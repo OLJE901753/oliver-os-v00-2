@@ -1,0 +1,176 @@
+{
+  "name": "Oliver-OS CodeBuff Configuration",
+  "version": "0.0.2",
+  "description": "Configuration for CodeBuff SDK agent spawning in Oliver-OS",
+  "agents": {
+    "code-generator": {
+      "id": "code-generator",
+      "displayName": "Code Generator",
+      "model": "openai/gpt-4",
+      "toolNames": ["read_files", "write_file", "search_code"],
+      "spawnableAgents": ["code-reviewer", "test-generator"],
+      "instructionsPrompt": "Generate high-quality, maintainable code following BMAD principles. Break down complex tasks into manageable pieces, map out architecture and dependencies, automate repetitive processes, and document everything.",
+      "status": "idle"
+    },
+    "code-reviewer": {
+      "id": "code-reviewer",
+      "displayName": "Code Reviewer",
+      "model": "openai/gpt-4",
+      "toolNames": ["read_files", "analyze_code"],
+      "spawnableAgents": ["security-analyzer"],
+      "instructionsPrompt": "Review code for quality, security, and adherence to standards. Focus on BMAD principles: modularity, automation, and documentation.",
+      "status": "idle"
+    },
+    "test-generator": {
+      "id": "test-generator",
+      "displayName": "Test Generator",
+      "model": "openai/gpt-4",
+      "toolNames": ["read_files", "write_file"],
+      "spawnableAgents": [],
+      "instructionsPrompt": "Generate comprehensive unit and integration tests. Ensure good test coverage and follow testing best practices.",
+      "status": "idle"
+    },
+    "security-analyzer": {
+      "id": "security-analyzer",
+      "displayName": "Security Analyzer",
+      "model": "openai/gpt-4",
+      "toolNames": ["read_files", "analyze_security"],
+      "spawnableAgents": [],
+      "instructionsPrompt": "Analyze code for security vulnerabilities and best practices. Focus on common security issues and provide actionable recommendations.",
+      "status": "idle"
+    },
+    "documentation-generator": {
+      "id": "documentation-generator",
+      "displayName": "Documentation Generator",
+      "model": "openai/gpt-4",
+      "toolNames": ["read_files", "write_file"],
+      "spawnableAgents": [],
+      "instructionsPrompt": "Generate comprehensive documentation for code and APIs. Follow BMAD principle of documenting everything.",
+      "status": "idle"
+    },
+    "bureaucracy-disruptor": {
+      "id": "bureaucracy-disruptor",
+      "displayName": "Bureaucracy Disruptor",
+      "model": "openai/gpt-4",
+      "toolNames": ["analyze_processes", "optimize_workflows"],
+      "spawnableAgents": ["efficiency-optimizer"],
+      "instructionsPrompt": "Identify and eliminate bureaucratic inefficiencies in code and processes. Focus on automation and streamlining workflows.",
+      "status": "idle"
+    },
+    "thought-processor": {
+      "id": "thought-processor",
+      "displayName": "Thought Processor",
+      "model": "openai/gpt-4",
+      "toolNames": ["analyze_thought", "extract_insights", "generate_summary"],
+      "spawnableAgents": ["pattern-recognizer", "knowledge-extractor"],
+      "instructionsPrompt": "Process and analyze thoughts to extract meaningful insights and patterns. Break down complex thoughts into manageable components.",
+      "status": "idle"
+    },
+    "pattern-recognizer": {
+      "id": "pattern-recognizer",
+      "displayName": "Pattern Recognizer",
+      "model": "openai/gpt-4",
+      "toolNames": ["recognize_patterns", "identify_trends", "analyze_correlations"],
+      "spawnableAgents": ["insight-generator"],
+      "instructionsPrompt": "Recognize patterns and trends in data and thoughts. Identify correlations and provide insights.",
+      "status": "idle"
+    },
+    "knowledge-extractor": {
+      "id": "knowledge-extractor",
+      "displayName": "Knowledge Extractor",
+      "model": "openai/gpt-4",
+      "toolNames": ["extract_knowledge", "build_graph", "update_database"],
+      "spawnableAgents": [],
+      "instructionsPrompt": "Extract and structure knowledge from various sources. Build knowledge graphs and update databases.",
+      "status": "idle"
+    },
+    "collaboration-coordinator": {
+      "id": "collaboration-coordinator",
+      "displayName": "Collaboration Coordinator",
+      "model": "openai/gpt-4",
+      "toolNames": ["coordinate_agents", "manage_workflows", "resolve_conflicts"],
+      "spawnableAgents": ["workflow-optimizer", "conflict-resolver"],
+      "instructionsPrompt": "Coordinate multiple agents and manage collaborative workflows. Resolve conflicts and optimize processes.",
+      "status": "idle"
+    }
+  },
+  "settings": {
+    "maxConcurrentAgents": 10,
+    "defaultTimeout": 300000,
+    "retryAttempts": 3,
+    "logLevel": "info",
+    "enableMetrics": true,
+    "enableWebhooks": false
+  },
+  "integrations": {
+    "openai": {
+      "apiKey": "${OPENAI_API_KEY}",
+      "baseURL": "https://api.openai.com/v1",
+      "model": "gpt-4",
+      "temperature": 0.7,
+      "maxTokens": 4000
+    },
+    "anthropic": {
+      "apiKey": "${ANTHROPIC_API_KEY}",
+      "model": "claude-3-sonnet-20240229",
+      "temperature": 0.7,
+      "maxTokens": 4000
+    }
+  },
+  "workflows": {
+    "code-generation": {
+      "name": "Code Generation Workflow",
+      "description": "Complete code generation workflow with review and testing",
+      "steps": [
+        {
+          "agent": "code-generator",
+          "prompt": "Generate code based on requirements"
+        },
+        {
+          "agent": "code-reviewer",
+          "prompt": "Review the generated code for quality and standards"
+        },
+        {
+          "agent": "test-generator",
+          "prompt": "Generate tests for the reviewed code"
+        },
+        {
+          "agent": "documentation-generator",
+          "prompt": "Generate documentation for the code"
+        }
+      ]
+    },
+    "thought-analysis": {
+      "name": "Thought Analysis Workflow",
+      "description": "Analyze thoughts and extract insights",
+      "steps": [
+        {
+          "agent": "thought-processor",
+          "prompt": "Process and analyze the thought"
+        },
+        {
+          "agent": "pattern-recognizer",
+          "prompt": "Recognize patterns in the processed thought"
+        },
+        {
+          "agent": "knowledge-extractor",
+          "prompt": "Extract knowledge from the thought and patterns"
+        }
+      ]
+    },
+    "bureaucracy-disruption": {
+      "name": "Bureaucracy Disruption Workflow",
+      "description": "Identify and eliminate bureaucratic inefficiencies",
+      "steps": [
+        {
+          "agent": "bureaucracy-disruptor",
+          "prompt": "Analyze processes for inefficiencies"
+        },
+        {
+          "agent": "collaboration-coordinator",
+          "prompt": "Coordinate optimization efforts"
+        }
+      ]
+    }
+  }
+}

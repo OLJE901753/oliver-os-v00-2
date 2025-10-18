@@ -1,0 +1,139 @@
+{
+  "bmadMethod": {
+    "break": {
+      "taskDecomposition": {
+        "enabled": true,
+        "maxTaskSize": "2-4 hours",
+        "breakdownCriteria": [
+          "AI-brain interface component",
+          "Real-time collaboration feature",
+          "WebSocket connection module",
+          "Thought processing service"
+        ]
+      },
+      "codeAnalysis": {
+        "enabled": true,
+        "dependencyMapping": true,
+        "complexityThreshold": 15,
+        "fileSizeLimit": 300
+      }
+    },
+    "map": {
+      "architecture": {
+        "enabled": true,
+        "visualization": true,
+        "dependencyGraph": true,
+        "serviceMapping": true
+      },
+      "navigation": {
+        "symbolSearch": true,
+        "fileRelationships": true,
+        "codeFlowAnalysis": true
+      }
+    },
+    "automate": {
+      "codeGeneration": {
+        "enabled": true,
+        "boilerplateReduction": true,
+        "patternRecognition": true,
+        "refactoringSuggestions": true
+      },
+      "processes": {
+        "testGeneration": true,
+        "documentationGeneration": true,
+        "errorHandling": true,
+        "validationRules": true
+      }
+    },
+    "document": {
+      "inlineDocumentation": {
+        "enabled": true,
+        "autoGenerate": true,
+        "includeExamples": true,
+        "updateOnChange": true
+      },
+      "testing": {
+        "unitTests": true,
+        "integrationTests": true,
+        "errorCaseTests": true,
+        "coverageTracking": true
+      }
+    }
+  },
+  "workflow": {
+    "phases": [
+      {
+        "name": "Break",
+        "description": "Decompose AI-brain interface into manageable components",
+        "tools": ["thoughtAnalysis", "componentMapping", "complexityAnalysis"]
+      },
+      {
+        "name": "Map",
+        "description": "Map AI services and real-time communication architecture",
+        "tools": ["serviceMapping", "websocketFlow", "aiIntegrationAnalysis"]
+      },
+      {
+        "name": "Automate",
+        "description": "Automate thought processing and collaboration workflows",
+        "tools": ["aiServiceGeneration", "realtimeAutomation", "collaborationScripts"]
+      },
+      {
+        "name": "Document",
+        "description": "Document AI-brain interface and collaboration APIs",
+        "tools": ["aiApiDocs", "collaborationGuides", "thoughtProcessingDocs"]
+      }
+    ]
+  },
+  "preferences": {
+    "language": "TypeScript",
+    "framework": "React",
+    "backend": "Node.js",
+    "database": "Supabase",
+    "testing": "Vitest",
+    "documentation": "JSDoc"
+  },
+  "project": {
+    "name": "Oliver-OS",
+    "type": "ai-brain-interface",
+    "architecture": "microservices",
+    "target": "real-time-thought-processing",
+    "collaboration": "multi-user",
+    "aiIntegration": "thought-analysis",
+    "realTime": "websocket-streaming"
+  },
+  "components": {
+    "frontend": {
+      "framework": "React + Vite + Tailwind",
+      "components": [
+        "Mind visualization components",
+        "Real-time collaboration UI", 
+        "Brain dump interface"
+      ]
+    },
+    "backend": {
+      "framework": "Node.js + Express + WebSocket",
+      "services": [
+        "Real-time idea streaming",
+        "User authentication",
+        "API endpoints"
+      ]
+    },
+    "aiServices": {
+      "framework": "Python + FastAPI + CrewAI",
+      "services": [
+        "Thought analysis",
+        "Pattern recognition", 
+        "Idea enhancement"
+      ]
+    },
+    "database": {
+      "primary": "Supabase",
+      "local": "SQLite",
+      "tables": [
+        "User data storage",
+        "Thought patterns",
+        "Collaboration data"
+      ]
+    }
+  }
+}

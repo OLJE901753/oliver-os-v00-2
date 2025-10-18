@@ -1,0 +1,53 @@
+# BMAD Method - Cursor AI Rules
+
+## Core BMAD Principles
+- **B**reak down complex tasks into manageable pieces
+- **M**ap out architecture and dependencies  
+- **A**utomate repetitive processes
+- **D**ocument and test everything
+
+## Coding Standards
+- Use strict typing, DRY/KISS principles, modular microservices
+- Prefer functional programming over OOP unless interfacing with external systems
+- Raise specific, actionable errors immediately; never ignore silently
+- Keep files under 200-300 lines of code; refactor at that point
+- Avoid duplication - check for existing similar code and functionality
+
+## Environment Considerations
+- Write code that accounts for different environments: dev, test, and prod
+- Only make changes that are requested or well understood and related
+- When fixing issues, exhaust existing implementation options before introducing new patterns
+- Keep the codebase very clean and organized
+
+## Development Workflow
+- Break down complex features into smaller, manageable tasks
+- Map out dependencies and architecture before coding
+- Automate repetitive tasks and boilerplate code generation
+- Document all functions, APIs, and complex logic
+- Write tests for all new functionality
+
+## Error Handling
+- Raise specific, actionable errors immediately
+- Never ignore errors silently
+- Provide clear error messages with context
+- Log errors appropriately for debugging
+
+## Code Organization
+- Use modular microservices architecture
+- Keep related functionality together
+- Separate concerns clearly
+- Use meaningful variable and function names
+
+## Testing Strategy
+- Write unit tests for all new functions
+- Include integration tests for API endpoints
+- Test error conditions and edge cases
+- Maintain good test coverage
+
+## Documentation
+- Document all public APIs and interfaces
+- Include examples in documentation
+- Keep README files updated
+- Document architectural decisions
+
+Remember: "For the honor, not the glory—by the people, for the people."

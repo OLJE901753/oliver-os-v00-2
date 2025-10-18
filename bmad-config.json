@@ -1,0 +1,95 @@
+{
+  "bmadMethod": {
+    "break": {
+      "taskDecomposition": {
+        "enabled": true,
+        "maxTaskSize": "2-4 hours",
+        "breakdownCriteria": [
+          "Single responsibility",
+          "Testable unit",
+          "Clear input/output",
+          "Independent functionality"
+        ]
+      },
+      "codeAnalysis": {
+        "enabled": true,
+        "dependencyMapping": true,
+        "complexityThreshold": 10,
+        "fileSizeLimit": 300
+      }
+    },
+    "map": {
+      "architecture": {
+        "enabled": true,
+        "visualization": true,
+        "dependencyGraph": true,
+        "serviceMapping": true
+      },
+      "navigation": {
+        "symbolSearch": true,
+        "fileRelationships": true,
+        "codeFlowAnalysis": true
+      }
+    },
+    "automate": {
+      "codeGeneration": {
+        "enabled": true,
+        "boilerplateReduction": true,
+        "patternRecognition": true,
+        "refactoringSuggestions": true
+      },
+      "processes": {
+        "testGeneration": true,
+        "documentationGeneration": true,
+        "errorHandling": true,
+        "validationRules": true
+      }
+    },
+    "document": {
+      "inlineDocumentation": {
+        "enabled": true,
+        "autoGenerate": true,
+        "includeExamples": true,
+        "updateOnChange": true
+      },
+      "testing": {
+        "unitTests": true,
+        "integrationTests": true,
+        "errorCaseTests": true,
+        "coverageTracking": true
+      }
+    }
+  },
+  "workflow": {
+    "phases": [
+      {
+        "name": "Break",
+        "description": "Decompose complex tasks",
+        "tools": ["taskAnalysis", "dependencyMapping", "complexityAnalysis"]
+      },
+      {
+        "name": "Map", 
+        "description": "Understand architecture and relationships",
+        "tools": ["symbolSearch", "visualization", "flowAnalysis"]
+      },
+      {
+        "name": "Automate",
+        "description": "Generate code and automate processes", 
+        "tools": ["codeGeneration", "refactoring", "testGeneration"]
+      },
+      {
+        "name": "Document",
+        "description": "Document and test everything",
+        "tools": ["documentation", "testing", "validation"]
+      }
+    ]
+  },
+  "preferences": {
+    "language": "TypeScript",
+    "framework": "React",
+    "backend": "Node.js",
+    "database": "Supabase",
+    "testing": "Vitest",
+    "documentation": "JSDoc"
+  }
+}

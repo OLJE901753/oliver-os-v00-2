@@ -1,0 +1,129 @@
+{
+  "name": "oliver-os-mcp-server",
+  "version": "1.0.0",
+  "description": "MCP Server for Oliver-OS AI-brain interface system",
+  "server": {
+    "name": "oliver-os-mcp-server",
+    "version": "1.0.0",
+    "description": "MCP Server for Oliver-OS AI-brain interface system",
+    "port": 4000,
+    "host": "localhost",
+    "transports": {
+      "stdio": {
+        "enabled": true,
+        "description": "Standard I/O transport for CLI integration"
+      },
+      "websocket": {
+        "enabled": true,
+        "port": 4001,
+        "description": "WebSocket transport for real-time communication"
+      },
+      "http": {
+        "enabled": true,
+        "port": 4002,
+        "description": "HTTP transport for REST API integration"
+      }
+    }
+  },
+  "tools": {
+    "thought-processing": {
+      "enabled": true,
+      "tools": [
+        "analyze_thought_patterns",
+        "enhance_thought",
+        "generate_thought_connections",
+        "stream_thought_processing"
+      ]
+    },
+    "collaboration": {
+      "enabled": true,
+      "tools": [
+        "get_workspace_status",
+        "join_workspace",
+        "leave_workspace",
+        "share_thought",
+        "get_collaboration_history",
+        "create_workspace",
+        "sync_workspace_state"
+      ]
+    },
+    "bmad": {
+      "enabled": true,
+      "tools": [
+        "bmad_break",
+        "bmad_map",
+        "bmad_automate",
+        "bmad_document",
+        "bmad_analyze",
+        "bmad_validate"
+      ]
+    },
+    "system": {
+      "enabled": true,
+      "tools": [
+        "get_system_status",
+        "process_thought",
+        "get_agent_status",
+        "spawn_agent",
+        "get_collaboration_data",
+        "execute_bmad_command"
+      ]
+    }
+  },
+  "resources": {
+    "system-architecture": {
+      "uri": "oliver-os://system/architecture",
+      "enabled": true,
+      "description": "Current Oliver-OS system architecture and component relationships"
+    },
+    "system-logs": {
+      "uri": "oliver-os://logs/system",
+      "enabled": true,
+      "description": "Recent system logs and error reports"
+    },
+    "current-config": {
+      "uri": "oliver-os://config/current",
+      "enabled": true,
+      "description": "Current system configuration and environment settings"
+    }
+  },
+  "integration": {
+    "ai-services": {
+      "enabled": true,
+      "endpoint": "http://localhost:8000",
+      "timeout": 30000
+    },
+    "database": {
+      "enabled": true,
+      "type": "supabase",
+      "timeout": 10000
+    },
+    "websocket": {
+      "enabled": true,
+      "port": 3000,
+      "timeout": 5000
+    }
+  },
+  "logging": {
+    "level": "info",
+    "format": "json",
+    "includeTimestamp": true,
+    "includeMetadata": true
+  },
+  "security": {
+    "authentication": {
+      "enabled": false,
+      "type": "jwt",
+      "secret": "your-secret-key"
+    },
+    "rateLimiting": {
+      "enabled": true,
+      "requestsPerMinute": 100,
+      "burstLimit": 20
+    },
+    "cors": {
+      "enabled": true,
+      "origins": ["http://localhost:3000", "http://localhost:4000"]
+    }
+  }
+}

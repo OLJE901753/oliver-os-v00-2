@@ -1,0 +1,187 @@
+{
+  "bmadMethod": {
+    "break": {
+      "thoughtDecomposition": {
+        "enabled": true,
+        "maxThoughtComplexity": 10,
+        "breakdownCriteria": [
+          "AI-brain interface component",
+          "Real-time collaboration feature",
+          "Thought processing service",
+          "Knowledge graph node",
+          "Mind visualization element"
+        ],
+        "aiProcessingLevels": [
+          "Basic thought capture",
+          "Pattern recognition",
+          "Semantic analysis",
+          "Knowledge integration",
+          "Collaborative enhancement"
+        ]
+      },
+      "systemAnalysis": {
+        "enabled": true,
+        "dependencyMapping": true,
+        "complexityThreshold": 15,
+        "fileSizeLimit": 300,
+        "aiModelIntegration": true
+      }
+    },
+    "map": {
+      "brainArchitecture": {
+        "enabled": true,
+        "thoughtFlowVisualization": true,
+        "aiServiceMapping": true,
+        "realtimeConnectionMapping": true
+      },
+      "knowledgeGraph": {
+        "enabled": true,
+        "thoughtRelationshipMapping": true,
+        "patternRecognition": true,
+        "semanticSearch": true
+      }
+    },
+    "automate": {
+      "aiCodeGeneration": {
+        "enabled": true,
+        "thoughtProcessingAutomation": true,
+        "patternRecognitionAutomation": true,
+        "collaborationWorkflowAutomation": true
+      },
+      "brainProcesses": {
+        "enabled": true,
+        "realtimeProcessing": true,
+        "aiModelIntegration": true,
+        "knowledgeGraphUpdates": true
+      }
+    },
+    "document": {
+      "aiSystemDocumentation": {
+        "enabled": true,
+        "thoughtProcessingDocs": true,
+        "aiModelDocumentation": true,
+        "collaborationWorkflowDocs": true
+      },
+      "brainTesting": {
+        "enabled": true,
+        "thoughtProcessingTests": true,
+        "aiModelTests": true,
+        "realtimeCollaborationTests": true,
+        "knowledgeGraphTests": true
+      }
+    }
+  },
+  "workflow": {
+    "phases": [
+      {
+        "name": "Break",
+        "description": "Decompose AI-brain interface into thought processing components",
+        "tools": ["thoughtAnalysis", "aiComponentMapping", "complexityAnalysis", "patternRecognition"]
+      },
+      {
+        "name": "Map",
+        "description": "Map AI-brain architecture and knowledge relationships",
+        "tools": ["brainArchitectureMapping", "knowledgeGraphVisualization", "realtimeFlowAnalysis", "aiServiceIntegration"]
+      },
+      {
+        "name": "Automate",
+        "description": "Automate thought processing and AI enhancement workflows",
+        "tools": ["aiCodeGeneration", "thoughtProcessingAutomation", "collaborationWorkflowAutomation", "knowledgeGraphUpdates"]
+      },
+      {
+        "name": "Document",
+        "description": "Document AI-brain interface and thought processing systems",
+        "tools": ["aiSystemDocumentation", "thoughtProcessingDocs", "collaborationWorkflowDocs", "aiModelDocumentation"]
+      }
+    ]
+  },
+  "preferences": {
+    "language": "TypeScript",
+    "framework": "React",
+    "backend": "Node.js",
+    "database": "Supabase",
+    "testing": "Vitest",
+    "documentation": "JSDoc",
+    "aiOrchestration": "LangChain",
+    "visualization": "D3.js",
+    "realtime": "Socket.io"
+  },
+  "project": {
+    "name": "Oliver-OS",
+    "type": "ai-brain-interface",
+    "architecture": "microservices",
+    "target": "real-time-thought-processing",
+    "collaboration": "multi-user",
+    "aiIntegration": "advanced-thought-analysis",
+    "realtime": "enhanced-websocket-streaming",
+    "visualization": "advanced-mind-mapping",
+    "knowledgeManagement": "graph-based"
+  },
+  "techStack": {
+    "frontend": {
+      "core": "React 18 + Vite + Tailwind CSS",
+      "stateManagement": "Zustand + React Query",
+      "visualization": "D3.js + Three.js + Cytoscape.js",
+      "realtime": "Socket.io + WebRTC + Yjs",
+      "forms": "React Hook Form",
+      "animations": "Framer Motion"
+    },
+    "backend": {
+      "core": "Node.js + Express + TypeScript",
+      "realtime": "Socket.io + Redis Pub/Sub",
+      "queues": "Bull Queue",
+      "database": "Prisma + Supabase",
+      "caching": "Redis",
+      "validation": "Zod"
+    },
+    "aiServices": {
+      "core": "Python 3.11 + FastAPI",
+      "orchestration": "LangChain + LlamaIndex",
+      "agents": "CrewAI",
+      "models": "OpenAI + Anthropic + Local Ollama",
+      "nlp": "spaCy + Transformers",
+      "vectorDB": "Chroma + Pinecone",
+      "graphDB": "Neo4j"
+    },
+    "database": {
+      "primary": "Supabase (PostgreSQL)",
+      "cache": "Redis",
+      "vector": "Pinecone/Weaviate",
+      "graph": "Neo4j",
+      "local": "SQLite + IndexedDB"
+    },
+    "devOps": {
+      "containers": "Docker + Docker Compose",
+      "ci": "GitHub Actions",
+      "deployment": "Vercel + Railway",
+      "monitoring": "Sentry + PostHog",
+      "testing": "Vitest + Playwright"
+    }
+  },
+  "aiBrainFeatures": {
+    "thoughtProcessing": {
+      "input": ["voice", "text", "image", "gesture"],
+      "processing": ["speech-to-text", "thought-analysis", "pattern-recognition", "semantic-analysis"],
+      "output": ["visualization", "collaboration", "knowledge-graph", "insights"],
+      "storage": ["vector-db", "graph-db", "relational-db", "local-cache"]
+    },
+    "collaboration": {
+      "realtime": ["websocket", "webrtc", "server-sent-events"],
+      "editing": ["collaborative-editing", "shared-cursor", "live-updates"],
+      "communication": ["voice-chat", "video-call", "text-chat"],
+      "synchronization": ["multi-user-sync", "conflict-resolution", "offline-support"]
+    },
+    "visualization": {
+      "2d": ["mind-maps", "flowcharts", "network-graphs"],
+      "3d": ["thought-spaces", "knowledge-universe", "collaboration-rooms"],
+      "interactive": ["zoom", "pan", "filter", "search"],
+      "real-time": ["live-updates", "animated-transitions", "user-presence"]
+    },
+    "aiEnhancement": {
+      "analysis": ["thought-patterns", "knowledge-gaps", "insights"],
+      "suggestion": ["idea-enhancement", "related-thoughts", "collaboration-prompts"],
+      "automation": ["auto-categorization", "pattern-detection", "knowledge-extraction"],
+      "learning": ["user-preference-learning", "collaboration-pattern-learning", "thought-evolution-tracking"]
+    }
+  }
+}
