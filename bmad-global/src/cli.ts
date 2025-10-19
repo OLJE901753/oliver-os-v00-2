@@ -6,10 +6,10 @@
 import chalk from 'chalk';
 import ora from 'ora';
 import { Command } from 'commander';
-import { Logger } from '../core/logger';
-import { EnhancedConfigManager } from '../core/enhanced-config';
-import { BMADWorkflowEngine } from '../core/workflow-engine';
-import { IntelligentCodeAnalyzer } from '../core/intelligent-analyzer';
+import { Logger } from './core/logger';
+import { EnhancedConfigManager } from './core/enhanced-config';
+import { BMADWorkflowEngine } from './core/workflow-engine';
+import { IntelligentCodeAnalyzer } from './core/intelligent-analyzer';
 import type { 
   BMADConfig, 
   ProjectType, 
@@ -17,7 +17,7 @@ import type {
   WorkflowContext,
   ProjectAnalysis,
   ExecutionResult
-} from '../types/bmad';
+} from './types/bmad';
 
 export class EnhancedBMADCLI {
   private program: Command;

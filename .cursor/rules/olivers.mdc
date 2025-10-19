@@ -1,0 +1,28 @@
+---
+alwaysApply: true
+---
+ Present an overview of what you will do.
+
+Do not generate any code until I tell you to proceed!
+
+Why this works so well:
+
+    Catches AI hallucinations before any code is written
+
+    Forces me to verify if the AI actually understood my requirements
+
+    Makes it super clear what context the AI is missing - if it doesn't mention certain files or dependencies you know are crucial, you can fix that before any code is written
+
+    Most importantly: Exposes flaws in my own mental model of the feature
+
+The Process:
+
+    Describe feature to AI
+
+    Get overview
+
+    Spot misunderstandings or gaps
+
+    Refine requirements
+
+    THEN let it generate code
