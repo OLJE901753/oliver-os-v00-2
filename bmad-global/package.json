@@ -1,25 +1,35 @@
 {
   "name": "bmad-global",
-  "version": "1.0.0",
-  "description": "BMAD Method - Global Development Tool for Breaking, Mapping, Automating, and Documenting",
+  "version": "2.0.0",
+  "description": "BMAD Method - Enhanced Edition: Break, Map, Automate, Document",
   "main": "dist/index.js",
   "bin": {
-    "bmad": "./dist/cli.js"
+    "bmad": "./dist/index.js"
   },
   "scripts": {
     "build": "tsc",
     "dev": "tsx src/cli.ts",
     "start": "node dist/cli.js",
     "test": "vitest",
+    "test:watch": "vitest --watch",
     "lint": "eslint src/**/*.ts",
-    "type-check": "tsc --noEmit"
+    "lint:fix": "eslint src/**/*.ts --fix",
+    "type-check": "tsc --noEmit",
+    "clean": "rimraf dist",
+    "prebuild": "npm run clean",
+    "postbuild": "chmod +x dist/cli.js",
+    "prepublishOnly": "npm run build"
   },
   "keywords": [
     "bmad",
     "development",
     "methodology",
     "automation",
-    "documentation"
+    "code-analysis",
+    "workflow",
+    "ai-brain-interface",
+    "oliver-os",
+    "intelligent-analysis"
   ],
   "author": "Oliver-OS Team",
   "license": "MIT",
@@ -30,7 +40,10 @@
     "glob": "^11.0.3",
     "inquirer": "^12.10.0",
     "ora": "^9.0.0",
-    "typescript": "^5.3.3"
+    "typescript": "^5.3.3",
+    "yaml": "^2.3.4",
+    "zod": "^3.22.4",
+    "minimatch": "^9.0.3"
   },
   "devDependencies": {
     "@types/fs-extra": "^11.0.4",
@@ -40,9 +53,27 @@
     "@typescript-eslint/parser": "^6.16.0",
     "eslint": "^8.56.0",
     "tsx": "^4.6.2",
-    "vitest": "^1.1.0"
+    "vitest": "^1.1.0",
+    "rimraf": "^5.0.5"
   },
   "engines": {
     "node": ">=18.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/OLJE901753/oliver-os-v00-2.git",
+    "directory": "bmad-global"
+  },
+  "homepage": "https://github.com/OLJE901753/oliver-os-v00-2#readme",
+  "bugs": {
+    "url": "https://github.com/OLJE901753/oliver-os-v00-2/issues"
+  },
+  "files": [
+    "dist/**/*",
+    "README.md",
+    "LICENSE"
+  ],
+  "publishConfig": {
+    "access": "public"
   }
 }
