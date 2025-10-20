@@ -1,14 +1,16 @@
-# BMAD Method - Oliver-OS Setup
+# Oliver-OS - AI-Brain Interface System
 
 > For the honor, not the glory—by the people, for the people.
 
-## 🚀 Better Approach Implementation
+## 🎉 **WORKING STATUS - Frontend & Backend Operational**
 
-This setup implements the **better approach** you requested:
+**✅ FULLY FUNCTIONAL** - Oliver-OS is now running with working authentication system!
 
-1. **Install BMAD globally** - As a development tool
-2. **Use BMAD to manage Oliver-OS** - Apply BMAD methodology to your project  
-3. **Keep Oliver-OS clean** - Only project-specific files
+### **Current Status:**
+- 🚀 **Frontend**: Running on http://localhost:5173
+- ⚡ **Backend**: Running on http://localhost:3000  
+- 🔐 **Authentication**: Working with TypeScript module issues resolved
+- 📦 **GitHub**: All fixes committed and pushed
 
 ## 📁 Project Structure
 
@@ -32,28 +34,33 @@ Oliver-OS V00.2/
 └── README.md                   # This file
 ```
 
-## 🛠️ Installation
+## 🚀 **QUICK START - Get Oliver-OS Running**
 
-### 1. Install BMAD Globally
-
-Run the PowerShell installation script:
-
-```powershell
-.\install-bmad-global.ps1
-```
-
-This will:
-- Check Node.js and pnpm installation
-- Install BMAD dependencies
-- Build and link BMAD globally
-- Make `bmad` command available everywhere
-
-### 2. Initialize Oliver-OS
+### **One Command to Rule Them All:**
 
 ```powershell
 cd oliver-os
-bmad init
+pnpm dev:full
 ```
+
+This starts both frontend and backend servers with colored output.
+
+### **Alternative - Start Separately:**
+
+```powershell
+# Terminal 1 - Backend
+cd oliver-os
+pnpm dev
+
+# Terminal 2 - Frontend  
+cd oliver-os/frontend
+pnpm start
+```
+
+### **Access Your System:**
+- **Frontend**: http://localhost:5173
+- **Backend API**: http://localhost:3000/api/health
+- **Authentication**: Working login/register forms
 
 ## 🎯 BMAD Commands
 

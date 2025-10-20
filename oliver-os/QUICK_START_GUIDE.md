@@ -1,57 +1,33 @@
 # Oliver-OS Quick Start Guide
 
-## 🚀 **Get Oliver-OS Running in 5 Minutes**
+## 🎉 **OLIVER-OS IS WORKING!**
 
-Despite the connection errors, your enhanced Oliver-OS system is ready to run locally! Here's how to get started:
+**✅ STATUS UPDATE**: All TypeScript module export issues have been resolved! Oliver-OS is now fully functional with working frontend and backend communication.
 
-### **Step 1: Start the Database Layer**
-```bash
-# Navigate to database directory
-cd oliver-os/database
+## 🚀 **Get Oliver-OS Running in 2 Minutes**
 
-# Start all databases with Docker
-docker-compose up -d
-
-# Check if all services are running
-docker-compose ps
+### **Step 1: One Command Start (RECOMMENDED)**
+```powershell
+cd oliver-os
+pnpm dev:full
 ```
 
-**Expected Output:**
-```
-NAME                    IMAGE                    STATUS
-oliver-os-redis         redis:7-alpine          Up
-oliver-os-postgres      postgres:15-alpine      Up  
-oliver-os-neo4j         neo4j:5.15             Up
-oliver-os-chromadb      chromadb/chroma:latest  Up
-oliver-os-elasticsearch elasticsearch:8.11.0    Up
-```
+This single command starts both frontend and backend with colored output!
 
-### **Step 2: Install Dependencies**
-```bash
-# Backend dependencies
-cd ../oliver-os
-pnpm install
+### **Step 2: Access Your System**
+- **Frontend**: http://localhost:5173 ✅
+- **Backend API**: http://localhost:3000/api/health ✅
+- **Authentication**: Working login/register forms ✅
 
-# Frontend dependencies  
-cd frontend
-pnpm install
-cd ..
-```
-
-### **Step 3: Start the Services**
-```bash
+### **Alternative: Start Separately**
+```powershell
 # Terminal 1: Backend (Port 3000)
 cd oliver-os
 pnpm dev
 
-# Terminal 2: Frontend (Port 3001) 
-cd frontend
-pnpm dev
-
-# Terminal 3: AI Services (Port 8000)
-cd ai-services
-pip install -r requirements.txt
-python main.py
+# Terminal 2: Frontend (Port 5173)
+cd oliver-os/frontend
+pnpm start
 ```
 
 ### **Step 4: Access Oliver-OS**
