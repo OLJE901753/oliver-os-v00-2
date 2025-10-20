@@ -5,36 +5,71 @@ import { useSocket } from '@/hooks/useSocket'
 import { useThoughtStore } from '@/stores/thoughtStore'
 
 export const BrainInterface: React.FC = () => {
-  const { isConnected, emit, on } = useSocket()
-  const { thoughts, addThought, processingStatus } = useThoughtStore()
+  const { isConnected, createThought, on } = useSocket()
+  const { thoughts, addThought, processingStatus, setProcessingStatus } = useThoughtStore()
   const [currentThought, setCurrentThought] = useState('')
-  const [isProcessing, setIsProcessing] = useState(false)
+  const [isProcessingState, setIsProcessingState] = useState(false)
 
   useEffect(() => {
     // Listen for thought processing updates
-    on('thought-processed', (data) => {
-      addThought(data.thought)
-      setIsProcessing(false)
+    on('thought:processed', (data) => {
+      console.log('Thought processed:', data)
+      addThought({
+        content: data.data.content,
+        processed: true,
+        insights: data.data.insights || [],
+        tags: data.data.tags || [],
+        confidence: data.data.confidence,
+        processingTime: data.data.processing_time_ms
+      })
+      setIsProcessingState(false)
+      setProcessingStatus(null)
     })
 
-    on('processing-status', (status) => {
-      setIsProcessing(status.isProcessing)
+    on('thought:error', (data) => {
+      console.error('Thought processing error:', data)
+      setIsProcessingState(false)
+      setProcessingStatus('Error processing thought')
+    })
+
+    on('thought:analyzed', (data) => {
+      console.log('Thought analyzed:', data)
+      // Update existing thought with analysis
+      // This would require updating the thought store
+    })
+
+    on('agent:spawned', (data) => {
+      console.log('Agent spawned:', data)
+      setProcessingStatus(`Agent ${data.data.agent_type} is ready`)
+    })
+
+    on('voice:transcribed', (data) => {
+      console.log('Voice transcribed:', data)
+      setCurrentThought(data.data.transcription)
     })
 
     return () => {
       // Cleanup listeners
     }
-  }, [on, addThought])
+  }, [on, addThought, setProcessingStatus])
 
   const handleThoughtSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    if (!currentThought.trim() || isProcessing) return
+    if (!currentThought.trim() || isProcessingState) return
 
-    setIsProcessing(true)
-    emit('process-thought', { 
-      thought: currentThought.trim(),
-      timestamp: new Date().toISOString()
+    setIsProcessingState(true)
+    setProcessingStatus('Processing your thought...')
+    
+    createThought({
+      content: currentThought.trim(),
+      user_id: 'anonymous', // In a real app, this would come from auth
+      metadata: {
+        timestamp: new Date().toISOString(),
+        source: 'web_interface'
+      },
+      tags: ['user_input', 'web']
     })
+    
     setCurrentThought('')
   }
 
@@ -48,6 +83,17 @@ export const BrainInterface: React.FC = () => {
       recognition.onresult = (event: any) => {
         const transcript = event.results[0][0].transcript
         setCurrentThought(transcript)
+        
+        // Also send to WebSocket for processing
+        createThought({
+          content: transcript,
+          user_id: 'anonymous',
+          metadata: {
+            timestamp: new Date().toISOString(),
+            source: 'voice_input'
+          },
+          tags: ['voice', 'speech_recognition']
+        })
       }
 
       recognition.start()
@@ -106,9 +152,9 @@ export const BrainInterface: React.FC = () => {
                     onChange={(e) => setCurrentThought(e.target.value)}
                     placeholder="Share your thoughts... What's on your mind?"
                     className="w-full h-32 bg-brain-700/50 border border-brain-600 rounded-xl p-4 text-white placeholder-brain-400 focus:outline-none focus:ring-2 focus:ring-thought-400 focus:border-transparent resize-none"
-                    disabled={isProcessing}
+                    disabled={isProcessingState}
                   />
-                  {isProcessing && (
+                  {isProcessingState && (
                     <div className="absolute top-4 right-4">
                       <motion.div
                         animate={{ rotate: 360 }}
@@ -122,10 +168,10 @@ export const BrainInterface: React.FC = () => {
                 <div className="flex space-x-3">
                   <button
                     type="submit"
-                    disabled={!currentThought.trim() || isProcessing}
+                    disabled={!currentThought.trim() || isProcessingState}
                     className="flex-1 bg-gradient-to-r from-thought-500 to-thought-600 hover:from-thought-600 hover:to-thought-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold py-3 px-6 rounded-xl transition-all duration-200 flex items-center justify-center"
                   >
-                    {isProcessing ? (
+                    {isProcessingState ? (
                       <>
                         <motion.div
                           animate={{ rotate: 360 }}
@@ -154,7 +200,7 @@ export const BrainInterface: React.FC = () => {
               </form>
 
               {/* Processing Status */}
-              {isProcessing && (
+              {isProcessingState && (
                 <motion.div 
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -204,9 +250,9 @@ export const BrainInterface: React.FC = () => {
                 <div className="flex justify-between items-center">
                   <span className="text-brain-300">Processing</span>
                   <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                    isProcessing ? 'bg-yellow-500/20 text-yellow-400' : 'bg-gray-500/20 text-gray-400'
+                    isProcessingState ? 'bg-yellow-500/20 text-yellow-400' : 'bg-gray-500/20 text-gray-400'
                   }`}>
-                    {isProcessing ? 'Active' : 'Idle'}
+                    {isProcessingState ? 'Active' : 'Idle'}
                   </span>
                 </div>
               </div>

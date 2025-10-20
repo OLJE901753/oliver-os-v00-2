@@ -7,6 +7,15 @@ interface SocketContextType {
   emit: (_event: string, _data?: any) => void
   on: (_event: string, _callback: (_data: any) => void) => void
   off: (_event: string, _callback?: (_data: any) => void) => void
+  
+  // Oliver-OS specific methods
+  createThought: (data: { content: string; user_id?: string; metadata?: any; tags?: string[] }) => void
+  analyzeThought: (thoughtId: string) => void
+  spawnAgent: (data: { agent_type: string; prompt: string; metadata?: any }) => void
+  sendVoiceData: (data: { audio_data: any; user_id?: string; metadata?: any }) => void
+  subscribe: (channel: string) => void
+  unsubscribe: (channel: string) => void
+  ping: () => void
 }
 
 const SocketContext = createContext<SocketContextType | undefined>(undefined)
@@ -21,7 +30,7 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
 
   useEffect(() => {
     // Initialize socket connection
-    const newSocket = io((import.meta as any).env?.VITE_WS_URL || 'http://localhost:3001', {
+    const newSocket = io((import.meta as any).env?.VITE_WS_URL || 'http://localhost:3000', {
       transports: ['websocket'],
       autoConnect: true,
       reconnection: true,
@@ -33,6 +42,11 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
     newSocket.on('connect', () => {
       console.log('Connected to WebSocket server')
       setIsConnected(true)
+    })
+
+    newSocket.on('connected', (data) => {
+      console.log('Welcome message:', data.message)
+      console.log('Client ID:', data.client_id)
     })
 
     newSocket.on('disconnect', (_reason) => {
@@ -57,6 +71,19 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
     newSocket.on('reconnect_failed', () => {
       console.error('WebSocket reconnection failed')
       setIsConnected(false)
+    })
+
+    // Backend-specific event handlers
+    newSocket.on('pong', (data) => {
+      console.log('Pong received:', data.timestamp)
+    })
+
+    newSocket.on('subscribed', (data) => {
+      console.log('Subscribed to channel:', data.channel)
+    })
+
+    newSocket.on('unsubscribed', (data) => {
+      console.log('Unsubscribed from channel:', data.channel)
     })
 
     setSocket(newSocket)
@@ -93,12 +120,48 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
     }
   }, [socket])
 
+  // Oliver-OS specific methods
+  const createThought = useCallback((data: { content: string; user_id?: string; metadata?: any; tags?: string[] }) => {
+    emit('thought:create', data)
+  }, [emit])
+
+  const analyzeThought = useCallback((thoughtId: string) => {
+    emit('thought:analyze', { thought_id: thoughtId })
+  }, [emit])
+
+  const spawnAgent = useCallback((data: { agent_type: string; prompt: string; metadata?: any }) => {
+    emit('agent:spawn', data)
+  }, [emit])
+
+  const sendVoiceData = useCallback((data: { audio_data: any; user_id?: string; metadata?: any }) => {
+    emit('voice:data', data)
+  }, [emit])
+
+  const subscribe = useCallback((channel: string) => {
+    emit('subscribe', channel)
+  }, [emit])
+
+  const unsubscribe = useCallback((channel: string) => {
+    emit('unsubscribe', channel)
+  }, [emit])
+
+  const ping = useCallback(() => {
+    emit('ping')
+  }, [emit])
+
   const value: SocketContextType = {
     socket,
     isConnected,
     emit,
     on,
     off,
+    createThought,
+    analyzeThought,
+    spawnAgent,
+    sendVoiceData,
+    subscribe,
+    unsubscribe,
+    ping,
   }
 
   return (

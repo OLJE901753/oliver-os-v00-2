@@ -3,7 +3,8 @@
  * Provides comprehensive system status and metrics
  */
 
-import { Router, Request, Response } from 'express';
+import { Router } from 'express';
+import type { Request, Response } from 'express';
 import { Logger } from '../core/logger';
 
 const router = Router();

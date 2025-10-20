@@ -3,7 +3,7 @@
  * Logs all incoming requests with timing and metadata
  */
 
-import { Request, Response, NextFunction } from 'express';
+import type { Request, Response, NextFunction } from 'express';
 import { Logger } from '../core/logger';
 
 const logger = new Logger('RequestLogger');

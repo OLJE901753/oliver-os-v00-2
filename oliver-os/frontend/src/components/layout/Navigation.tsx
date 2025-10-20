@@ -12,10 +12,14 @@ import {
   User,
   LogOut
 } from 'lucide-react'
+import { useAuthStore } from '../../stores/authStore'
+import { UserProfile } from '../auth/UserProfile'
 
 export const Navigation: React.FC = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const [showUserProfile, setShowUserProfile] = useState(false)
   const location = useLocation()
+  const { user, logout, isLoading } = useAuthStore()
 
   const navigationItems = [
     { path: '/', label: 'Brain Interface', icon: Brain },
@@ -25,6 +29,14 @@ export const Navigation: React.FC = () => {
   ]
 
   const isActive = (path: string) => location.pathname === path
+
+  const handleLogout = async () => {
+    try {
+      await logout()
+    } catch (error) {
+      console.error('Logout error:', error)
+    }
+  }
 
   return (
     <nav className="bg-brain-800/80 backdrop-blur-sm border-b border-brain-700/50 sticky top-0 z-50">
@@ -92,11 +104,18 @@ export const Navigation: React.FC = () => {
               <button className="p-2 text-brain-400 hover:text-white hover:bg-brain-700/50 rounded-lg transition-colors">
                 <Settings className="w-5 h-5" />
               </button>
-              <div className="flex items-center space-x-2 px-3 py-2 bg-brain-700/50 rounded-lg">
+              <button 
+                onClick={() => setShowUserProfile(!showUserProfile)}
+                className="flex items-center space-x-2 px-3 py-2 bg-brain-700/50 rounded-lg hover:bg-brain-700/70 transition-colors"
+              >
                 <User className="w-5 h-5 text-thought-400" />
-                <span className="text-sm text-white">User</span>
-              </div>
-              <button className="p-2 text-brain-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors">
+                <span className="text-sm text-white">{user?.name || 'User'}</span>
+              </button>
+              <button 
+                onClick={handleLogout}
+                disabled={isLoading}
+                className="p-2 text-brain-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors disabled:opacity-50"
+              >
                 <LogOut className="w-5 h-5" />
               </button>
             </div>
@@ -148,12 +167,39 @@ export const Navigation: React.FC = () => {
                   <Settings className="w-5 h-5" />
                   <span>Settings</span>
                 </button>
-                <button className="w-full flex items-center space-x-3 px-4 py-3 text-brain-300 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors">
+                <button 
+                  onClick={handleLogout}
+                  disabled={isLoading}
+                  className="w-full flex items-center space-x-3 px-4 py-3 text-brain-300 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors disabled:opacity-50"
+                >
                   <LogOut className="w-5 h-5" />
-                  <span>Sign Out</span>
+                  <span>{isLoading ? 'Signing Out...' : 'Sign Out'}</span>
                 </button>
               </div>
             </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* User Profile Modal */}
+      <AnimatePresence>
+        {showUserProfile && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+            onClick={() => setShowUserProfile(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="w-full max-w-md"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <UserProfile />
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>

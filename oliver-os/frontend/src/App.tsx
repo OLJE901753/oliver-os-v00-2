@@ -6,7 +6,12 @@ import { CollaborationWorkspace } from './components/collaboration/Collaboration
 import { MindVisualizer } from './components/visualization/MindVisualizer'
 import { ThoughtProcessor } from './components/thought/ThoughtProcessor'
 import { Navigation } from './components/layout/Navigation'
+import { RealtimeStatus } from './components/status/RealtimeStatus'
+import { WebSocketDebug } from './components/debug/WebSocketDebug'
+import { ProtectedRoute } from './components/auth/ProtectedRoute'
 import { SocketProvider } from './hooks/useSocket'
+import { initializeAuth } from './stores/authStore'
+import { useEffect } from 'react'
 import './App.css'
 
 const queryClient = new QueryClient({
@@ -19,20 +24,50 @@ const queryClient = new QueryClient({
 })
 
 function App() {
+  // Initialize authentication on app start
+  useEffect(() => {
+    initializeAuth()
+  }, [])
+
+  // For development: bypass authentication temporarily
+  const isDevelopment = (import.meta as any).env?.DEV || false
+
   return (
     <QueryClientProvider client={queryClient}>
       <SocketProvider>
         <Router>
           <div className="min-h-screen bg-gradient-to-br from-brain-900 via-brain-800 to-brain-900">
-            <Navigation />
-            <main className="container mx-auto px-4 py-8">
-              <Routes>
-                <Route path="/" element={<BrainInterface />} />
-                <Route path="/collaborate" element={<CollaborationWorkspace />} />
-                <Route path="/visualize" element={<MindVisualizer />} />
-                <Route path="/thoughts" element={<ThoughtProcessor />} />
-              </Routes>
-            </main>
+            {isDevelopment ? (
+              // Development mode: show interface without auth
+              <>
+                <Navigation />
+                <main className="container mx-auto px-4 py-8">
+                  <Routes>
+                    <Route path="/" element={<BrainInterface />} />
+                    <Route path="/collaborate" element={<CollaborationWorkspace />} />
+                    <Route path="/visualize" element={<MindVisualizer />} />
+                    <Route path="/thoughts" element={<ThoughtProcessor />} />
+                  </Routes>
+                </main>
+                <RealtimeStatus />
+                <WebSocketDebug />
+              </>
+            ) : (
+              // Production mode: require authentication
+              <ProtectedRoute>
+                <Navigation />
+                <main className="container mx-auto px-4 py-8">
+                  <Routes>
+                    <Route path="/" element={<BrainInterface />} />
+                    <Route path="/collaborate" element={<CollaborationWorkspace />} />
+                    <Route path="/visualize" element={<MindVisualizer />} />
+                    <Route path="/thoughts" element={<ThoughtProcessor />} />
+                  </Routes>
+                </main>
+                <RealtimeStatus />
+                <WebSocketDebug />
+              </ProtectedRoute>
+            )}
             <Toaster 
               position="top-right"
               toastOptions={{

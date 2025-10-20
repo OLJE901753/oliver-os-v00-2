@@ -9,19 +9,18 @@ import { Config } from '../core/config';
 import { Logger } from '../core/logger';
 
 describe('Oliver-OS System', () => {
-  let server: any;
+  let app: any;
   let config: Config;
 
   beforeAll(async () => {
     config = new Config();
     await config.load();
-    server = createServer(config);
+    app = createServer(config);
   });
 
   afterAll(() => {
-    if (server) {
-      server.close();
-    }
+    // Express apps don't need explicit cleanup
+    // The test environment will handle cleanup
   });
 
   describe('Configuration', () => {
@@ -56,8 +55,8 @@ describe('Oliver-OS System', () => {
 
   describe('Server', () => {
     it('should create server instance', () => {
-      expect(server).toBeDefined();
-      expect(typeof server.listen).toBe('function');
+      expect(app).toBeDefined();
+      expect(typeof app.listen).toBe('function');
     });
   });
 });

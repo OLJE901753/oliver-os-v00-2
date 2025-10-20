@@ -3,7 +3,7 @@
  * Centralized error handling with proper logging and responses
  */
 
-import { Request, Response, NextFunction } from 'express';
+import type { Request, Response, NextFunction } from 'express';
 import { Logger } from '../core/logger';
 
 const logger = new Logger('ErrorHandler');

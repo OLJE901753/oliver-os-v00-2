@@ -3,7 +3,8 @@
  * Provides bureaucracy disruption status and reports
  */
 
-import { Router, Request, Response } from 'express';
+import { Router } from 'express';
+import type { Request, Response } from 'express';
 import { Logger } from '../core/logger';
 import { BureaucracyDisruptorService } from '../services/bureaucracy-disruptor';
 import { Config } from '../core/config';

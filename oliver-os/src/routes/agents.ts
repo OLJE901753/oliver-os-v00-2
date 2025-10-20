@@ -3,9 +3,10 @@
  * API endpoints for agent spawning and management
  */
 
-import { Router, Request, Response } from 'express';
+import { Router } from 'express';
+import type { Request, Response } from 'express';
 import { ServiceManager } from '../services/service-manager';
-import { SpawnRequest } from '../services/agent-manager';
+import type { SpawnRequest } from '../services/agent-manager';
 
 const router = Router();
 

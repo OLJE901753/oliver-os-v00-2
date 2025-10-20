@@ -1,0 +1,203 @@
+// Oliver-OS Prisma Schema - SQLite Version for Testing
+// Simplified schema for authentication testing without Docker
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+// Users table
+model User {
+  id          String   @id @default(cuid())
+  email       String   @unique
+  name        String
+  password    String   // Hashed password
+  avatarUrl   String?  @map("avatar_url")
+  preferences String   @default("{}") // JSON as string in SQLite
+  isActive    Boolean  @default(true) @map("is_active")
+  lastLoginAt DateTime? @map("last_login_at")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  thoughts                Thought[]
+  collaborationSessions   CollaborationSession[] @relation("SessionCreator")
+  realtimeEvents          RealtimeEvent[]
+  voiceRecordings         VoiceRecording[]
+  mindVisualizations      MindVisualization[]
+  refreshTokens           RefreshToken[]
+
+  @@map("users")
+}
+
+// Refresh tokens for JWT authentication
+model RefreshToken {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  token     String   @unique
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId], map: "idx_refresh_tokens_user_id")
+  @@index([expiresAt], map: "idx_refresh_tokens_expires_at")
+  @@map("refresh_tokens")
+}
+
+// Thoughts table
+model Thought {
+  id            String    @id @default(cuid())
+  userId        String    @map("user_id")
+  content       String
+  type          String    @default("text")
+  metadata      String    @default("{}") // JSON as string in SQLite
+  processedAt   DateTime? @map("processed_at")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  user                User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  aiProcessingResults AiProcessingResult[]
+  voiceRecordings     VoiceRecording[]
+
+  @@index([userId], map: "idx_thoughts_user_id")
+  @@index([createdAt(sort: Desc)], map: "idx_thoughts_created_at")
+  @@map("thoughts")
+}
+
+// Knowledge graph nodes
+model KnowledgeNode {
+  id        String   @id @default(cuid())
+  label     String
+  type      String
+  properties String  @default("{}") // JSON as string in SQLite
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  sourceRelationships KnowledgeRelationship[] @relation("SourceNode")
+  targetRelationships KnowledgeRelationship[] @relation("TargetNode")
+
+  @@index([type], map: "idx_knowledge_nodes_type")
+  @@index([label], map: "idx_knowledge_nodes_label")
+  @@map("knowledge_nodes")
+}
+
+// Knowledge graph relationships
+model KnowledgeRelationship {
+  id               String   @id @default(cuid())
+  sourceId         String   @map("source_id")
+  targetId         String   @map("target_id")
+  relationshipType String   @map("relationship_type")
+  properties       String   @default("{}") // JSON as string in SQLite
+  weight           Float    @default(1.0)
+  createdAt        DateTime @default(now()) @map("created_at")
+
+  // Relations
+  sourceNode KnowledgeNode @relation("SourceNode", fields: [sourceId], references: [id], onDelete: Cascade)
+  targetNode KnowledgeNode @relation("TargetNode", fields: [targetId], references: [id], onDelete: Cascade)
+
+  @@index([sourceId], map: "idx_knowledge_relationships_source")
+  @@index([targetId], map: "idx_knowledge_relationships_target")
+  @@index([relationshipType], map: "idx_knowledge_relationships_type")
+  @@map("knowledge_relationships")
+}
+
+// Collaboration sessions
+model CollaborationSession {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  participants String  @default("[]") // JSON array as string in SQLite
+  settings    String  @default("{}") // JSON as string in SQLite
+  createdBy   String   @map("created_by")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  creator        User             @relation("SessionCreator", fields: [createdBy], references: [id])
+  realtimeEvents RealtimeEvent[]
+
+  @@map("collaboration_sessions")
+}
+
+// Real-time events
+model RealtimeEvent {
+  id        String   @id @default(cuid())
+  sessionId String   @map("session_id")
+  userId    String   @map("user_id")
+  eventType String   @map("event_type")
+  eventData String   @map("event_data") // JSON as string in SQLite
+  timestamp DateTime @default(now())
+
+  // Relations
+  session CollaborationSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  user    User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId], map: "idx_realtime_events_session_id")
+  @@index([timestamp(sort: Desc)], map: "idx_realtime_events_timestamp")
+  @@map("realtime_events")
+}
+
+// AI processing results
+model AiProcessingResult {
+  id               String   @id @default(cuid())
+  thoughtId        String   @map("thought_id")
+  processingType   String   @map("processing_type")
+  modelName        String?  @map("model_name")
+  inputData        String?  @map("input_data") // JSON as string in SQLite
+  outputData       String?  @map("output_data") // JSON as string in SQLite
+  confidence       Float?
+  processingTimeMs Int?     @map("processing_time_ms")
+  createdAt        DateTime @default(now()) @map("created_at")
+
+  // Relations
+  thought Thought @relation(fields: [thoughtId], references: [id], onDelete: Cascade)
+
+  @@index([thoughtId], map: "idx_ai_processing_results_thought_id")
+  @@index([processingType], map: "idx_ai_processing_results_type")
+  @@map("ai_processing_results")
+}
+
+// Voice recordings
+model VoiceRecording {
+  id              String   @id @default(cuid())
+  userId          String   @map("user_id")
+  thoughtId       String?  @map("thought_id")
+  audioFilePath   String?  @map("audio_file_path")
+  transcription   String?
+  language        String   @default("en")
+  durationSeconds Float?   @map("duration_seconds")
+  metadata        String   @default("{}") // JSON as string in SQLite
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  // Relations
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  thought Thought? @relation(fields: [thoughtId], references: [id], onDelete: Cascade)
+
+  @@map("voice_recordings")
+}
+
+// Mind visualizations
+model MindVisualization {
+  id                String   @id @default(cuid())
+  userId            String   @map("user_id")
+  name              String
+  visualizationType String   @map("visualization_type")
+  data              String   // JSON as string in SQLite
+  settings          String   @default("{}") // JSON as string in SQLite
+  isShared          Boolean  @default(false) @map("is_shared")
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("mind_visualizations")
+}

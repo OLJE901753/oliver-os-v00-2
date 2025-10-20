@@ -3,7 +3,8 @@
  * Manages microservices and their lifecycle
  */
 
-import { Router, Request, Response } from 'express';
+import { Router } from 'express';
+import type { Request, Response } from 'express';
 import { Logger } from '../core/logger';
 
 const router = Router();

@@ -6,12 +6,13 @@
  * through clean, efficient microservices architecture.
  */
 
-import { createServer } from './core/server';
+import { createHttpServerWithWebSocket } from './core/server';
 import { Logger } from './core/logger';
 import { Config } from './core/config';
 import { ServiceManager } from './services/service-manager';
 import { ProcessManager } from './core/process-manager';
 import { BureaucracyDisruptorService } from './services/bureaucracy-disruptor';
+import { PrismaClient } from '@prisma/client';
 
 const logger = new Logger('Oliver-OS');
 const config = new Config();
@@ -26,6 +27,11 @@ async function initialize(): Promise<void> {
     // Load configuration
     await config.load();
     logger.info('✅ Configuration loaded');
+    
+    // Initialize database
+    const prisma = new PrismaClient();
+    await prisma.$connect();
+    logger.info('✅ Database connected');
     
     // Initialize service manager
     const serviceManager = new ServiceManager(config);
@@ -42,13 +48,14 @@ async function initialize(): Promise<void> {
     await disruptorService.initialize();
     logger.info('✅ Bureaucracy disruptor service initialized');
     
-    // Create and start server
-    const server = createServer(config, serviceManager);
+    // Create and start server with WebSocket support
+    const { httpServer, wsManager } = createHttpServerWithWebSocket(config, serviceManager, prisma);
     const port = config.get('port', 3000);
     
-    server.listen(port, () => {
+    httpServer.listen(port, () => {
       logger.info(`🎯 Oliver-OS running on port ${port}`);
       logger.info('🔥 Ready to disrupt bureaucracy with clean code!');
+      logger.info('🌐 WebSocket server enabled for real-time communication');
       
       // Log available endpoints
       logger.info('📡 Available endpoints:');
@@ -61,6 +68,14 @@ async function initialize(): Promise<void> {
       logger.info(`   GET  /api/agents - List available agent types`);
       logger.info(`   POST /api/agents/spawn - Spawn a new agent`);
       logger.info(`   POST /api/agents/spawn-multiple - Spawn multiple agents`);
+      logger.info(`   POST /api/auth/register - Register new user`);
+      logger.info(`   POST /api/auth/login - Login user`);
+      logger.info(`   POST /api/auth/refresh - Refresh access token`);
+      logger.info(`   POST /api/auth/logout - Logout user`);
+      logger.info(`   GET  /api/auth/me - Get current user info`);
+      logger.info('🔌 WebSocket endpoints:');
+      logger.info(`   WS   /ws/{client_id} - Real-time communication`);
+      logger.info(`   Events: thought:create, thought:analyze, collaboration:event, agent:spawn, voice:data`);
     });
     
     // Graceful shutdown
@@ -69,8 +84,10 @@ async function initialize(): Promise<void> {
       
       await serviceManager.shutdown();
       await processManager.shutdown();
+      await wsManager.shutdown();
+      await prisma.$disconnect();
       
-      server.close(() => {
+      httpServer.close(() => {
         logger.info('✅ Oliver-OS shutdown complete');
         process.exit(0);
       });
