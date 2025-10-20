@@ -3,12 +3,40 @@
  * Handles API calls for authentication operations
  */
 
-import { 
-  User, 
-  LoginCredentials, 
-  RegisterData, 
-  AuthResponse
-} from '../types/auth';
+// Inline types to avoid module resolution issues
+interface User {
+  id: string
+  email: string
+  name: string
+  avatarUrl?: string
+  isActive: boolean
+  lastLoginAt?: string
+  createdAt: string
+}
+
+interface LoginCredentials {
+  email: string
+  password: string
+}
+
+interface AuthResponse {
+  success: boolean
+  message?: string
+  data?: {
+    user: User
+    tokens: AuthTokens
+  }
+  error?: string
+  details?: any
+}
+
+interface AuthTokens {
+  accessToken: string
+  refreshToken: string
+  expiresIn: number
+}
+
+import type { RegisterData } from '../types/register';
 
 const API_BASE_URL = (import.meta as any).env?.VITE_API_URL || 'http://localhost:3000';
 

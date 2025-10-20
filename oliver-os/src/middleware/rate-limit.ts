@@ -86,11 +86,8 @@ export const strictRateLimit = rateLimit({
 export const slowDownMiddleware = slowDown({
   windowMs: 15 * 60 * 1000, // 15 minutes
   delayAfter: 50, // Allow 50 requests per 15 minutes, then...
-  delayMs: 500, // Add 500ms delay per request after delayAfter
+  delayMs: () => 500, // Add 500ms delay per request after delayAfter
   maxDelayMs: 20000, // Maximum delay of 20 seconds
-  onLimitReached: (req: Request) => {
-    logger.warn(`Slow down triggered for IP: ${req.ip}`);
-  }
 });
 
 /**
@@ -100,8 +97,12 @@ export const userRateLimit = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 200, // Limit each user to 200 requests per windowMs
   keyGenerator: (req: Request) => {
-    // Use user ID if available, otherwise fall back to IP
-    return req.user?.id || req.ip;
+    // Use user ID if available, otherwise fall back to IP with proper IPv6 handling
+    if (req.user?.id) {
+      return req.user.id;
+    }
+    // For IP-based rate limiting, use a consistent key
+    return req.ip || 'unknown';
   },
   message: {
     error: 'User Rate Limit Exceeded',

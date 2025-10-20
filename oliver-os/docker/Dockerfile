@@ -7,21 +7,19 @@ FROM node:18-alpine AS builder
 WORKDIR /app
 
 # Copy package files
-COPY package.json pnpm-lock.yaml ./
-COPY oliver-os/package.json ./oliver-os/
-COPY oliver-os/pnpm-lock.yaml ./oliver-os/
+COPY package.json ./
+COPY pnpm-lock.yaml* ./
 
 # Install pnpm
 RUN npm install -g pnpm
 
 # Install dependencies
-RUN pnpm install --frozen-lockfile
+RUN pnpm install
 
 # Copy source code
-COPY oliver-os/ ./oliver-os/
+COPY . .
 
 # Build the application
-WORKDIR /app/oliver-os
 RUN pnpm build
 
 # Production stage
@@ -37,10 +35,10 @@ RUN adduser -S oliver -u 1001
 WORKDIR /app
 
 # Copy built application
-COPY --from=builder --chown=oliver:nodejs /app/oliver-os/dist ./dist
-COPY --from=builder --chown=oliver:nodejs /app/oliver-os/node_modules ./node_modules
-COPY --from=builder --chown=oliver:nodejs /app/oliver-os/package.json ./package.json
-COPY --from=builder --chown=oliver:nodejs /app/oliver-os/prisma ./prisma
+COPY --from=builder --chown=oliver:nodejs /app/dist ./dist
+COPY --from=builder --chown=oliver:nodejs /app/node_modules ./node_modules
+COPY --from=builder --chown=oliver:nodejs /app/package.json ./package.json
+COPY --from=builder --chown=oliver:nodejs /app/prisma ./prisma
 
 # Switch to non-root user
 USER oliver

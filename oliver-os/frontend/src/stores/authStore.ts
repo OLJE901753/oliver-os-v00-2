@@ -5,13 +5,37 @@
 
 import { create } from 'zustand';
 import { devtools, persist } from 'zustand/middleware';
-import { 
-  User,
-  AuthTokens, 
-  LoginCredentials, 
-  RegisterData, 
-  AuthState 
-} from '../types/auth';
+// Inline types to avoid module resolution issues
+interface User {
+  id: string
+  email: string
+  name: string
+  avatarUrl?: string
+  isActive: boolean
+  lastLoginAt?: string
+  createdAt: string
+}
+
+interface AuthTokens {
+  accessToken: string
+  refreshToken: string
+  expiresIn: number
+}
+
+interface LoginCredentials {
+  email: string
+  password: string
+}
+
+interface AuthState {
+  user: User | null
+  tokens: AuthTokens | null
+  isAuthenticated: boolean
+  isLoading: boolean
+  error: string | null
+}
+
+import type { RegisterData } from '../types/register';
 import { authService } from '../services/auth';
 
 interface AuthStore extends AuthState {

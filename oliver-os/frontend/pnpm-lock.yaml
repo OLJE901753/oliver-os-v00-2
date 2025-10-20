@@ -124,7 +124,7 @@ importers:
         specifier: ^5.2.2
         version: 5.9.3
       vite:
-        specifier: ^5.0.8
+        specifier: ^5.4.20
         version: 5.4.20
       vitest:
         specifier: ^1.1.0

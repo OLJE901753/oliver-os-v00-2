@@ -5,7 +5,7 @@
 
 import React, { useState } from 'react';
 import { useAuthStore } from '../../stores/authStore';
-import { RegisterData } from '../../types/auth';
+import type { RegisterData } from '../../types/register';
 
 interface RegisterFormProps {
   onSuccess?: () => void;

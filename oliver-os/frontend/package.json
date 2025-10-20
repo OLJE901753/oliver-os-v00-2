@@ -4,7 +4,8 @@
   "description": "Oliver-OS Frontend - AI-Brain Interface",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "vite --host",
+    "start": "vite --host",
     "build": "tsc --project tsconfig.frontend.json && vite build",
     "preview": "vite preview",
     "test": "vitest",
@@ -54,7 +55,7 @@
     "postcss": "^8.4.32",
     "tailwindcss": "^3.4.0",
     "typescript": "^5.2.2",
-    "vite": "^5.0.8",
+    "vite": "^5.4.20",
     "vitest": "^1.1.0"
   }
 }

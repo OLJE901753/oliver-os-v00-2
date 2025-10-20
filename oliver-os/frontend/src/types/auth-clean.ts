@@ -19,15 +19,6 @@ export interface LoginCredentials {
   password: string
 }
 
-export interface RegisterData {
-  email: string
-  name: string
-  password: string
-}
-
-// Export as type alias for better compatibility
-export type RegisterDataType = RegisterData;
-
 export interface AuthState {
   user: User | null
   tokens: AuthTokens | null

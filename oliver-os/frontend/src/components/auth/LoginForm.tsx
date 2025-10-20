@@ -5,7 +5,11 @@
 
 import React, { useState } from 'react';
 import { useAuthStore } from '../../stores/authStore';
-import { LoginCredentials } from '../../types/auth';
+// Inline types to avoid module resolution issues
+interface LoginCredentials {
+  email: string
+  password: string
+}
 
 interface LoginFormProps {
   onSuccess?: () => void;
