@@ -1,0 +1,479 @@
+import type { ObjectsConfig } from '../types';
+
+export const objectsConfig: ObjectsConfig = {
+  "version": "1.0.0",
+  "canvas": {
+    "width": 1920,
+    "height": 1080,
+    "aspectRatio": "16:9"
+  },
+  "groups": {
+    "central_hub": {
+      "objects": ["CORE_AI_BRAIN"],
+      "priority": 100,
+      "behavior": "always_visible"
+    },
+    "left_panels": {
+      "objects": ["SCREEN_LOG_L", "VIS_PROFILE_1_L", "VIS_PROFILE_2_L", "VIS_PROFILE_3_L", "SCREEN_STATUS_L", "AI_LOGO_L"],
+      "priority": 50,
+      "behavior": "independent",
+      "groupAnimation": "stagger_fade"
+    },
+    "right_panels": {
+      "objects": ["SCREEN_DATA_R", "SCREEN_DEEPFAKE_R1", "SCREEN_DEEPFAKE_R2", "ICON_UI_R", "AI_LOGO_R", "ICON_GEAR_R", "VIS_WAVEFORM_R"],
+      "priority": 50,
+      "behavior": "independent"
+    },
+    "top_cluster": {
+      "objects": ["WIZARD_PANEL_TOP"],
+      "priority": 40,
+      "behavior": "connected_to_brain"
+    },
+    "ui_overlay": {
+      "objects": ["HMI_HANDS_KEYBOARD"],
+      "priority": 120,
+      "behavior": "static"
+    },
+    "connections": {
+      "objects": ["NETWORK_CIRCUITS"],
+      "priority": 30,
+      "behavior": "dynamic"
+    }
+  },
+  "objects": [
+    {
+      "id": "CORE_AI_BRAIN",
+      "name": "Neural Core Brain",
+      "type": "hub",
+      "group": "central_hub",
+      "position": { "x": 960, "y": 405, "z": 90 },
+      "size": { "width": 280, "height": 320 },
+      "gridPosition": "G3",
+      "colors": ["#00FFFF", "#FF00FF"],
+      "enabled": true,
+      "interactive": true,
+      "animations": {
+        "idle": {
+          "pulse": { "speed": 3, "intensity": 0.4 },
+          "particles": { "count": 80, "speed": 1.5 },
+          "glow": { "radius": 40, "color": "#00FFFF" }
+        },
+        "hover": {
+          "scale": 1.05,
+          "glow": { "radius": 60, "intensity": 0.9 }
+        },
+        "focused": {
+          "scale": 1.5,
+          "rotation": { "speed": 2, "axis": "y" }
+        }
+      },
+      "behavior": {
+        "onClick": "focus",
+        "onHover": "glow",
+        "draggable": false
+      },
+      "data": {
+        "source": "/api/status",
+        "updateInterval": 1000,
+        "displays": ["cpu", "memory", "processes"]
+      },
+      "connections": ["VIS_PROFILE_1_L", "VIS_PROFILE_2_L", "SCREEN_LOG_L", "SCREEN_DATA_R", "WIZARD_PANEL_TOP"],
+      "description": "Translucent brain with dual-hemisphere structure (cyan left, magenta right). Largest central element. Focal point of entire interface."
+    },
+    {
+      "id": "HMI_HANDS_KEYBOARD",
+      "name": "Robotic Hands & Keyboard",
+      "type": "ui_overlay",
+      "group": "ui_overlay",
+      "position": { "x": 960, "y": 950, "z": 110 },
+      "size": { "width": 768, "height": 260 },
+      "gridPosition": "E2-E4",
+      "colors": ["#FFFFFF", "#CCCCCC"],
+      "enabled": true,
+      "interactive": false,
+      "animations": {
+        "idle": {
+          "typing": { "speed": 2, "fingers": "random" },
+          "glow": { "color": "#00FFFF", "intensity": 0.8 }
+        }
+      },
+      "behavior": {
+        "onClick": "none",
+        "static": true
+      },
+      "description": "White keyboard with glowing cyan-backlit keys. Metallic robotic hands with segmented fingers. Purple glow joints. Spans 40% of image width."
+    },
+    {
+      "id": "NETWORK_CIRCUITS",
+      "name": "Connection Circuit Lines",
+      "type": "connection_system",
+      "group": "connections",
+      "position": { "x": 960, "y": 540, "z": 20 },
+      "size": { "width": 1920, "height": 1080 },
+      "gridPosition": "Entire Canvas",
+      "colors": ["#00FFFF", "#FF00FF", "#FFFFFF"],
+      "enabled": true,
+      "interactive": false,
+      "animations": {
+        "idle": {
+          "flow": { "speed": 2, "direction": "to_brain" },
+          "pulse": { "speed": 1.5, "intensity": 0.3 },
+          "particles": { "count": 50, "speed": 2 }
+        }
+      },
+      "behavior": {
+        "onClick": "none",
+        "dynamic": true
+      },
+      "connections": ["CORE_AI_BRAIN"],
+      "description": "Glowing lines connecting all elements to central brain. Blue/Purple/White colors. Animated particle flow along paths."
+    },
+    {
+      "id": "SCREEN_LOG_L",
+      "name": "Code Terminal Left",
+      "type": "panel",
+      "group": "left_panels",
+      "position": { "x": 138, "y": 150, "z": 40 },
+      "size": { "width": 276, "height": 432 },
+      "gridPosition": "A1-C1",
+      "colors": ["#00FF00", "#001100"],
+      "enabled": true,
+      "interactive": true,
+      "animations": {
+        "idle": {
+          "scanlines": true,
+          "textScroll": { "speed": 1, "direction": "up" }
+        },
+        "hover": {
+          "glow": { "color": "#00FF00", "intensity": 0.6 }
+        }
+      },
+      "behavior": {
+        "onClick": "focus",
+        "onHover": "glow"
+      },
+      "data": {
+        "source": "websocket:system:logs",
+        "maxLines": 20,
+        "fontSize": "12px",
+        "fontFamily": "monospace"
+      },
+      "description": "Tallest screen element. Dense white/green code text. Purple button/menu in top-right corner. Cyan border glow."
+    },
+    {
+      "id": "VIS_PROFILE_1_L",
+      "name": "Large Profile Visualization Left",
+      "type": "profile",
+      "group": "left_panels",
+      "position": { "x": 150, "y": 480, "z": 45 },
+      "size": { "width": 240, "height": 160 },
+      "gridPosition": "C1-D1",
+      "colors": ["#00FFFF", "#FF00FF", "#00FF00"],
+      "enabled": true,
+      "interactive": true,
+      "animations": {
+        "idle": {
+          "pulse": { "speed": 2, "intensity": 0.3 },
+          "digitalNoise": { "speed": 1, "intensity": 0.2 }
+        },
+        "hover": {
+          "scale": 1.03,
+          "glow": { "color": "#00FFFF" }
+        }
+      },
+      "behavior": {
+        "onClick": "focus",
+        "onHover": "glow"
+      },
+      "connections": ["CORE_AI_BRAIN"],
+      "description": "Wide landscape screen. Colorful (purple/green/cyan) digital human head profile. Pixelated/grid effect. Cyan border."
+    },
+    {
+      "id": "VIS_PROFILE_2_L",
+      "name": "Medium Profile Left",
+      "type": "profile",
+      "group": "left_panels",
+      "position": { "x": 456, "y": 480, "z": 45 },
+      "size": { "width": 180, "height": 160 },
+      "gridPosition": "C2",
+      "colors": ["#00FFFF", "#FFFFFF"],
+      "enabled": true,
+      "interactive": true,
+      "animations": {
+        "idle": {
+          "glow": { "color": "#00FFFF", "intensity": 0.4 }
+        }
+      },
+      "behavior": {
+        "onClick": "focus",
+        "onHover": "glow"
+      },
+      "connections": ["CORE_AI_BRAIN"],
+      "description": "Vertical portrait orientation. Simple shadowed human profile with code overlay. Cyan border."
+    },
+    {
+      "id": "VIS_PROFILE_3_L",
+      "name": "Small Profile Left",
+      "type": "profile",
+      "group": "left_panels",
+      "position": { "x": 600, "y": 480, "z": 45 },
+      "size": { "width": 140, "height": 160 },
+      "gridPosition": "C2",
+      "colors": ["#00FFFF", "#FFFFFF"],
+      "enabled": true,
+      "interactive": true,
+      "animations": {
+        "idle": {
+          "glow": { "color": "#00FFFF", "intensity": 0.3 }
+        }
+      },
+      "behavior": {
+        "onClick": "focus",
+        "onHover": "glow"
+      },
+      "connections": ["CORE_AI_BRAIN"],
+      "description": "Smallest profile. Simple silhouette. Cyan border."
+    },
+    {
+      "id": "SCREEN_STATUS_L",
+      "name": "Status Screens Bottom Left",
+      "type": "status_grid",
+      "group": "left_panels",
+      "position": { "x": 150, "y": 750, "z": 40 },
+      "size": { "width": 200, "height": 100 },
+      "gridPosition": "D1-E1",
+      "colors": ["#00FFFF", "#FF00FF"],
+      "enabled": true,
+      "interactive": true,
+      "animations": {
+        "idle": {
+          "orbPulse": { "speed": 2 },
+          "rotate": { "speed": 0.5 }
+        }
+      },
+      "behavior": {
+        "onClick": "toggle"
+      },
+      "description": "Group of 4 small square screens. Geometric patterns and glowing orbs. Cyan borders."
+    },
+    {
+      "id": "AI_LOGO_L",
+      "name": "AI Label Left",
+      "type": "label",
+      "group": "left_panels",
+      "position": { "x": 580, "y": 380, "z": 50 },
+      "size": { "width": 60, "height": 60 },
+      "gridPosition": "C3",
+      "colors": ["#FFFFFF"],
+      "enabled": true,
+      "interactive": false,
+      "animations": {
+        "idle": {
+          "glow": { "color": "#00FFFF", "intensity": 0.5 }
+        }
+      },
+      "behavior": {
+        "onClick": "none"
+      },
+      "text": "AI",
+      "description": "Small square. White 'AI' text on dark background. Cyan glow."
+    },
+    {
+      "id": "WIZARD_PANEL_TOP",
+      "name": "Top Cluster Panel",
+      "type": "cluster",
+      "group": "top_cluster",
+      "position": { "x": 600, "y": 120, "z": 45 },
+      "size": { "width": 280, "height": 180 },
+      "gridPosition": "A2-B3",
+      "colors": ["#FFFFFF", "#00FFFF", "#FF00FF"],
+      "enabled": true,
+      "interactive": true,
+      "animations": {
+        "idle": {
+          "float": { "speed": 1.5, "amplitude": 10 },
+          "iconRotate": { "speed": 0.5 }
+        }
+      },
+      "behavior": {
+        "onClick": "focus"
+      },
+      "connections": ["CORE_AI_BRAIN"],
+      "elements": [
+        { "type": "icon", "shape": "cloud", "color": "#FFFFFF" },
+        { "type": "icon", "shape": "crescent", "color": "#00FFFF" },
+        { "type": "text", "content": "RULE-BASED\\nCOMPUTING", "color": "#FFFFFF" }
+      ],
+      "description": "Cluster of small connected components. Cloud icon, crescent, various abstract symbols. Contains 'RULE-BASED COMPUTING' text."
+    },
+    {
+      "id": "SCREEN_DATA_R",
+      "name": "Data Screen Right",
+      "type": "panel",
+      "group": "right_panels",
+      "position": { "x": 1670, "y": 150, "z": 40 },
+      "size": { "width": 250, "height": 432 },
+      "gridPosition": "A5-C5",
+      "colors": ["#00FFFF", "#FF00FF", "#001122"],
+      "enabled": true,
+      "interactive": true,
+      "animations": {
+        "idle": {
+          "scanlines": true,
+          "dataFlow": { "speed": 2 }
+        },
+        "hover": {
+          "glow": { "color": "#00FFFF" }
+        }
+      },
+      "behavior": {
+        "onClick": "focus"
+      },
+      "data": {
+        "source": "/api/processes",
+        "visualization": "circular_abstract"
+      },
+      "connections": ["CORE_AI_BRAIN"],
+      "description": "Tallest right screen. Code snippets at top. Large abstract glowing circular visualization in center. Purple/cyan colors."
+    },
+    {
+      "id": "SCREEN_DEEPFAKE_R1",
+      "name": "Deepfake Panel Upper Right",
+      "type": "panel",
+      "group": "right_panels",
+      "position": { "x": 1280, "y": 280, "z": 40 },
+      "size": { "width": 180, "height": 180 },
+      "gridPosition": "C4",
+      "colors": ["#FF00FF", "#00FFFF"],
+      "enabled": true,
+      "interactive": true,
+      "animations": {
+        "idle": {
+          "pulse": { "speed": 2.5, "intensity": 0.6 },
+          "visualNoise": { "intensity": 0.3 }
+        }
+      },
+      "behavior": {
+        "onClick": "focus"
+      },
+      "text": "DEEPFAKE",
+      "description": "Medium square. Colorful abstract visualization. 'DEEPFAKE' text label. Purple border."
+    },
+    {
+      "id": "SCREEN_DEEPFAKE_R2",
+      "name": "Deepfake Panel Lower Right",
+      "type": "panel",
+      "group": "right_panels",
+      "position": { "x": 1280, "y": 470, "z": 40 },
+      "size": { "width": 160, "height": 160 },
+      "gridPosition": "C4-D4",
+      "colors": ["#FF00FF", "#FFFFFF"],
+      "enabled": true,
+      "interactive": true,
+      "animations": {
+        "idle": {
+          "circularPattern": { "speed": 1 }
+        }
+      },
+      "behavior": {
+        "onClick": "focus"
+      },
+      "text": "DEAPFAKE",
+      "description": "Slightly smaller square. Simple circular pattern. 'DEAPFAKE' text. Purple glow."
+    },
+    {
+      "id": "ICON_UI_R",
+      "name": "UI Icon Cluster Right",
+      "type": "icon_cluster",
+      "group": "right_panels",
+      "position": { "x": 1480, "y": 350, "z": 50 },
+      "size": { "width": 80, "height": 120 },
+      "gridPosition": "C4",
+      "colors": ["#00FFFF", "#FF00FF", "#FFFFFF"],
+      "enabled": true,
+      "interactive": true,
+      "animations": {
+        "idle": {
+          "iconPulse": { "stagger": true }
+        }
+      },
+      "behavior": {
+        "onClick": "menu"
+      },
+      "icons": ["circular_stack", "speaker", "arrow", "target"],
+      "description": "Cluster of small icons. Circular button stack, speaker/audio icon, utility symbols."
+    },
+    {
+      "id": "AI_LOGO_R",
+      "name": "AI Label Right",
+      "type": "label",
+      "group": "right_panels",
+      "position": { "x": 1350, "y": 480, "z": 50 },
+      "size": { "width": 60, "height": 60 },
+      "gridPosition": "D4",
+      "colors": ["#FFFFFF"],
+      "enabled": true,
+      "interactive": false,
+      "animations": {
+        "idle": {
+          "glow": { "color": "#FF00FF" }
+        }
+      },
+      "behavior": {
+        "onClick": "none"
+      },
+      "text": "AI",
+      "description": "Small square. White 'AI' text. Magenta glow."
+    },
+    {
+      "id": "ICON_GEAR_R",
+      "name": "Gear Icon Bottom Right",
+      "type": "icon",
+      "group": "right_panels",
+      "position": { "x": 1480, "y": 820, "z": 50 },
+      "size": { "width": 60, "height": 60 },
+      "gridPosition": "E4",
+      "colors": ["#00FFFF"],
+      "enabled": true,
+      "interactive": true,
+      "animations": {
+        "idle": {
+          "rotate": { "speed": 1 }
+        },
+        "hover": {
+          "rotateSpeed": 3,
+          "glow": { "intensity": 0.8 }
+        }
+      },
+      "behavior": {
+        "onClick": "settings"
+      },
+      "description": "Circular gear/cog icon. Cyan color. Symbolizes process or settings."
+    },
+    {
+      "id": "VIS_WAVEFORM_R",
+      "name": "Waveform Visualization Bottom Right",
+      "type": "visualization",
+      "group": "right_panels",
+      "position": { "x": 1780, "y": 900, "z": 40 },
+      "size": { "width": 120, "height": 140 },
+      "gridPosition": "E5",
+      "colors": ["#FF00FF", "#00FFFF"],
+      "enabled": true,
+      "interactive": true,
+      "animations": {
+        "idle": {
+          "barAnimate": { "speed": 3, "reactive": true }
+        }
+      },
+      "behavior": {
+        "onClick": "focus"
+      },
+      "data": {
+        "source": "websocket:audio:waveform",
+        "type": "bar_chart"
+      },
+      "description": "Vertical bar chart. Purple/cyan bars. Represents audio or data frequency/magnitude."
+    }
+  ]
+};

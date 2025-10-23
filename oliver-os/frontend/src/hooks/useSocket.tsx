@@ -29,69 +29,72 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
   const [isConnected, setIsConnected] = useState(false)
 
   useEffect(() => {
-    // Initialize socket connection
-    const newSocket = io((import.meta as any).env?.VITE_WS_URL || 'http://localhost:3000', {
-      transports: ['websocket'],
-      autoConnect: true,
-      reconnection: true,
-      reconnectionAttempts: 5,
-      reconnectionDelay: 1000,
-    })
+    // Initialize socket connection - disabled for frontend-only mode
+    // const newSocket = io((import.meta as any).env?.VITE_WS_URL || 'http://localhost:3000', {
+    //   transports: ['websocket'],
+    //   autoConnect: true,
+    //   reconnection: true,
+    //   reconnectionAttempts: 5,
+    //   reconnectionDelay: 1000,
+    // })
+    
+    // Mock socket for frontend-only mode
+    const newSocket = null
 
-    // Connection event handlers
-    newSocket.on('connect', () => {
-      console.log('Connected to WebSocket server')
-      setIsConnected(true)
-    })
+    // Connection event handlers - disabled for frontend-only mode
+    // newSocket.on('connect', () => {
+    //   console.log('Connected to WebSocket server')
+    //   setIsConnected(true)
+    // })
 
-    newSocket.on('connected', (data) => {
-      console.log('Welcome message:', data.message)
-      console.log('Client ID:', data.client_id)
-    })
+    // newSocket.on('connected', (data) => {
+    //   console.log('Welcome message:', data.message)
+    //   console.log('Client ID:', data.client_id)
+    // })
 
-    newSocket.on('disconnect', (_reason) => {
-      console.log('Disconnected from WebSocket server')
-      setIsConnected(false)
-    })
+    // newSocket.on('disconnect', (_reason) => {
+    //   console.log('Disconnected from WebSocket server')
+    //   setIsConnected(false)
+    // })
 
-    newSocket.on('connect_error', (_error) => {
-      console.error('WebSocket connection error')
-      setIsConnected(false)
-    })
+    // newSocket.on('connect_error', (_error) => {
+    //   console.error('WebSocket connection error')
+    //   setIsConnected(false)
+    // })
 
-    newSocket.on('reconnect', (attemptNumber) => {
-      console.log('Reconnected to WebSocket server after', attemptNumber, 'attempts')
-      setIsConnected(true)
-    })
+    // newSocket.on('reconnect', (attemptNumber) => {
+    //   console.log('Reconnected to WebSocket server after', attemptNumber, 'attempts')
+    //   setIsConnected(true)
+    // })
 
-    newSocket.on('reconnect_error', (_error) => {
-      console.error('WebSocket reconnection error')
-    })
+    // newSocket.on('reconnect_error', (_error) => {
+    //   console.error('WebSocket reconnection error')
+    // })
 
-    newSocket.on('reconnect_failed', () => {
-      console.error('WebSocket reconnection failed')
-      setIsConnected(false)
-    })
+    // newSocket.on('reconnect_failed', () => {
+    //   console.error('WebSocket reconnection failed')
+    //   setIsConnected(false)
+    // })
 
-    // Backend-specific event handlers
-    newSocket.on('pong', (data) => {
-      console.log('Pong received:', data.timestamp)
-    })
+    // Backend-specific event handlers - disabled for frontend-only mode
+    // newSocket.on('pong', (data) => {
+    //   console.log('Pong received:', data.timestamp)
+    // })
 
-    newSocket.on('subscribed', (data) => {
-      console.log('Subscribed to channel:', data.channel)
-    })
+    // newSocket.on('subscribed', (data) => {
+    //   console.log('Subscribed to channel:', data.channel)
+    // })
 
-    newSocket.on('unsubscribed', (data) => {
-      console.log('Unsubscribed from channel:', data.channel)
-    })
+    // newSocket.on('unsubscribed', (data) => {
+    //   console.log('Unsubscribed from channel:', data.channel)
+    // })
 
     setSocket(newSocket)
 
-    // Cleanup on unmount
-    return () => {
-      newSocket.close()
-    }
+    // Cleanup on unmount - disabled for frontend-only mode
+    // return () => {
+    //   newSocket.close()
+    // }
   }, [])
 
   const emit = useCallback((event: string, data?: any) => {

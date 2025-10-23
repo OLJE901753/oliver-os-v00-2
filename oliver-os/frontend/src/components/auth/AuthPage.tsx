@@ -31,34 +31,50 @@ export const AuthPage: React.FC = () => {
   const switchToRegister = () => setMode('register');
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-md w-full space-y-8">
         {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-white mb-2">Oliver-OS</h1>
-          <p className="text-gray-300 text-lg">
+        <div className="text-center">
+          <div className="flex justify-center">
+            <div className="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center">
+              <span className="text-white text-xl font-bold">O</span>
+            </div>
+          </div>
+          <h1 className="mt-6 text-3xl font-bold text-gray-900">
+            Oliver-OS
+          </h1>
+          <p className="mt-2 text-sm text-gray-600">
             For the honor, not the glory—by the people, for the people.
           </p>
         </div>
 
         {/* Auth Forms */}
-        {mode === 'login' ? (
-          <LoginForm 
-            onSuccess={handleAuthSuccess}
-            onSwitchToRegister={switchToRegister}
-          />
-        ) : (
-          <RegisterForm 
-            onSuccess={handleAuthSuccess}
-            onSwitchToLogin={switchToLogin}
-          />
-        )}
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
+          {mode === 'login' ? (
+            <LoginForm 
+              onSuccess={handleAuthSuccess}
+              onSwitchToRegister={switchToRegister}
+            />
+          ) : (
+            <RegisterForm 
+              onSuccess={handleAuthSuccess}
+              onSwitchToLogin={switchToLogin}
+            />
+          )}
+        </div>
 
         {/* Footer */}
-        <div className="mt-8 text-center">
-          <p className="text-gray-400 text-sm">
+        <div className="text-center">
+          <p className="text-xs text-gray-500">
             A rebellious operating system for disrupting bureaucracy
           </p>
+          <div className="mt-2 flex justify-center space-x-4 text-xs text-gray-400">
+            <span>AI-Powered</span>
+            <span>•</span>
+            <span>Privacy-First</span>
+            <span>•</span>
+            <span>Open Source</span>
+          </div>
         </div>
       </div>
     </div>

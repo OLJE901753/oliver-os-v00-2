@@ -100,108 +100,137 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
   };
 
   return (
-    <div className="max-w-md mx-auto p-6 bg-gray-800 rounded-lg shadow-lg">
+    <div className="space-y-6">
       <div className="text-center mb-6">
-        <h2 className="text-2xl font-bold text-white mb-2">Join Oliver-OS</h2>
-        <p className="text-gray-400">Create your account to get started</p>
+        <h2 className="text-3xl font-bold text-lime-400 mb-2 neon-text">Join Oliver-OS</h2>
+        <p className="text-gray-300">Create your account to get started</p>
+        <div className="mt-3 w-16 h-0.5 bg-gradient-to-r from-lime-400 to-cyan-400 mx-auto rounded-full"></div>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-5">
         {/* Name Field */}
-        <div>
-          <label htmlFor="name" className="block text-sm font-medium text-gray-300 mb-1">
+        <div className="space-y-2">
+          <label htmlFor="name" className="block text-sm font-medium text-gray-300">
             Full Name
           </label>
-          <input
-            type="text"
-            id="name"
-            name="name"
-            value={formData.name}
-            onChange={handleInputChange}
-            className={`w-full px-3 py-2 bg-gray-700 border rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-              errors.name ? 'border-red-500' : 'border-gray-600'
-            }`}
-            placeholder="Enter your full name"
-            disabled={isSubmitting}
-          />
+          <div className="relative">
+            <input
+              type="text"
+              id="name"
+              name="name"
+              value={formData.name}
+              onChange={handleInputChange}
+              className={`futuristic-input w-full ${
+                errors.name ? 'border-red-500 focus:border-red-400' : 'border-lime-500/30 focus:border-lime-400'
+              }`}
+              placeholder="Enter your full name"
+              disabled={isSubmitting}
+            />
+            <div className="absolute inset-0 rounded-lg bg-lime-400/5 pointer-events-none"></div>
+          </div>
           {errors.name && (
-            <p className="mt-1 text-sm text-red-400">{errors.name}</p>
+            <p className="text-sm text-red-400 flex items-center">
+              <span className="w-1 h-1 bg-red-400 rounded-full mr-2"></span>
+              {errors.name}
+            </p>
           )}
         </div>
 
         {/* Email Field */}
-        <div>
-          <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-1">
+        <div className="space-y-2">
+          <label htmlFor="email" className="block text-sm font-medium text-gray-300">
             Email Address
           </label>
-          <input
-            type="email"
-            id="email"
-            name="email"
-            value={formData.email}
-            onChange={handleInputChange}
-            className={`w-full px-3 py-2 bg-gray-700 border rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-              errors.email ? 'border-red-500' : 'border-gray-600'
-            }`}
-            placeholder="Enter your email"
-            disabled={isSubmitting}
-          />
+          <div className="relative">
+            <input
+              type="email"
+              id="email"
+              name="email"
+              value={formData.email}
+              onChange={handleInputChange}
+              className={`futuristic-input w-full ${
+                errors.email ? 'border-red-500 focus:border-red-400' : 'border-lime-500/30 focus:border-lime-400'
+              }`}
+              placeholder="Enter your email"
+              disabled={isSubmitting}
+            />
+            <div className="absolute inset-0 rounded-lg bg-lime-400/5 pointer-events-none"></div>
+          </div>
           {errors.email && (
-            <p className="mt-1 text-sm text-red-400">{errors.email}</p>
+            <p className="text-sm text-red-400 flex items-center">
+              <span className="w-1 h-1 bg-red-400 rounded-full mr-2"></span>
+              {errors.email}
+            </p>
           )}
         </div>
 
         {/* Password Field */}
-        <div>
-          <label htmlFor="password" className="block text-sm font-medium text-gray-300 mb-1">
+        <div className="space-y-2">
+          <label htmlFor="password" className="block text-sm font-medium text-gray-300">
             Password
           </label>
-          <input
-            type="password"
-            id="password"
-            name="password"
-            value={formData.password}
-            onChange={handleInputChange}
-            className={`w-full px-3 py-2 bg-gray-700 border rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-              errors.password ? 'border-red-500' : 'border-gray-600'
-            }`}
-            placeholder="Create a strong password"
-            disabled={isSubmitting}
-          />
+          <div className="relative">
+            <input
+              type="password"
+              id="password"
+              name="password"
+              value={formData.password}
+              onChange={handleInputChange}
+              className={`futuristic-input w-full ${
+                errors.password ? 'border-red-500 focus:border-red-400' : 'border-lime-500/30 focus:border-lime-400'
+              }`}
+              placeholder="Create a strong password"
+              disabled={isSubmitting}
+            />
+            <div className="absolute inset-0 rounded-lg bg-lime-400/5 pointer-events-none"></div>
+          </div>
           {errors.password && (
-            <p className="mt-1 text-sm text-red-400">{errors.password}</p>
+            <p className="text-sm text-red-400 flex items-center">
+              <span className="w-1 h-1 bg-red-400 rounded-full mr-2"></span>
+              {errors.password}
+            </p>
           )}
-          <div className="mt-1 text-xs text-gray-400">
+          <div className="mt-1 text-xs text-gray-400 flex items-center">
+            <div className="w-1 h-1 bg-lime-400 rounded-full mr-2 animate-neon-pulse"></div>
             Password must be at least 8 characters with uppercase, lowercase, and numbers
           </div>
         </div>
 
         {/* Confirm Password Field */}
-        <div>
-          <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-300 mb-1">
+        <div className="space-y-2">
+          <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-300">
             Confirm Password
           </label>
-          <input
-            type="password"
-            id="confirmPassword"
-            name="confirmPassword"
-            value={confirmPassword}
-            onChange={handleInputChange}
-            className={`w-full px-3 py-2 bg-gray-700 border rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-              errors.confirmPassword ? 'border-red-500' : 'border-gray-600'
-            }`}
-            placeholder="Confirm your password"
-            disabled={isSubmitting}
-          />
+          <div className="relative">
+            <input
+              type="password"
+              id="confirmPassword"
+              name="confirmPassword"
+              value={confirmPassword}
+              onChange={handleInputChange}
+              className={`futuristic-input w-full ${
+                errors.confirmPassword ? 'border-red-500 focus:border-red-400' : 'border-lime-500/30 focus:border-lime-400'
+              }`}
+              placeholder="Confirm your password"
+              disabled={isSubmitting}
+            />
+            <div className="absolute inset-0 rounded-lg bg-lime-400/5 pointer-events-none"></div>
+          </div>
           {errors.confirmPassword && (
-            <p className="mt-1 text-sm text-red-400">{errors.confirmPassword}</p>
+            <p className="text-sm text-red-400 flex items-center">
+              <span className="w-1 h-1 bg-red-400 rounded-full mr-2"></span>
+              {errors.confirmPassword}
+            </p>
           )}
         </div>
 
         {/* Error Message */}
         {error && (
-          <div className="p-3 bg-red-900/50 border border-red-500 rounded-lg">
-            <p className="text-sm text-red-400">{error}</p>
+          <div className="p-4 bg-red-900/20 border border-red-500/50 rounded-lg backdrop-blur-sm">
+            <div className="flex items-center">
+              <div className="w-2 h-2 bg-red-400 rounded-full mr-3 animate-neon-pulse"></div>
+              <p className="text-sm text-red-300">{error}</p>
+            </div>
           </div>
         )}
 
@@ -209,9 +238,18 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
         <button
           type="submit"
           disabled={isSubmitting}
-          className="w-full py-2 px-4 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 text-white font-medium rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="neon-button w-full py-3 px-6 text-white font-semibold rounded-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {isSubmitting ? 'Creating Account...' : 'Create Account'}
+          <span className="relative z-10">
+            {isSubmitting ? (
+              <div className="flex items-center justify-center space-x-2">
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                <span>Creating Account...</span>
+              </div>
+            ) : (
+              'Create Account'
+            )}
+          </span>
         </button>
       </form>
 
@@ -223,7 +261,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
             <button
               type="button"
               onClick={onSwitchToLogin}
-              className="text-blue-400 hover:text-blue-300 font-medium"
+              className="text-lime-400 hover:text-lime-300 font-medium transition-colors duration-200 hover:underline"
             >
               Sign in
             </button>
@@ -235,9 +273,9 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
       <div className="mt-6 text-center">
         <p className="text-xs text-gray-500">
           By creating an account, you agree to our{' '}
-          <a href="#" className="text-blue-400 hover:text-blue-300">Terms of Service</a>
+          <a href="#" className="text-lime-400 hover:text-lime-300 transition-colors duration-200">Terms of Service</a>
           {' '}and{' '}
-          <a href="#" className="text-blue-400 hover:text-blue-300">Privacy Policy</a>
+          <a href="#" className="text-lime-400 hover:text-lime-300 transition-colors duration-200">Privacy Policy</a>
         </p>
       </div>
     </div>

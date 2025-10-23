@@ -63,7 +63,7 @@ export const RealtimeStatus: React.FC = () => {
     switch (status) {
       case 'connected':
       case 'online':
-        return 'text-green-400'
+        return 'text-lime-400'
       case 'disconnected':
       case 'offline':
         return 'text-red-400'
@@ -83,7 +83,7 @@ export const RealtimeStatus: React.FC = () => {
       case 'offline':
         return <WifiOff className="w-4 h-4" />
       case 'connecting':
-        return <Activity className="w-4 h-4 animate-pulse" />
+        return <Activity className="w-4 h-4 animate-neon-pulse" />
       default:
         return <Activity className="w-4 h-4" />
     }
@@ -94,12 +94,12 @@ export const RealtimeStatus: React.FC = () => {
       <motion.div
         initial={{ opacity: 0, x: 20 }}
         animate={{ opacity: 1, x: 0 }}
-        className="bg-brain-800/90 backdrop-blur-sm rounded-xl border border-brain-700/50 shadow-lg"
+        className="glass-card border border-lime-500/20 shadow-neon-lime"
       >
         {/* Status Header */}
         <button
           onClick={() => setIsExpanded(!isExpanded)}
-          className="flex items-center space-x-3 p-4 hover:bg-brain-700/50 transition-colors duration-200 rounded-xl"
+          className="flex items-center space-x-3 p-4 hover:bg-lime-500/10 transition-all duration-300 rounded-xl"
         >
           <div className={`${getStatusColor(status.websocket)}`}>
             {getStatusIcon(status.websocket)}
@@ -108,7 +108,8 @@ export const RealtimeStatus: React.FC = () => {
             <p className="text-white text-sm font-medium">
               Oliver-OS Status
             </p>
-            <p className="text-brain-400 text-xs">
+            <p className="text-gray-400 text-xs flex items-center">
+              <div className="w-1 h-1 bg-lime-400 rounded-full mr-2 animate-neon-pulse"></div>
               {status.websocket === 'connected' ? 'Connected' : 'Disconnected'}
               {pingLatency && ` • ${pingLatency}ms`}
             </p>
@@ -116,7 +117,7 @@ export const RealtimeStatus: React.FC = () => {
           <motion.div
             animate={{ rotate: isExpanded ? 180 : 0 }}
             transition={{ duration: 0.2 }}
-            className="text-brain-400"
+            className="text-gray-400"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -132,7 +133,7 @@ export const RealtimeStatus: React.FC = () => {
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
               transition={{ duration: 0.2 }}
-              className="border-t border-brain-700/50"
+              className="border-t border-lime-500/20"
             >
               <div className="p-4 space-y-4">
                 {/* WebSocket Status */}
@@ -143,10 +144,10 @@ export const RealtimeStatus: React.FC = () => {
                     </div>
                     <span className="text-white text-sm">WebSocket</span>
                   </div>
-                  <span className={`text-xs px-2 py-1 rounded-full ${
+                  <span className={`text-xs px-3 py-1 rounded-full border ${
                     status.websocket === 'connected' 
-                      ? 'bg-green-500/20 text-green-400' 
-                      : 'bg-red-500/20 text-red-400'
+                      ? 'bg-lime-500/20 text-lime-400 border-lime-500/30' 
+                      : 'bg-red-500/20 text-red-400 border-red-500/30'
                   }`}>
                     {status.websocket}
                   </span>
@@ -160,12 +161,12 @@ export const RealtimeStatus: React.FC = () => {
                     </div>
                     <span className="text-white text-sm">AI Services</span>
                   </div>
-                  <span className={`text-xs px-2 py-1 rounded-full ${
+                  <span className={`text-xs px-3 py-1 rounded-full border ${
                     status.aiServices === 'online' 
-                      ? 'bg-green-500/20 text-green-400' 
+                      ? 'bg-lime-500/20 text-lime-400 border-lime-500/30' 
                       : status.aiServices === 'offline'
-                      ? 'bg-red-500/20 text-red-400'
-                      : 'bg-gray-500/20 text-gray-400'
+                      ? 'bg-red-500/20 text-red-400 border-red-500/30'
+                      : 'bg-gray-500/20 text-gray-400 border-gray-500/30'
                   }`}>
                     {status.aiServices}
                   </span>
@@ -179,19 +180,19 @@ export const RealtimeStatus: React.FC = () => {
                     </div>
                     <span className="text-white text-sm">Database</span>
                   </div>
-                  <span className={`text-xs px-2 py-1 rounded-full ${
+                  <span className={`text-xs px-3 py-1 rounded-full border ${
                     status.database === 'online' 
-                      ? 'bg-green-500/20 text-green-400' 
+                      ? 'bg-lime-500/20 text-lime-400 border-lime-500/30' 
                       : status.database === 'offline'
-                      ? 'bg-red-500/20 text-red-400'
-                      : 'bg-gray-500/20 text-gray-400'
+                      ? 'bg-red-500/20 text-red-400 border-red-500/30'
+                      : 'bg-gray-500/20 text-gray-400 border-gray-500/30'
                   }`}>
                     {status.database}
                   </span>
                 </div>
 
                 {/* Last Update */}
-                <div className="flex items-center space-x-2 text-brain-400 text-xs">
+                <div className="flex items-center space-x-2 text-gray-400 text-xs">
                   <Clock className="w-3 h-3" />
                   <span>
                     Last update: {status.lastUpdate.toLocaleTimeString()}
@@ -200,9 +201,12 @@ export const RealtimeStatus: React.FC = () => {
 
                 {/* Connection Info */}
                 {isConnected && (
-                  <div className="pt-2 border-t border-brain-700/50">
-                    <div className="flex items-center justify-between text-xs text-brain-400">
-                      <span>Latency</span>
+                  <div className="pt-2 border-t border-lime-500/20">
+                    <div className="flex items-center justify-between text-xs text-gray-400">
+                      <span className="flex items-center">
+                        <div className="w-1 h-1 bg-lime-400 rounded-full mr-2 animate-neon-pulse"></div>
+                        Latency
+                      </span>
                       <span>{pingLatency ? `${pingLatency}ms` : 'Measuring...'}</span>
                     </div>
                   </div>

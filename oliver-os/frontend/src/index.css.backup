@@ -1,0 +1,15 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Basic styles for testing */
+body {
+  margin: 0;
+  padding: 0;
+  font-family: system-ui, sans-serif;
+}
+
+/* Test class to verify Tailwind is working */
+.test-tailwind {
+  @apply bg-blue-500 text-white p-4 rounded;
+}

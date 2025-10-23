@@ -75,16 +75,16 @@ export const LoginForm: React.FC<LoginFormProps> = ({
   };
 
   return (
-    <div className="max-w-md mx-auto p-6 bg-gray-800 rounded-lg shadow-lg">
-      <div className="text-center mb-6">
-        <h2 className="text-2xl font-bold text-white mb-2">Welcome Back</h2>
-        <p className="text-gray-400">Sign in to your Oliver-OS account</p>
+    <div className="space-y-6">
+      <div className="text-center">
+        <h2 className="text-2xl font-bold text-gray-900">Welcome Back</h2>
+        <p className="mt-2 text-sm text-gray-600">Sign in to your Oliver-OS account</p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Email Field */}
         <div>
-          <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-1">
+          <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
             Email Address
           </label>
           <input
@@ -93,20 +93,20 @@ export const LoginForm: React.FC<LoginFormProps> = ({
             name="email"
             value={formData.email}
             onChange={handleInputChange}
-            className={`w-full px-3 py-2 bg-gray-700 border rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-              errors.email ? 'border-red-500' : 'border-gray-600'
+            className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+              errors.email ? 'border-red-300' : 'border-gray-300'
             }`}
             placeholder="Enter your email"
             disabled={isSubmitting}
           />
           {errors.email && (
-            <p className="mt-1 text-sm text-red-400">{errors.email}</p>
+            <p className="mt-1 text-sm text-red-600">{errors.email}</p>
           )}
         </div>
 
         {/* Password Field */}
         <div>
-          <label htmlFor="password" className="block text-sm font-medium text-gray-300 mb-1">
+          <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
             Password
           </label>
           <input
@@ -115,21 +115,21 @@ export const LoginForm: React.FC<LoginFormProps> = ({
             name="password"
             value={formData.password}
             onChange={handleInputChange}
-            className={`w-full px-3 py-2 bg-gray-700 border rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-              errors.password ? 'border-red-500' : 'border-gray-600'
+            className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+              errors.password ? 'border-red-300' : 'border-gray-300'
             }`}
             placeholder="Enter your password"
             disabled={isSubmitting}
           />
           {errors.password && (
-            <p className="mt-1 text-sm text-red-400">{errors.password}</p>
+            <p className="mt-1 text-sm text-red-600">{errors.password}</p>
           )}
         </div>
 
         {/* Error Message */}
         {error && (
-          <div className="p-3 bg-red-900/50 border border-red-500 rounded-lg">
-            <p className="text-sm text-red-400">{error}</p>
+          <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+            <p className="text-sm text-red-600">{error}</p>
           </div>
         )}
 
@@ -137,21 +137,28 @@ export const LoginForm: React.FC<LoginFormProps> = ({
         <button
           type="submit"
           disabled={isSubmitting}
-          className="w-full py-2 px-4 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 text-white font-medium rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200"
         >
-          {isSubmitting ? 'Signing In...' : 'Sign In'}
+          {isSubmitting ? (
+            <div className="flex items-center justify-center">
+              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+              Signing In...
+            </div>
+          ) : (
+            'Sign In'
+          )}
         </button>
       </form>
 
       {/* Switch to Register */}
       {onSwitchToRegister && (
-        <div className="mt-6 text-center">
-          <p className="text-gray-400">
+        <div className="text-center">
+          <p className="text-sm text-gray-600">
             Don't have an account?{' '}
             <button
               type="button"
               onClick={onSwitchToRegister}
-              className="text-blue-400 hover:text-blue-300 font-medium"
+              className="text-blue-600 hover:text-blue-500 font-medium"
             >
               Sign up
             </button>
@@ -160,10 +167,12 @@ export const LoginForm: React.FC<LoginFormProps> = ({
       )}
 
       {/* Demo Credentials */}
-      <div className="mt-6 p-3 bg-gray-700/50 rounded-lg">
-        <p className="text-xs text-gray-400 mb-2">Demo Credentials:</p>
-        <p className="text-xs text-gray-300">Email: demo@oliver-os.com</p>
-        <p className="text-xs text-gray-300">Password: demo123</p>
+      <div className="p-3 bg-gray-50 border border-gray-200 rounded-lg">
+        <p className="text-xs text-gray-600 mb-2 font-medium">Demo Credentials:</p>
+        <div className="space-y-1">
+          <p className="text-xs text-gray-500 font-mono">Email: demo@oliver-os.com</p>
+          <p className="text-xs text-gray-500 font-mono">Password: demo123</p>
+        </div>
       </div>
     </div>
   );

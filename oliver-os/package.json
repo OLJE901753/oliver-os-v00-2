@@ -6,8 +6,11 @@
   "type": "module",
   "scripts": {
     "dev": "tsx src/index.ts",
+    "dev:visual": "tsx src/visual-server.ts",
+    "dev:client": "cd client && pnpm dev",
     "dev:frontend": "cd frontend && pnpm start",
     "dev:full": "concurrently \"pnpm dev\" \"pnpm dev:frontend\" --names \"backend,frontend\" --prefix-colors \"blue,green\"",
+    "dev:cyberpunk": "concurrently \"pnpm dev:visual\" \"pnpm dev:client\" --names \"SERVER,CLIENT\" --prefix-colors \"blue,magenta\"",
     "build": "tsc && tsc-alias",
     "start": "node dist/index.js",
     "test": "vitest",
@@ -134,7 +137,7 @@
     "socket.io-client": "^4.7.5",
     "tailwindcss": "^3.4.0",
     "tsc-alias": "^1.8.8",
-    "tsx": "^4.6.2",
+    "tsx": "^4.20.6",
     "typescript": "^5.3.3",
     "vite": "^5.0.8",
     "vitest": "^1.1.0"

@@ -1,0 +1,216 @@
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'JetBrains Mono', 'Courier New', monospace;
+  background: #000000;
+  color: #ffffff;
+  overflow: hidden;
+}
+
+/* FUI Typography System */
+@layer utilities {
+  .fui-text-primary {
+    color: #ffffff;
+    font-weight: 600;
+  }
+  
+  .fui-text-secondary {
+    color: #e5e7eb;
+    font-weight: 400;
+  }
+  
+  .fui-text-tertiary {
+    color: #9ca3af;
+    font-weight: 300;
+  }
+  
+  .fui-text-accent {
+    color: #00ffff;
+    font-weight: 500;
+  }
+  
+  .fui-text-warning {
+    color: #ff00ff;
+    font-weight: 500;
+  }
+  
+  .fui-text-success {
+    color: #00ff00;
+    font-weight: 500;
+  }
+}
+
+/* Interactive Element Styles */
+@layer components {
+  .fui-button {
+    @apply px-4 py-2 font-mono text-sm font-bold rounded border-2 transition-all duration-200;
+    @apply hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-black;
+  }
+  
+  .fui-button-primary {
+    @apply fui-button bg-cyan-500 hover:bg-cyan-400 text-black border-cyan-300;
+    @apply hover:shadow-cyan-500/50 focus:ring-cyan-500;
+  }
+  
+  .fui-button-secondary {
+    @apply fui-button bg-magenta-500 hover:bg-magenta-400 text-black border-magenta-300;
+    @apply hover:shadow-magenta-500/50 focus:ring-magenta-500;
+  }
+  
+  .fui-button-success {
+    @apply fui-button bg-green-500 hover:bg-green-400 text-black border-green-300;
+    @apply hover:shadow-green-500/50 focus:ring-green-500;
+  }
+  
+  .fui-button-danger {
+    @apply fui-button bg-red-500 hover:bg-red-400 text-black border-red-300;
+    @apply hover:shadow-red-500/50 focus:ring-red-500;
+  }
+  
+  .fui-panel {
+    @apply bg-black/80 border border-gray-600 rounded-lg backdrop-blur-sm;
+    @apply p-4 font-mono text-sm;
+  }
+  
+  .fui-panel-interactive {
+    @apply fui-panel border-cyan-400 bg-cyan-500/10;
+  }
+  
+  .fui-panel-warning {
+    @apply fui-panel border-magenta-400 bg-magenta-500/10;
+  }
+  
+  .fui-panel-success {
+    @apply fui-panel border-green-400 bg-green-500/10;
+  }
+}
+
+/* Minimal Glow Effects - Only for active states */
+@layer utilities {
+  .glow-active {
+    box-shadow: 0 0 10px currentColor;
+  }
+  
+  .glow-hover:hover {
+    box-shadow: 0 0 15px currentColor;
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #111111;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #00ffff;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #ff00ff;
+}
+
+/* Selection styling */
+::selection {
+  background: rgba(0, 255, 255, 0.3);
+  color: #ffffff;
+}
+
+/* Focus styling */
+:focus {
+  outline: 2px solid #00ffff;
+  outline-offset: 2px;
+}
+
+/* Subtle animations for FUI feel */
+@keyframes data-tick {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+@keyframes flow-line {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes pulse-subtle {
+  0%, 100% {
+    opacity: 0.8;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.animate-data-tick {
+  animation: data-tick 2s ease-in-out infinite;
+}
+
+.animate-flow-line {
+  animation: flow-line 3s linear infinite;
+}
+
+.animate-pulse-subtle {
+  animation: pulse-subtle 3s ease-in-out infinite;
+}
+
+/* Status indicators */
+.status-online {
+  color: #00ff00;
+}
+
+.status-warning {
+  color: #ffaa00;
+}
+
+.status-error {
+  color: #ff0000;
+}
+
+.status-processing {
+  color: #00ffff;
+}
+
+/* Data visualization styles */
+.data-bar {
+  height: 4px;
+  background: linear-gradient(90deg, #00ffff, #ff00ff);
+  border-radius: 2px;
+  transition: width 0.3s ease;
+}
+
+.data-meter {
+  width: 100%;
+  height: 8px;
+  background: #333333;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.data-meter-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #00ffff, #00ff00);
+  transition: width 0.5s ease;
+}
