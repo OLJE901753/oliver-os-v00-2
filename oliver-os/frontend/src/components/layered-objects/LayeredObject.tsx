@@ -10,27 +10,86 @@ export const LayeredObject: React.FC<LayeredObjectProps> = ({
   config,
   state,
   onStateChange,
-  devMode = false
+  devMode = false,
+  interactionState,
+  onObjectInteraction,
+  positioningState,
+  onObjectSelect
 }) => {
   const [showBackgroundWithoutObject, setShowBackgroundWithoutObject] = useState(false);
   const objectRef = useRef<HTMLDivElement>(null);
 
-  // State change logging (can be removed in production)
-  useEffect(() => {
-    if (config.id === 'brain-core') {
-      console.log('🎨 Background state:', showBackgroundWithoutObject ? 'Hole' : 'Full');
+  // Get visual state based on interactions
+  const getVisualState = () => {
+    if (interactionState?.isObjectActive(config.id)) {
+      return 'active';
     }
-  }, [showBackgroundWithoutObject, config.id]);
+    // For brain core, also show as active when in hole mode
+    if (config.id === 'brain-core' && showBackgroundWithoutObject) {
+      return 'active';
+    }
+    return 'idle';
+  };
+
+  const visualState = getVisualState();
 
 
 
-  // Handle click - only for non-brain-core objects
-  const handleClick = useCallback(() => {
-    if (!state.interactive || config.id === 'brain-core') return;
+  // Handle click with interaction support and zone detection
+  const handleClick = useCallback((event: React.MouseEvent) => {
+    // Handle positioning mode selection
+    if (positioningState?.positioningMode && onObjectSelect) {
+      onObjectSelect();
+      event.stopPropagation();
+      return;
+    }
     
-    console.log('🔄 Toggle: Full → Hole');
-    // Toggle between full background and background-without-object
-    setShowBackgroundWithoutObject(!showBackgroundWithoutObject);
+    if (!state.interactive) return;
+    
+    // Get click position relative to the object
+    const rect = event.currentTarget.getBoundingClientRect();
+    const clickX = event.clientX - rect.left;
+    const clickY = event.clientY - rect.top;
+    const objectWidth = rect.width;
+    const objectHeight = rect.height;
+    
+    // Calculate click zone (left, center, right)
+    const zoneWidth = objectWidth / 3;
+    let clickZone = 'center'; // Default zone
+    
+    if (clickX < zoneWidth) {
+      clickZone = 'left';
+    } else if (clickX > zoneWidth * 2) {
+      clickZone = 'right';
+    }
+    
+    console.log(`🎯 ${config.name} clicked in ${clickZone} zone! (${clickX}, ${clickY})`);
+    
+    // Handle different click zones
+    switch (clickZone) {
+      case 'left':
+        console.log('🔵 Left zone clicked - Opening Data Panel');
+        // TODO: Implement left zone functionality
+        break;
+        
+      case 'center':
+        console.log('🟡 Center zone clicked - Toggling Show Hole');
+        // Toggle background state for brain-core (existing behavior)
+        if (config.id === 'brain-core') {
+          setShowBackgroundWithoutObject(!showBackgroundWithoutObject);
+        }
+        break;
+        
+      case 'right':
+        console.log('🔴 Right zone clicked - Opening Status Panel');
+        // TODO: Implement right zone functionality
+        break;
+    }
+    
+    // Trigger object interaction for cascade effects
+    if (onObjectInteraction) {
+      onObjectInteraction(config.id, 'toggle');
+    }
     
     // Call custom click handler
     if (config.interaction.onClick) {
@@ -38,7 +97,7 @@ export const LayeredObject: React.FC<LayeredObjectProps> = ({
     }
     
     onStateChange({ active: !showBackgroundWithoutObject });
-  }, [state.interactive, showBackgroundWithoutObject, config.interaction.onClick, onStateChange, config.id]);
+  }, [state.interactive, config.id, config.name, onObjectInteraction, config.interaction.onClick, onStateChange, showBackgroundWithoutObject, positioningState?.positioningMode, onObjectSelect]);
 
   
   // Don't render if not visible
@@ -74,7 +133,7 @@ export const LayeredObject: React.FC<LayeredObjectProps> = ({
             cursor: state.interactive ? 'pointer' : 'default'
           }}
         >
-          🧠 Loading Brain Core...
+          🧠 Loading...
         </div>
       );
     }
@@ -134,7 +193,7 @@ export const LayeredObject: React.FC<LayeredObjectProps> = ({
             cursor: state.interactive ? 'pointer' : 'default'
           }}
         >
-          🧠 Brain Core (Initializing...)
+          🧠 Initializing...
         </div>
       );
     }
@@ -168,7 +227,7 @@ export const LayeredObject: React.FC<LayeredObjectProps> = ({
             cursor: state.interactive ? 'pointer' : 'default'
           }}
         >
-          🧠 Brain Core (Placeholder)
+          🧠 Placeholder
         </div>
       );
     }
@@ -199,10 +258,31 @@ export const LayeredObject: React.FC<LayeredObjectProps> = ({
     );
   }
 
+
+  // Get positioning classes
+  const getPositioningClasses = () => {
+    const classes = [];
+    
+    if (positioningState?.isSelected) {
+      classes.push('selected');
+    }
+    
+    if (positioningState?.isDragging) {
+      classes.push('dragging');
+    }
+    
+    if (positioningState?.positioningMode) {
+      classes.push('drag-handle');
+    }
+    
+    return classes.join(' ');
+  };
+
   return (
     <div
       ref={objectRef}
-      className={`layered-object ${devMode ? 'dev-mode' : ''}`}
+      className={`layered-object ${devMode ? 'dev-mode' : ''} ${visualState} ${getPositioningClasses()}`}
+      data-object-id={config.id}
       style={{
         position: 'absolute',
         left: config.position.x,
@@ -210,11 +290,12 @@ export const LayeredObject: React.FC<LayeredObjectProps> = ({
         width: config.position.width,
         height: config.position.height,
         zIndex: config.zIndex,
-        cursor: config.id === 'brain-core' ? 'default' : (state.interactive ? 'pointer' : 'default'),
-        border: devMode ? '2px solid rgba(0, 212, 255, 0.3)' : 'none',
-        borderRadius: '8px'
+        cursor: positioningState?.positioningMode ? 'pointer' : (state.interactive ? 'pointer' : 'default'),
+        borderRadius: '8px',
+        // Positioning mode effects only
+        opacity: positioningState?.isDragging ? 0.8 : 1
       }}
-      onClick={config.id === 'brain-core' ? undefined : handleClick}
+      onClick={handleClick}
     >
       {/* Full Background - Always visible as base layer */}
       <div
@@ -283,14 +364,6 @@ export const LayeredObject: React.FC<LayeredObjectProps> = ({
               config.interaction.onClick();
             }
           }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.transform = 'scale(1.1)';
-            e.currentTarget.style.opacity = '0.8';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.transform = 'scale(1)';
-            e.currentTarget.style.opacity = '1';
-          }}
           onLoad={() => console.log('🎯 Isolated object loaded')}
           onError={() => console.log('❌ Isolated object failed to load')}
         />
@@ -299,59 +372,175 @@ export const LayeredObject: React.FC<LayeredObjectProps> = ({
       
 
 
-      {/* Toggle Button - Only for brain core */}
-      {config.id === 'brain-core' && (
-        <div
-          style={{
-            position: 'absolute',
-            top: '20px',
-            right: '20px',
-            zIndex: 1000, // Much higher z-index
-            backgroundColor: 'rgba(0, 212, 255, 0.9)', // More visible background
-            color: 'black',
-            padding: '12px 16px',
-            borderRadius: '8px',
-            fontSize: '14px',
-            fontWeight: 'bold',
-            cursor: 'pointer',
-            border: '2px solid rgba(0, 212, 255, 1)',
-            boxShadow: '0 0 20px rgba(0, 212, 255, 0.5)',
-            minWidth: '120px',
-            textAlign: 'center'
-          }}
-          onClick={(e) => {
-            e.stopPropagation();
-            e.preventDefault();
-            setShowBackgroundWithoutObject(!showBackgroundWithoutObject);
-          }}
-        >
-          {showBackgroundWithoutObject ? 'Show Full' : 'Show Hole'}
-        </div>
-      )}
 
-      {/* Development mode overlay */}
-      {devMode && (
+      {/* Interaction indicator for active objects */}
+      {visualState === 'active' && (
         <div
-          className="dev-overlay"
           style={{
             position: 'absolute',
-            top: 0,
-            left: 0,
-            width: '100%',
-            height: '100%',
-            backgroundColor: 'rgba(0, 212, 255, 0.1)',
+            top: '-10px',
+            right: '-10px',
+            width: '24px',
+            height: '24px',
+            backgroundColor: 'rgba(0, 212, 255, 0.9)',
+            borderRadius: '50%',
+            border: '3px solid white',
+            zIndex: 1000,
+            animation: 'pulse 1.5s infinite, glow 2s infinite',
+            boxShadow: '0 0 20px rgba(0, 212, 255, 0.8)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             fontSize: '12px',
+            fontWeight: 'bold',
+            color: 'white'
+          }}
+        >
+          ⚡
+        </div>
+      )}
+
+      {/* Positioning indicator for selected objects */}
+      {positioningState?.isSelected && devMode && (
+        <div
+          style={{
+            position: 'absolute',
+            top: '-8px',
+            left: '-8px',
+            width: '20px',
+            height: '20px',
+            backgroundColor: 'rgba(0, 212, 255, 0.9)',
+            borderRadius: '50%',
+            border: '2px solid white',
+            zIndex: 1000,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: '10px',
+            fontWeight: 'bold',
+            color: 'white',
+            animation: 'pulse 1s infinite'
+          }}
+        >
+          📐
+        </div>
+      )}
+
+      {/* Drag indicator for positioning mode */}
+      {positioningState?.positioningMode && devMode && !positioningState.isSelected && (
+        <div
+          style={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            backgroundColor: 'rgba(0, 212, 255, 0.1)',
+            border: '1px dashed rgba(0, 212, 255, 0.5)',
+            borderRadius: '4px',
+            padding: '4px 8px',
+            fontSize: '10px',
             color: 'rgba(0, 212, 255, 0.8)',
             fontWeight: 'bold',
             pointerEvents: 'none',
-            zIndex: 5
+            zIndex: 1000,
+            opacity: 0.7
           }}
         >
-          {config.name}
+          Click to select
         </div>
+      )}
+
+      {/* Development mode overlay with click zones - Only show when dev mode is ON */}
+      {devMode && (
+        <>
+          {/* Click zone indicators */}
+          <div
+            className="click-zone-left"
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              width: '33.33%',
+              height: '100%',
+              backgroundColor: 'rgba(0, 100, 255, 0.1)',
+              border: '1px dashed rgba(0, 100, 255, 0.5)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '10px',
+              color: 'rgba(0, 100, 255, 0.8)',
+              fontWeight: 'bold',
+              pointerEvents: 'none',
+              zIndex: 5
+            }}
+          >
+            LEFT
+          </div>
+          <div
+            className="click-zone-center"
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: '33.33%',
+              width: '33.33%',
+              height: '100%',
+              backgroundColor: 'rgba(255, 200, 0, 0.1)',
+              border: '1px dashed rgba(255, 200, 0, 0.5)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '10px',
+              color: 'rgba(255, 200, 0, 0.8)',
+              fontWeight: 'bold',
+              pointerEvents: 'none',
+              zIndex: 5
+            }}
+          >
+            CENTER
+          </div>
+          <div
+            className="click-zone-right"
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: '66.66%',
+              width: '33.33%',
+              height: '100%',
+              backgroundColor: 'rgba(255, 100, 100, 0.1)',
+              border: '1px dashed rgba(255, 100, 100, 0.5)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '10px',
+              color: 'rgba(255, 100, 100, 0.8)',
+              fontWeight: 'bold',
+              pointerEvents: 'none',
+              zIndex: 5
+            }}
+          >
+            RIGHT
+          </div>
+          
+          {/* Object name overlay */}
+          <div
+            className="dev-overlay"
+            style={{
+              position: 'absolute',
+              top: '10px',
+              left: '10px',
+              backgroundColor: 'rgba(0, 0, 0, 0.7)',
+              color: 'white',
+              padding: '4px 8px',
+              borderRadius: '4px',
+              fontSize: '10px',
+              fontWeight: 'bold',
+              pointerEvents: 'none',
+              zIndex: 6
+            }}
+          >
+            {config.name}
+          </div>
+        </>
       )}
     </div>
   );

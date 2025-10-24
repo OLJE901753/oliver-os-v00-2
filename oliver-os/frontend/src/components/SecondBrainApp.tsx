@@ -7,16 +7,32 @@ import { Brain, Settings, Eye, EyeOff } from 'lucide-react'
 const SecondBrainApp: React.FC = () => {
   const [isInitializing, setIsInitializing] = useState(true)
   const [showLayeredBackground, setShowLayeredBackground] = useState(true)
-  const [devMode, setDevMode] = useState(false) // Start with dev mode OFF for clean view
+  const [devMode, setDevMode] = useState(false) // Start with dev mode OFF
+  
+  // Container positions state
+  const [containerPositions, setContainerPositions] = useState({
+    controls: { top: 16, left: 16 },
+    head: { top: '50%', left: '50%' }
+  })
+  
+  // Handle container drag
+  const handleContainerDrag = (containerType: 'controls' | 'head', event: React.DragEvent) => {
+    const rect = event.currentTarget.getBoundingClientRect()
+    const newPosition = {
+      top: event.clientY - rect.height / 2,
+      left: event.clientX - rect.width / 2
+    }
+    
+    setContainerPositions(prev => ({
+      ...prev,
+      [containerType]: newPosition
+    }))
+  }
 
   // Initialize the app
   useEffect(() => {
     const initializeApp = async () => {
       // Debug: Log object registry
-      console.log('🧠 SecondBrainApp: Initializing Brain Core System');
-      console.log('Object Registry:', objectRegistry)
-      console.log('Objects count:', objectRegistry.objects.length)
-      console.log('Canvas config:', objectRegistry.canvas)
       
       // Simulate initialization
       await new Promise(resolve => setTimeout(resolve, 1000))
@@ -70,20 +86,23 @@ const SecondBrainApp: React.FC = () => {
             registry={objectRegistry}
             devMode={devMode}
             className="w-full h-full"
+            onDevModeToggle={() => setDevMode(!devMode)}
           />
         </div>
       )}
       
-      {/* Hidden Dev Mode Toggle - Press 'D' key to toggle */}
-      <div 
-        className="absolute top-4 left-4 z-20 w-8 h-8 bg-transparent cursor-pointer"
-        onClick={() => setDevMode(!devMode)}
-        title="Click to toggle dev mode (or press 'D' key)"
-      />
       
-      {/* Debug Controls */}
+      {/* Debug Controls - Only show when dev mode is ON */}
       {devMode && (
-        <div className="absolute top-4 left-4 z-20 glass-card p-4 rounded-lg">
+        <div 
+          className="absolute z-[9999] glass-card p-4 rounded-lg cursor-move"
+          style={{
+            top: containerPositions.controls.top,
+            left: containerPositions.controls.left
+          }}
+          draggable="true"
+          onDragEnd={(e) => handleContainerDrag('controls', e)}
+        >
           <div className="flex items-center space-x-4 mb-2">
             <label className="flex items-center space-x-2 text-sm">
               <input
@@ -91,27 +110,30 @@ const SecondBrainApp: React.FC = () => {
                 checked={showLayeredBackground}
                 onChange={(e) => setShowLayeredBackground(e.target.checked)}
                 className="rounded"
+                style={{
+                  backgroundColor: 'rgba(0, 212, 255, 0.9)',
+                  borderColor: 'rgba(0, 212, 255, 0.9)',
+                  color: 'white'
+                }}
               />
-              <span>Show Brain Core</span>
+              <span style={{ color: 'white' }}>Show</span>
             </label>
-            <button
-              onClick={() => setDevMode(false)}
-              className="text-xs px-2 py-1 bg-neon-500/20 border border-neon-500/30 rounded"
-            >
-              Hide Debug
-            </button>
-          </div>
-          <div className="text-xs text-gray-400">
-            Objects: {objectRegistry.objects.length} | Canvas: {objectRegistry.canvas.width}x{objectRegistry.canvas.height}
           </div>
         </div>
       )}
       
-      {/* Debug Info Overlay */}
+      {/* Debug Info Overlay - Positioned on top of brain core */}
       {devMode && (
-        <div className="absolute top-4 right-4 z-20 bg-black/80 text-white p-2 rounded text-xs font-mono">
-          <div>Objects: {objectRegistry.objects.length}</div>
-          <div>Canvas: {objectRegistry.canvas.width}x{objectRegistry.canvas.height}</div>
+        <div 
+          className="absolute z-[9999] bg-black/80 text-white p-2 rounded text-xs font-mono cursor-move"
+          style={{
+            top: containerPositions.head.top,
+            left: containerPositions.head.left,
+            transform: 'translate(-50%, -50%)'
+          }}
+          draggable="true"
+          onDragEnd={(e) => handleContainerDrag('head', e)}
+        >
           <div>Background: {objectRegistry.canvas.background.image ? 'Image' : 'Color'}</div>
         </div>
       )}
