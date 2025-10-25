@@ -346,7 +346,7 @@ class QuickFixCommandGenerator {
   /**
    * Generate quick fix command based on failure analysis
    */
-  generateQuickFix(failureAnalysis: any): QuickFixCommand | null {
+  generateQuickFix(failureAnalysis: unknown): QuickFixCommand | null {
     const context = this.extractContext(failureAnalysis);
     this.context = context;
 
@@ -363,13 +363,21 @@ class QuickFixCommandGenerator {
   /**
    * Extract context from failure analysis
    */
-  private extractContext(failureAnalysis: any): QuickFixContext {
+  private extractContext(failureAnalysis: unknown): QuickFixContext {
+    const analysis = failureAnalysis as {
+      testSuite?: string;
+      type?: string;
+      files?: string[];
+      lineNumbers?: number[];
+      description?: string;
+    };
+    
     return {
-      testSuite: failureAnalysis.testSuite || 'unknown',
-      failureType: failureAnalysis.type || 'unknown',
-      files: failureAnalysis.files || [],
-      lineNumbers: failureAnalysis.lineNumbers || [],
-      errorMessage: failureAnalysis.description || '',
+      testSuite: analysis.testSuite || 'unknown',
+      failureType: analysis.type || 'unknown',
+      files: analysis.files || [],
+      lineNumbers: analysis.lineNumbers || [],
+      errorMessage: analysis.description || '',
       environment: 'development'
     };
   }
@@ -377,9 +385,14 @@ class QuickFixCommandGenerator {
   /**
    * Find matching command based on failure analysis
    */
-  private findMatchingCommand(failureAnalysis: any): QuickFixCommand | null {
-    const failureType = failureAnalysis.type?.toLowerCase() || '';
-    const category = failureAnalysis.category || 'test';
+  private findMatchingCommand(failureAnalysis: unknown): QuickFixCommand | null {
+    const analysis = failureAnalysis as {
+      type?: string;
+      category?: string;
+    };
+    
+    const failureType = analysis.type?.toLowerCase() || '';
+    const category = analysis.category || 'test';
 
     // Direct matches
     const directMatch = this.commands.find(cmd => 

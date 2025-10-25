@@ -324,7 +324,7 @@ class TestFailureAnalyzer {
   /**
    * Analyze test results and identify failure patterns
    */
-  analyzeTestResults(testData: any, testSuite: string): FailureAnalysis[] {
+  analyzeTestResults(testData: unknown, testSuite: string): FailureAnalysis[] {
     const analyses: FailureAnalysis[] = [];
     const testOutput = this.extractTestOutput(testData);
 
@@ -344,22 +344,25 @@ class TestFailureAnalyzer {
   /**
    * Extract test output from test data
    */
-  private extractTestOutput(testData: any): string {
+  private extractTestOutput(testData: unknown): string {
     let output = '';
 
-    if (testData.testResults) {
-      testData.testResults.forEach((test: any) => {
-        if (test.failureMessages) {
-          output += `${test.failureMessages.join('\n')  }\n`;
+    const testDataObj = testData as { testResults?: unknown[] };
+    if (testDataObj.testResults) {
+      testDataObj.testResults.forEach((test: unknown) => {
+        const testObj = test as { failureMessages?: string[]; status?: string; fullName?: string };
+        if (testObj.failureMessages) {
+          output += `${testObj.failureMessages.join('\n')  }\n`;
         }
-        if (test.status === 'failed') {
-          output += `Test failed: ${test.fullName}\n`;
+        if (testObj.status === 'failed') {
+          output += `Test failed: ${testObj.fullName}\n`;
         }
       });
     }
 
-    if (testData.failureMessages) {
-      output += `${testData.failureMessages.join('\n')  }\n`;
+    const testDataWithFailures = testData as { failureMessages?: string[] };
+    if (testDataWithFailures.failureMessages) {
+      output += `${testDataWithFailures.failureMessages.join('\n')  }\n`;
     }
 
     return output;
@@ -385,7 +388,7 @@ class TestFailureAnalyzer {
   private createFailureAnalysis(
     pattern: TestFailurePattern,
     matches: string[],
-    testData: any,
+    testData: unknown,
     _testSuite: string
   ): FailureAnalysis {
     const files = this.extractFiles(testData);
@@ -406,13 +409,15 @@ class TestFailureAnalyzer {
   /**
    * Extract files from test data
    */
-  private extractFiles(testData: any): string[] {
+  private extractFiles(testData: unknown): string[] {
     const files: string[] = [];
 
-    if (testData.testResults) {
-      testData.testResults.forEach((test: any) => {
-        if (test.location && test.location.path) {
-          files.push(test.location.path);
+    const testDataObj = testData as { testResults?: unknown[] };
+    if (testDataObj.testResults) {
+      testDataObj.testResults.forEach((test: unknown) => {
+        const testObj = test as { location?: { path?: string } };
+        if (testObj.location && testObj.location.path) {
+          files.push(testObj.location.path);
         }
       });
     }
@@ -423,13 +428,15 @@ class TestFailureAnalyzer {
   /**
    * Extract line numbers from test data
    */
-  private extractLineNumbers(testData: any): number[] {
+  private extractLineNumbers(testData: unknown): number[] {
     const lineNumbers: number[] = [];
 
-    if (testData.testResults) {
-      testData.testResults.forEach((test: any) => {
-        if (test.location && test.location.line) {
-          lineNumbers.push(test.location.line);
+    const testDataObj = testData as { testResults?: unknown[] };
+    if (testDataObj.testResults) {
+      testDataObj.testResults.forEach((test: unknown) => {
+        const testObj = test as { location?: { line?: number } };
+        if (testObj.location && testObj.location.line) {
+          lineNumbers.push(testObj.location.line);
         }
       });
     }
@@ -440,13 +447,15 @@ class TestFailureAnalyzer {
   /**
    * Extract context from test data
    */
-  private extractContext(testData: any): string {
+  private extractContext(testData: unknown): string {
     let context = '';
 
-    if (testData.testResults) {
-      testData.testResults.forEach((test: any) => {
-        if (test.failureMessages) {
-          context += `${test.failureMessages.join('\n')  }\n`;
+    const testDataObj = testData as { testResults?: unknown[] };
+    if (testDataObj.testResults) {
+      testDataObj.testResults.forEach((test: unknown) => {
+        const testObj = test as { failureMessages?: string[] };
+        if (testObj.failureMessages) {
+          context += `${testObj.failureMessages.join('\n')  }\n`;
         }
       });
     }
@@ -489,7 +498,7 @@ class TestFailureAnalyzer {
   /**
    * Analyze coverage results
    */
-  analyzeCoverageResults(coverageData: any): FailureAnalysis[] {
+  analyzeCoverageResults(coverageData: unknown): FailureAnalysis[] {
     const analyses: FailureAnalysis[] = [];
     const coverageOutput = JSON.stringify(coverageData);
 
@@ -509,7 +518,7 @@ class TestFailureAnalyzer {
   /**
    * Analyze quality results
    */
-  analyzeQualityResults(qualityData: any): FailureAnalysis[] {
+  analyzeQualityResults(qualityData: unknown): FailureAnalysis[] {
     const analyses: FailureAnalysis[] = [];
     const qualityOutput = JSON.stringify(qualityData);
 
@@ -529,7 +538,7 @@ class TestFailureAnalyzer {
   /**
    * Analyze security results
    */
-  analyzeSecurityResults(securityData: any): FailureAnalysis[] {
+  analyzeSecurityResults(securityData: unknown): FailureAnalysis[] {
     const analyses: FailureAnalysis[] = [];
     const securityOutput = JSON.stringify(securityData);
 
@@ -549,7 +558,7 @@ class TestFailureAnalyzer {
   /**
    * Analyze build results
    */
-  analyzeBuildResults(buildOutput: string, healthCheck: any): FailureAnalysis[] {
+  analyzeBuildResults(buildOutput: string, healthCheck: unknown): FailureAnalysis[] {
     const analyses: FailureAnalysis[] = [];
 
     // Check for build issues

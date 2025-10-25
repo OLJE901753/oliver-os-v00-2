@@ -90,12 +90,12 @@ export class Config {
   private getDefaultConfig(): ConfigType {
     return {
       port: parseInt(process.env['PORT'] || '3000', 10),
-      nodeEnv: (process.env['NODE_ENV'] as any) || 'development',
+      nodeEnv: (process.env['NODE_ENV'] as 'development' | 'production' | 'test') || 'development',
       cors: {
         origin: process.env['CORS_ORIGIN'] ? process.env['CORS_ORIGIN'].split(',') : ['http://localhost:3000']
       },
       version: process.env['VERSION'] || '0.0.2',
-      logLevel: (process.env['LOG_LEVEL'] as any) || 'info',
+      logLevel: (process.env['LOG_LEVEL'] as 'error' | 'warn' | 'info' | 'debug') || 'info',
       codebuff: {
         apiKey: process.env['CODEBUFF_API_KEY'] || '',
         timeout: parseInt(process.env['CODEBUFF_TIMEOUT'] || '300000', 10),
@@ -107,18 +107,18 @@ export class Config {
     };
   }
 
-  get(key: string, defaultValue?: any): any {
+  get(key: string, defaultValue?: unknown): unknown {
     const keys = key.split('.');
-    let value: any = this.config;
+    let value: unknown = this.config;
     for (const k of keys) {
-      value = value?.[k];
+      value = (value as Record<string, unknown>)?.[k];
     }
     return value !== undefined ? value : defaultValue;
   }
 
-  set(key: string, value: any): void {
+  set(key: string, value: unknown): void {
     const keys = key.split('.');
-    let target: any = this.config;
+    let target: Record<string, unknown> = this.config as Record<string, unknown>;
     
     // Navigate to the parent of the target key (optimized with reduce)
     const parentKeys = keys.slice(0, -1);
@@ -127,7 +127,7 @@ export class Config {
       if (!current[k] || typeof current[k] !== 'object') {
         current[k] = {};
       }
-      return current[k];
+      return current[k] as Record<string, unknown>;
     }, target);
     
     // Set the final value
