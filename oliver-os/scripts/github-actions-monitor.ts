@@ -60,11 +60,80 @@ class GitHubActionsMonitor {
   }
 
   /**
-   * Get recent workflow runs (mock implementation)
+   * Get recent workflow runs - fetches actual runs from GitHub
    */
   private getWorkflowRuns(): any[] {
-    // In a real implementation, this would use the GitHub API
-    // For now, we'll simulate based on our recent push
+    try {
+      // Try to fetch using GitHub CLI
+      try {
+        execSync('gh --version', { stdio: 'ignore' });
+        
+        console.log('   📥 Fetching recent workflow runs...');
+        
+        const command = `gh run list --repo ${this.repoOwner}/${this.repoName} --branch ${this.branch} --limit 5 --json databaseId,name,conclusion,status,createdAt,url`;
+        const output = execSync(command, { encoding: 'utf8' });
+        
+        const runs = JSON.parse(output);
+        
+        return runs.map((run: any) => ({
+          id: run.databaseId.toString(),
+          name: run.name,
+          conclusion: run.conclusion,
+          status: run.status,
+          created_at: run.createdAt,
+          html_url: run.url
+        }));
+      } catch (ghError) {
+        // If GitHub CLI is not available, use API
+        console.log('   ⚠️  GitHub CLI not available, trying GitHub API...');
+        return this.fetchWorkflowRunsFromAPI();
+      }
+    } catch (error) {
+      console.log(`   ⚠️  Could not fetch workflow runs: ${error.message}`);
+      console.log('   📝 Using mock data for demonstration');
+      
+      // Fallback to mock data
+      return this.getMockWorkflowRuns();
+    }
+  }
+
+  /**
+   * Fetch workflow runs from GitHub API
+   */
+  private fetchWorkflowRunsFromAPI(): any[] {
+    const token = process.env.GITHUB_TOKEN || process.env.GH_TOKEN;
+    
+    if (!token) {
+      console.log('   ⚠️  GitHub token not found. Set GITHUB_TOKEN or GH_TOKEN.');
+      return this.getMockWorkflowRuns();
+    }
+
+    try {
+      const fetch = require('node-fetch').default;
+      
+      const url = `https://api.github.com/repos/${this.repoOwner}/${this.repoName}/actions/runs?branch=${this.branch}&per_page=5`;
+      
+      const response = require('child_process').execSync(`curl -s -H "Authorization: Bearer ${token}" "${url}"`, { encoding: 'utf8' });
+      const data = JSON.parse(response);
+      
+      return data.workflow_runs.map((run: any) => ({
+        id: run.id.toString(),
+        name: run.name,
+        conclusion: run.conclusion,
+        status: run.status,
+        created_at: run.created_at,
+        html_url: run.html_url
+      }));
+    } catch (error) {
+      console.log(`   ❌ API fetch failed: ${error.message}`);
+      return this.getMockWorkflowRuns();
+    }
+  }
+
+  /**
+   * Get mock workflow runs as fallback
+   */
+  private getMockWorkflowRuns(): any[] {
     return [
       {
         id: '1234567890',
@@ -116,10 +185,114 @@ class GitHubActionsMonitor {
   }
 
   /**
-   * Get workflow logs (mock implementation)
+   * Get workflow logs - fetches actual logs from GitHub
    */
   private async getWorkflowLogs(workflowId: string): Promise<string> {
-    // In a real implementation, this would fetch actual logs from GitHub API
+    try {
+      // Check if GitHub CLI is available
+      try {
+        execSync('gh --version', { stdio: 'ignore' });
+        
+        // Fetch actual logs using GitHub CLI
+        console.log('   📥 Fetching workflow logs from GitHub...');
+        
+        const command = `gh run view ${workflowId} --repo ${this.repoOwner}/${this.repoName} --log`;
+        const logs = execSync(command, { encoding: 'utf8', stdio: 'pipe' });
+        
+        return logs;
+      } catch (ghError) {
+        // If GitHub CLI is not available, try to fetch from GitHub API
+        console.log('   ⚠️  GitHub CLI not available, trying GitHub API...');
+        return await this.fetchLogsFromAPI(workflowId);
+      }
+    } catch (error) {
+      console.log(`   ⚠️  Could not fetch logs: ${error.message}`);
+      console.log('   📝 Using mock data for demonstration');
+      
+      // Fallback to mock data
+      return this.getMockLogs();
+    }
+  }
+
+  /**
+   * Fetch logs from GitHub API
+   */
+  private async fetchLogsFromAPI(workflowId: string): Promise<string> {
+    // Check for GitHub token
+    const token = process.env.GITHUB_TOKEN || process.env.GH_TOKEN;
+    
+    if (!token) {
+      throw new Error('GitHub token not found. Set GITHUB_TOKEN or GH_TOKEN environment variable.');
+    }
+
+    const fetch = (await import('node-fetch')).default;
+    
+    // Fetch workflow run
+    const runUrl = `https://api.github.com/repos/${this.repoOwner}/${this.repoName}/actions/runs/${workflowId}`;
+    const runResponse = await fetch(runUrl, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Accept': 'application/vnd.github.v3+json'
+      }
+    });
+    
+    if (!runResponse.ok) {
+      throw new Error(`Failed to fetch workflow run: ${runResponse.statusText}`);
+    }
+    
+    const run = await runResponse.json() as { jobs_url: string };
+    
+    // Fetch jobs for this run
+    const jobsUrl = run.jobs_url;
+    const jobsResponse = await fetch(jobsUrl, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Accept': 'application/vnd.github.v3+json'
+      }
+    });
+    
+    if (!jobsResponse.ok) {
+      throw new Error(`Failed to fetch jobs: ${jobsResponse.statusText}`);
+    }
+    
+    const jobsData = await jobsResponse.json() as { jobs?: Array<{ name: string; conclusion: string; logs_url: string }> };
+    const jobs = jobsData.jobs || [];
+    
+    // Fetch logs for each job
+    let allLogs = '';
+    
+    for (const job of jobs) {
+      if (job.conclusion === 'failure') {
+        allLogs += `\n=== ${job.name} ===\n`;
+        
+        // Fetch logs for this job
+        try {
+          const logsUrl = job.logs_url;
+          const logsResponse = await fetch(logsUrl, {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Accept': 'application/vnd.github.v3+json'
+            },
+            redirect: 'follow'
+          });
+          
+          if (logsResponse.ok) {
+            const logs = await logsResponse.text();
+            allLogs += logs + '\n';
+          }
+        } catch (logError) {
+          allLogs += `Could not fetch logs for ${job.name}\n`;
+        }
+      }
+    }
+    
+    return allLogs || this.getMockLogs();
+  }
+
+  /**
+   * Get mock logs as fallback
+   */
+  private getMockLogs(): string {
     return `
 Smart Assistance Tests - FAILED
 ================================
@@ -173,7 +346,26 @@ error TS2322: Type 'string' is not assignable to type 'number'
    * Analyze workflow failure
    */
   private analyzeWorkflowFailure(logs: string, artifacts: any[]): any {
-    const analysis = {
+    const analysis: {
+      workflowId: string;
+      timestamp: string;
+      failures: Array<{
+        type: string;
+        description: string;
+        severity: string;
+        category: string;
+        quickFix: string;
+        suggestions: string[];
+      }>;
+      categories: {
+        test: number;
+        coverage: number;
+        quality: number;
+        build: number;
+        security: number;
+      };
+      severity: string;
+    } = {
       workflowId: '1234567890',
       timestamp: new Date().toISOString(),
       failures: [],
@@ -301,7 +493,14 @@ error TS2322: Type 'string' is not assignable to type 'number'
    * Generate quick fix commands
    */
   private generateQuickFixes(analysis: any): any[] {
-    const quickFixes = [];
+    const quickFixes: Array<{
+      command: string;
+      description: string;
+      category: string;
+      severity: string;
+      autoFixable: boolean;
+      confidence: number;
+    }> = [];
 
     // Generate fixes based on failure categories
     if (analysis.categories.test > 0) {
