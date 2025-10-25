@@ -3,10 +3,10 @@
  * Provides system health status and diagnostics
  */
 
-import { Router, type Request, type Response } from 'express';
+import { Router, type IRouter, type Request, type Response } from 'express';
 import { Logger } from '../core/logger';
 
-const router = Router();
+const router: IRouter = Router();
 const logger = new Logger('HealthAPI');
 
 router.get('/', (req: Request, res: Response) => {

@@ -3,13 +3,13 @@
  * Provides bureaucracy disruption status and reports
  */
 
-import { Router } from 'express';
+import { Router, type IRouter } from 'express';
 import type { Request, Response } from 'express';
 import { Logger } from '../core/logger';
 // import { BureaucracyDisruptorService } from '../services/bureaucracy-disruptor';
 // import { Config } from '../core/config';
 
-const router = Router();
+const router: IRouter = Router();
 const logger = new Logger('DisruptorAPI');
 // const config = new Config();
 

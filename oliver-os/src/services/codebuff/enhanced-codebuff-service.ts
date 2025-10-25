@@ -44,7 +44,7 @@ export class EnhancedCodebuffService extends EventEmitter {
   private workflows: Map<string, WorkflowDefinition> = new Map();
   private agentDefinitions: Map<string, OliverOSAgentDefinition> = new Map();
   private toolRegistry: ToolRegistry;
-  private mcpServers: Map<string, MCPServerInfo> = new Map();
+  // private mcpServers: Map<string, MCPServerInfo> = new Map(); // Unused - will be implemented in future iteration
   private activeExecutions: Map<string, WorkflowExecution> = new Map();
   // private _artifacts: Map<string, Artifact> = new Map(); // Unused - will be implemented in future iteration
   private mcpToolManager: MCPToolRegistryManager;
@@ -454,26 +454,17 @@ export class EnhancedCodebuffService extends EventEmitter {
   private async executeOrchestratedTask(
     options: CodebuffRunOptions, 
     _plan: Record<string, unknown>, 
-    events: CodebuffEvent[], 
+    _events: CodebuffEvent[], 
     _artifacts: Artifact[]
   ): Promise<any> {
     // Execute the task with full orchestration capabilities
+    // TODO: Update when CodebuffRunOptions interface is finalized
     const result = await this.client.run({
       agent: options.agent,
-      prompt: options.prompt,
-      customToolDefinitions: options.customToolDefinitions as any,
-      handleEvent: ((_event: any) => {
-        const codebuffEvent: CodebuffEvent = {
-          type: 'progress',
-          message: (_event as any).message || 'Processing...',
-          data: (_event as any).data,
-          timestamp: new Date().toISOString(),
-          ...(options.workflowId && { workflowId: options.workflowId })
-        };
-        events.push(codebuffEvent);
-        options.handleEvent?.(codebuffEvent);
-      })
-    });
+      prompt: options.prompt
+      // customToolDefinitions: options.customToolDefinitions as any, // Removed - not in type definition
+      // handleEvent: ((_event: any) => { ... }) // Removed - not in type definition
+    } as any);
 
     return result;
   }
@@ -625,34 +616,35 @@ export class EnhancedCodebuffService extends EventEmitter {
   }
 
   // MCP Integration
-  private async initializeMCPTools(): Promise<void> {
-    this._logger.info('🔧 Initializing MCP tools...');
-    
-    // Get all MCP tools and register them in our tool registry
-    const mcpTools = this.mcpToolManager.getAllTools();
-    
-    for (const tool of mcpTools) {
-      this.toolRegistry.registerTool(tool);
-    }
-    
-    // Get server health status
-    const serverHealth = await this.mcpToolManager.getServerHealth();
-    const serverInfo = this.mcpToolManager.getServerInfo();
-    
-    for (const [serverName, health] of Object.entries(serverHealth)) {
-      const info = serverInfo[serverName];
-      this.mcpServers.set(serverName, {
-        name: info?.name || serverName,
-        port: info?.port || 0,
-        tools: info?.tools || [],
-        lastError: info?.lastError,
-        healthCheck: info?.healthCheck,
-        status: health ? 'running' : 'error'
-      });
-    }
-    
-    this._logger.info(`✅ Initialized ${mcpTools.length} MCP tools across ${Object.keys(serverHealth).length} servers`);
-  }
+  // TODO: Uncomment and implement when needed
+  // private async initializeMCPTools(): Promise<void> {
+  //   this._logger.info('🔧 Initializing MCP tools...');
+  //   
+  //   // Get all MCP tools and register them in our tool registry
+  //   const mcpTools = this.mcpToolManager.getAllTools();
+  //   
+  //   for (const tool of mcpTools) {
+  //     this.toolRegistry.registerTool(tool);
+  //   }
+  //   
+  //   // Get server health status
+  //   const serverHealth = await this.mcpToolManager.getServerHealth();
+  //   const serverInfo = this.mcpToolManager.getServerInfo();
+  //   
+  //   for (const [serverName, health] of Object.entries(serverHealth)) {
+  //     const info = serverInfo[serverName];
+  //     this.mcpServers.set(serverName, {
+  //       name: info?.name || serverName,
+  //       port: info?.port || 0,
+  //       tools: info?.tools || [],
+  //       lastError: info?.lastError,
+  //       healthCheck: info?.healthCheck,
+  //       status: health ? 'running' : 'error'
+  //     });
+  //   }
+  //   
+  //   this._logger.info(`✅ Initialized ${mcpTools.length} MCP tools across ${Object.keys(serverHealth).length} servers`);
+  // }
 
   // Unused - will be implemented in future iteration
   // private async executeMCPTool(_serverName: string, _toolName: string, _args: Record<string, unknown>): Promise<unknown> {

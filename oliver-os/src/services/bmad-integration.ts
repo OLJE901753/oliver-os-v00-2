@@ -143,7 +143,7 @@ class OliverOSBMADService implements OliverOSBMADIntegration {
   /**
    * Execute BMAD workflow with Oliver-OS context
    */
-  async executeWorkflow(workflowId: string, context?: Partial<WorkflowContext>): Promise<ExecutionResult> {
+  async executeWorkflow(workflowId: string, _context?: Partial<WorkflowContext>): Promise<ExecutionResult> {
     if (!this.isInitialized) {
       await this.initialize();
     }
@@ -151,21 +151,7 @@ class OliverOSBMADService implements OliverOSBMADIntegration {
     try {
       this._logger.info(`🔄 Executing BMAD workflow: ${workflowId}`);
 
-      const workflowContext: WorkflowContext = {
-        projectType: 'ai-brain-interface',
-        projectPath: process.cwd(),
-        environment: (process.env['NODE_ENV'] as any) || 'development',
-        integrations: {
-          mcp: true,
-          codebuff: true,
-          aiServices: true,
-          collaboration: true,
-          github: true,
-          docker: true,
-          ci: true
-        },
-        ...context
-      };
+      // const workflowContext: WorkflowContext = { ... }; // Unused for now
 
       const result = await this.workflowEngine.executeWorkflow();
 
@@ -244,12 +230,12 @@ class OliverOSBMADService implements OliverOSBMADIntegration {
   /**
    * Update BMAD configuration for Oliver-OS
    */
-  async updateConfiguration(updates: Partial<BMADConfig>): Promise<void> {
+  async updateConfiguration(_updates: Partial<BMADConfig>): Promise<void> {
     try {
       this._logger.info('⚙️ Updating BMAD configuration...');
 
       // Apply Oliver-OS specific configuration updates
-      // const _oliverOSUpdates = this.applyOliverOSDefaults(updates); // Unused for now
+      // const _oliverOSUpdates = this.applyOliverOSDefaults(_updates); // Unused for now
       
       // await this._configManager.updateConfig(oliverOSUpdates); // Unused for now
 
@@ -427,32 +413,33 @@ class OliverOSBMADService implements OliverOSBMADIntegration {
 
   /**
    * Apply Oliver-OS specific configuration defaults
+   * TODO: Uncomment and implement when needed
    */
-  private applyOliverOSDefaults(updates: Partial<BMADConfig>): Partial<BMADConfig> {
-    return {
-      ...updates,
-      projectType: 'ai-brain-interface',
-      integrations: {
-        mcp: true,
-        codebuff: true,
-        aiServices: true,
-        collaboration: true,
-        github: true,
-        docker: true,
-        ci: true,
-        ...updates['integrations']
-      },
-      automation: {
-        autoCommit: true,
-        autoTest: true,
-        autoDeploy: false,
-        qualityGates: true,
-        codeReview: true,
-        dependencyUpdates: true,
-        ...updates['automation']
-      }
-    };
-  }
+  // private applyOliverOSDefaults(_updates: Partial<BMADConfig>): Partial<BMADConfig> {
+  //   return {
+  //     ..._updates,
+  //     projectType: 'ai-brain-interface',
+  //     integrations: {
+  //       mcp: true,
+  //       codebuff: true,
+  //       aiServices: true,
+  //       collaboration: true,
+  //       github: true,
+  //       docker: true,
+  //       ci: true,
+  //       ..._updates['integrations']
+  //     },
+  //     automation: {
+  //       autoCommit: true,
+  //       autoTest: true,
+  //       autoDeploy: false,
+  //       qualityGates: true,
+  //       codeReview: true,
+  //       dependencyUpdates: true,
+  //       ..._updates['automation']
+  //     }
+  //   };
+  // }
 
   /**
    * Assess system health for Oliver-OS

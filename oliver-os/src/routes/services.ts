@@ -3,11 +3,11 @@
  * Manages microservices and their lifecycle
  */
 
-import { Router } from 'express';
+import { Router, type IRouter } from 'express';
 import type { Request, Response } from 'express';
 import { Logger } from '../core/logger';
 
-const router = Router();
+const router: IRouter = Router();
 const logger = new Logger('ServicesAPI');
 
 // Mock service manager for now

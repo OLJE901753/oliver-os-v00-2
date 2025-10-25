@@ -136,7 +136,7 @@ router.post('/send/:clientId', (req: Request, res: Response) => {
         event
       });
     } else {
-      res.status(404).json({
+      return res.status(404).json({
         status: 'error',
         message: 'Client not found',
         client_id: clientId
