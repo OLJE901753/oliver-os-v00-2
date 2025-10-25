@@ -51,6 +51,8 @@
     "ci:report:quality-analysis": "tsx scripts/generate-ci-report.ts quality-analysis",
     "ci:report:security-analysis": "tsx scripts/generate-ci-report.ts security-analysis",
     "ci:report:build-analysis": "tsx scripts/generate-ci-report.ts build-analysis",
+    "ci:monitor-github": "tsx scripts/github-actions-monitor.ts",
+    "ci:auto-fix": "tsx scripts/github-actions-monitor.ts && pnpm ci:quick-fix",
     "monitor:dev": "powershell -ExecutionPolicy Bypass -File start-monitoring.ps1",
     "monitor:build": "cd monitoring-dashboard",
     "monitor:start": "powershell -ExecutionPolicy Bypass -File start-monitoring.ps1",
