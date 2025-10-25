@@ -66,7 +66,7 @@ jobs:
       - name: Generate lint and type check report
         if: always()
         run: |
-          node scripts/generate-ci-report.js lint-typecheck \
+          tsx scripts/generate-ci-report.ts lint-typecheck \
             --eslint-results eslint-results.json \
             --typecheck-results typecheck-results.txt \
             --eslint-exit-code ${{ steps.eslint.outputs.eslint_exit_code }} \
@@ -129,7 +129,7 @@ jobs:
       - name: Generate test failure analysis
         if: always()
         run: |
-          node scripts/generate-ci-report.js test-analysis \
+          tsx scripts/generate-ci-report.ts test-analysis \
             --test-suite ${{ matrix.test-suite }} \
             --test-results test-results-${{ matrix.test-suite }}.json \
             --test-exit-code ${{ steps.test-run.outputs.test_exit_code }} \
@@ -138,7 +138,7 @@ jobs:
       - name: Generate quick fix suggestions
         if: failure()
         run: |
-          node scripts/cursor-test-integration.js analyze-failures \
+          tsx scripts/cursor-test-integration.ts analyze-failures \
             --test-suite ${{ matrix.test-suite }} \
             --test-results test-results-${{ matrix.test-suite }}.json \
             --output quick-fix-${{ matrix.test-suite }}.json
@@ -195,7 +195,7 @@ jobs:
       - name: Generate coverage analysis
         if: always()
         run: |
-          node scripts/generate-ci-report.js coverage-analysis \
+          tsx scripts/generate-ci-report.ts coverage-analysis \
             --coverage-results coverage-results.json \
             --coverage-exit-code ${{ steps.coverage-run.outputs.coverage_exit_code }} \
             --output coverage-analysis.json
@@ -203,7 +203,7 @@ jobs:
       - name: Generate coverage improvement suggestions
         if: failure()
         run: |
-          node scripts/cursor-test-integration.js analyze-coverage \
+          tsx scripts/cursor-test-integration.ts analyze-coverage \
             --coverage-results coverage-results.json \
             --output coverage-improvements.json
 
@@ -259,7 +259,7 @@ jobs:
       - name: Generate quality analysis
         if: always()
         run: |
-          node scripts/generate-ci-report.js quality-analysis \
+          tsx scripts/generate-ci-report.ts quality-analysis \
             --quality-results quality-results.json \
             --quality-exit-code ${{ steps.quality-run.outputs.quality_exit_code }} \
             --output quality-analysis.json
@@ -267,7 +267,7 @@ jobs:
       - name: Generate quality improvement suggestions
         if: failure()
         run: |
-          node scripts/cursor-test-integration.js analyze-quality \
+          tsx scripts/cursor-test-integration.ts analyze-quality \
             --quality-results quality-results.json \
             --output quality-improvements.json
 
@@ -324,7 +324,7 @@ jobs:
       - name: Generate security analysis
         if: always()
         run: |
-          node scripts/generate-ci-report.js security-analysis \
+          tsx scripts/generate-ci-report.ts security-analysis \
             --security-results security-audit.json \
             --security-exit-code ${{ steps.security-run.outputs.security_exit_code }} \
             --output security-analysis.json
@@ -332,7 +332,7 @@ jobs:
       - name: Generate security fix suggestions
         if: failure()
         run: |
-          node scripts/cursor-test-integration.js analyze-security \
+          tsx scripts/cursor-test-integration.ts analyze-security \
             --security-results security-audit.json \
             --output security-fixes.json
 
@@ -398,7 +398,7 @@ jobs:
       - name: Generate build analysis
         if: always()
         run: |
-          node scripts/generate-ci-report.js build-analysis \
+          tsx scripts/generate-ci-report.ts build-analysis \
             --build-output build-output.txt \
             --health-check health-check.json \
             --build-exit-code ${{ steps.build-run.outputs.build_exit_code }} \
@@ -408,7 +408,7 @@ jobs:
       - name: Generate build fix suggestions
         if: failure()
         run: |
-          node scripts/cursor-test-integration.js analyze-build \
+          tsx scripts/cursor-test-integration.ts analyze-build \
             --build-output build-output.txt \
             --health-check health-check.json \
             --output build-fixes.json
@@ -440,13 +440,13 @@ jobs:
 
       - name: Generate comprehensive Cursor integration report
         run: |
-          node scripts/cursor-test-integration.js generate-report \
+          tsx scripts/cursor-test-integration.ts generate-report \
             --artifacts-dir . \
             --output cursor-integration-report.json
 
       - name: Generate quick fix commands
         run: |
-          node scripts/cursor-test-integration.js generate-quick-fixes \
+          tsx scripts/cursor-test-integration.ts generate-quick-fixes \
             --report cursor-integration-report.json \
             --output quick-fix-commands.json
 
@@ -575,6 +575,6 @@ jobs:
 
       - name: Send enhanced notifications
         run: |
-          node scripts/cursor-test-integration.js send-notifications \
+          tsx scripts/cursor-test-integration.ts send-notifications \
             --report cursor-report/cursor-integration-report.json \
             --context ${{ toJson(github) }}
