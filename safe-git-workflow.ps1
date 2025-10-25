@@ -10,10 +10,10 @@ param(
 )
 
 # Color functions for better output
-function Write-Success { param($Message) Write-Host "✅ $Message" -ForegroundColor Green }
-function Write-Warning { param($Message) Write-Host "⚠️  $Message" -ForegroundColor Yellow }
-function Write-Error { param($Message) Write-Host "❌ $Message" -ForegroundColor Red }
-function Write-Info { param($Message) Write-Host "ℹ️  $Message" -ForegroundColor Cyan }
+function Write-Success { param($Message) Write-Host "[SUCCESS] $Message" -ForegroundColor Green }
+function Write-Warning { param($Message) Write-Host "[WARNING] $Message" -ForegroundColor Yellow }
+function Write-Error { param($Message) Write-Host "[ERROR] $Message" -ForegroundColor Red }
+function Write-Info { param($Message) Write-Host "[INFO] $Message" -ForegroundColor Cyan }
 
 # Safety checks
 function Test-SafeBranch {
@@ -171,8 +171,8 @@ function Push-SafeBranch {
 
 function Show-Help {
     Write-Host @"
-🚀 Safe Git Workflow for Oliver-OS
-==================================
+Safe Git Workflow for Oliver-OS
+================================
 
 USAGE:
   .\safe-git-workflow.ps1 -Action <command> [options]
@@ -193,10 +193,10 @@ EXAMPLES:
   .\safe-git-workflow.ps1 -Action full-workflow -CommitMessage "Complete feature implementation"
 
 SAFETY FEATURES:
-  ✅ Prevents pushing to protected branches (main, master, production)
-  ✅ Always pushes to feature branches
-  ✅ Shows clear status and warnings
-  ✅ Protects your working main code
+  - Prevents pushing to protected branches (main, master, production)
+  - Always pushes to feature branches
+  - Shows clear status and warnings
+  - Protects your working main code
 
 PROTECTED BRANCHES: main, master, production, prod
 "@ -ForegroundColor White
