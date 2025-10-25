@@ -35,26 +35,6 @@ export declare class SmartAssistanceExample {
      */
     suggestRefactoring(filePath: string): Promise<any>;
     /**
-     * Find long functions in the code
-     * @deprecated This method is not currently used but kept for potential future enhancements
-     */
-    private(_lines: string[]): number[];
-    /**
-     * Find complex conditional statements
-     * @deprecated This method is not currently used but kept for potential future enhancements
-     */
-    private findComplexConditionals;
-    /**
-     * Find repeated code patterns
-     * @deprecated This method is not currently used but kept for potential future enhancements
-     */
-    private findRepeatedPatterns;
-    /**
-     * Find magic numbers in the code
-     * @deprecated This method is not currently used but kept for potential future enhancements
-     */
-    private findMagicNumbers;
-    /**
      * Smart quality check
      */
     checkQuality(projectPath?: string): Promise<void>;

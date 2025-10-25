@@ -178,39 +178,7 @@ export class SmartAssistanceExample {
             throw error;
         }
     }
-    // Removed unused generateRefactoringSuggestions method
-    /**
-     * Find long functions in the code
-     * @deprecated This method is not currently used but kept for potential future enhancements
-     */
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    private(_lines) {
-        return [];
-    }
-    /**
-     * Find complex conditional statements
-     * @deprecated This method is not currently used but kept for potential future enhancements
-     */
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    findComplexConditionals(_lines) {
-        return [];
-    }
-    /**
-     * Find repeated code patterns
-     * @deprecated This method is not currently used but kept for potential future enhancements
-     */
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    findRepeatedPatterns(_lines) {
-        return [];
-    }
-    /**
-     * Find magic numbers in the code
-     * @deprecated This method is not currently used but kept for potential future enhancements
-     */
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    findMagicNumbers(_lines) {
-        return [];
-    }
+    // Removed unused deprecated methods for cleaner codebase
     /**
      * Smart quality check
      */
