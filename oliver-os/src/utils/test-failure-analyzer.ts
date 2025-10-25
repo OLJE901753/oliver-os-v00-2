@@ -13,7 +13,7 @@ interface TestFailurePattern {
   description: string;
   regex: RegExp;
   severity: 'low' | 'medium' | 'high' | 'critical';
-  category: 'test' | 'coverage' | 'quality' | 'security' | 'build' | 'lint' | 'typecheck';
+  category: 'test' | 'coverage' | 'quality' | 'security' | 'build' | 'lint' | 'typecheck' | 'workflow';
   quickFix: string;
   suggestions: string[];
   autoFixable: boolean;
