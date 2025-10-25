@@ -16,8 +16,13 @@ COPY oliver-os/pnpm-lock.yaml* ./
 # Install pnpm
 RUN npm install -g pnpm@9
 
+# Copy TypeScript config files
+COPY tsconfig.base.json ./tsconfig.base.json
+COPY oliver-os/tsconfig.json ./tsconfig.json
+
 # Copy source code
-COPY oliver-os ./
+COPY oliver-os/src ./src
+COPY oliver-os/prisma ./prisma
 
 # Fix bmad-global path in package.json before installing
 RUN sed -i 's|file:../bmad-global|file:./bmad-global|' package.json
