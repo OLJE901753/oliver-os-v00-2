@@ -477,10 +477,8 @@ class QuickFixCommandGenerator {
       // Execute main command
       const output = await this.executeCommand(command.command);
 
-      // Execute post actions
-      for (const _postAction of command.postActions) {
-        // console.log(`Post-action: ${postAction}`); // Removed console statement
-      }
+      // Execute post actions (placeholder for future implementation)
+      // Post actions are logged but not executed in this implementation
 
       const duration = Date.now() - startTime;
 

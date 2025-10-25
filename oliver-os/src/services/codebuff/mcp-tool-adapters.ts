@@ -138,19 +138,21 @@ export class FilesystemMCPAdapter implements MCPToolAdapter {
     const path = await import('path');
 
     switch (toolName) {
-      case 'read_file':
+      case 'read_file': {
         const filePath = args['path'] as string;
         const encoding = (args['encoding'] as string) || 'utf8';
         return await fs.readFile(filePath, { encoding: encoding as BufferEncoding });
+      }
 
-      case 'write_file':
+      case 'write_file': {
         const writePath = args['path'] as string;
         const content = args['content'] as string;
         const writeEncoding = (args['encoding'] as string) || 'utf8';
         await fs.writeFile(writePath, content, { encoding: writeEncoding as BufferEncoding });
         return { success: true, message: `File written to ${writePath}` };
+      }
 
-      case 'list_directory':
+      case 'list_directory': {
         const dirPath = args['path'] as string;
         const recursive = args['recursive'] as boolean || false;
         if (recursive) {
@@ -168,14 +170,16 @@ export class FilesystemMCPAdapter implements MCPToolAdapter {
             type: item.isDirectory() ? 'directory' : 'file'
           }));
         }
+      }
 
-      case 'create_directory':
+      case 'create_directory': {
         const createPath = args['path'] as string;
         const createRecursive = args['recursive'] as boolean || false;
         await fs.mkdir(createPath, { recursive: createRecursive });
         return { success: true, message: `Directory created: ${createPath}` };
+      }
 
-      case 'delete_file':
+      case 'delete_file': {
         const deletePath = args['path'] as string;
         const deleteRecursive = args['recursive'] as boolean || false;
         const stat = await fs.stat(deletePath);
@@ -185,8 +189,9 @@ export class FilesystemMCPAdapter implements MCPToolAdapter {
           await fs.unlink(deletePath);
         }
         return { success: true, message: `Deleted: ${deletePath}` };
+      }
 
-      case 'search_files':
+      case 'search_files': {
         const pattern = args['pattern'] as string;
         const searchDir = (args['directory'] as string) || process.cwd();
         // const _searchRecursive = args.recursive as boolean || false; // Unused for now
@@ -206,6 +211,7 @@ export class FilesystemMCPAdapter implements MCPToolAdapter {
           type: item.isDirectory() ? 'directory' : 'file',
           path: path.join(searchDir, item.name)
         }));
+      }
 
       default:
         throw new Error(`Unknown tool: ${toolName}`);

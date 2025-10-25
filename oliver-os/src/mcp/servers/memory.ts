@@ -489,9 +489,10 @@ export class MemoryMCPServer extends EventEmitter implements OliverOSMCPServer {
             return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
           case 'updated':
             return new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime();
-          case 'priority':
+          case 'priority': {
             const priorityOrder = { critical: 4, high: 3, medium: 2, low: 1 };
             return priorityOrder[b.priority as keyof typeof priorityOrder] - priorityOrder[a.priority as keyof typeof priorityOrder];
+          }
           default:
             return 0;
         }
