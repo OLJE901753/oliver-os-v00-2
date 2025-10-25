@@ -11,6 +11,11 @@ import { MemoryService } from '../memory/memory-service';
 import { LearningService } from '../memory/learning-service';
 import fs from 'fs-extra';
 import path from 'path';
+import { simpleGit } from 'simple-git';
+import { exec } from 'child_process';
+import { promisify } from 'util';
+
+const execAsync = promisify(exec);
 
 export interface CodeReviewResult {
   id: string;
@@ -186,17 +191,159 @@ export class SelfReviewService extends EventEmitter {
   private async createReviewContext(filePath: string, _fileContent: string, fileType: string): Promise<ReviewContext> {
     const memory = this._memoryService as any;
     
+    try {
+      // Get git diff (hybrid approach)
+      const gitDiff = await this.getGitDiff(filePath);
+      
+      // Get recent changes (hybrid approach)
+      const recentChanges = await this.getRecentChanges();
+      
+      // Get git statistics (execAsync for complex operations)
+      const gitStats = await this.getGitStats();
+      
+      // Parse changes from diff
+      const changes = this.parseChangesFromDiff(gitDiff);
+      
+      // Log git stats for debugging
+      if (gitStats.filesChanged > 0) {
+        this._logger.info(`Git stats: ${gitStats.filesChanged} files, +${gitStats.insertions}/-${gitStats.deletions} lines`);
+      }
+      
+      return {
+        filePath,
+        fileType,
+        changes,
+        gitDiff,
+        projectStructure: ['src', 'services', 'components'],
+        recentChanges,
+        userPreferences: memory.memory?.codePatterns?.userPreferences || {},
+        codingPatterns: [], // TODO: Get from memory
+        architectureDecisions: memory.memory?.architecture?.decisions?.map((d: any) => d.id) || []
+      };
+    } catch (error) {
+      this._logger.warn(`Failed to get git context for ${filePath}:`, { error: error instanceof Error ? error.message : String(error) });
+      // Return context without git data if git fails
+      return {
+        filePath,
+        fileType,
+        changes: [],
+        gitDiff: '',
+        projectStructure: ['src', 'services', 'components'],
+        recentChanges: [],
+        userPreferences: memory.memory?.codePatterns?.userPreferences || {},
+        codingPatterns: [],
+        architectureDecisions: memory.memory?.architecture?.decisions?.map((d: any) => d.id) || []
+      };
+    }
+  }
+
+  /**
+   * Get git diff for a file
+   * Hybrid: simple-git for basic diff, execAsync for advanced options
+   */
+  private async getGitDiff(filePath: string): Promise<string> {
+    try {
+      // Use simple-git for basic, safe operations
+      const git = simpleGit();
+      const diff = await git.diff(['--', filePath]);
+      
+      // If no diff, try unstaged changes
+      if (!diff) {
+        const unstaged = await git.diff([filePath]);
+        return unstaged;
+      }
+      
+      return diff;
+    } catch (error) {
+      this._logger.warn(`Failed to get git diff with simple-git, trying execAsync for ${filePath}:`, { error: error instanceof Error ? error.message : String(error) });
+      
+      // Fallback to execAsync for advanced operations
+      try {
+        const { stdout } = await execAsync(`git diff -- ${filePath}`);
+        return stdout;
+      } catch (execError) {
+        this._logger.warn(`Failed to get git diff with execAsync for ${filePath}:`, { error: execError instanceof Error ? execError.message : String(execError) });
+        return '';
+      }
+    }
+  }
+
+  /**
+   * Get recent git changes
+   * Hybrid: simple-git for structured data, execAsync for formatting
+   */
+  private async getRecentChanges(): Promise<string[]> {
+    try {
+      // Use simple-git for structured commit data
+      const git = simpleGit();
+      const log = await git.log({ maxCount: 10 });
+      
+      return log.all.map(commit => {
+        const shortHash = commit.hash.substring(0, 7);
+        return `${shortHash} - ${commit.message}`;
+      });
+    } catch (error) {
+      this._logger.warn('Failed to get recent changes with simple-git, trying execAsync:', { error: error instanceof Error ? error.message : String(error) });
+      
+      // Fallback to execAsync for custom formatting
+      try {
+        const { stdout } = await execAsync('git log --oneline -10');
+        return stdout.split('\n').filter(line => line.trim());
+      } catch (execError) {
+        this._logger.warn('Failed to get recent changes with execAsync:', { error: execError instanceof Error ? execError.message : String(execError) });
+        return [];
+      }
+    }
+  }
+
+  /**
+   * Get detailed git statistics
+   * Uses execAsync for complex operations
+   */
+  private async getGitStats(): Promise<{ filesChanged: number; insertions: number; deletions: number }> {
+    try {
+      // Use execAsync for complex git commands
+      const { stdout: shortStat } = await execAsync('git diff --shortstat');
+      const stats = this.parseGitStat(shortStat);
+      return stats;
+    } catch (error) {
+      this._logger.warn('Failed to get git stats:', { error: error instanceof Error ? error.message : String(error) });
+      return { filesChanged: 0, insertions: 0, deletions: 0 };
+    }
+  }
+
+  /**
+   * Parse git stat output
+   */
+  private parseGitStat(stat: string): { filesChanged: number; insertions: number; deletions: number } {
+    const filesMatch = stat.match(/(\d+)\s+files? changed/);
+    const insertionsMatch = stat.match(/(\d+)\s+insertions?/);
+    const deletionsMatch = stat.match(/(\d+)\s+deletions?/);
+
     return {
-      filePath,
-      fileType,
-      changes: [], // TODO: Get from git diff
-      gitDiff: '', // TODO: Get from git
-      projectStructure: ['src', 'services', 'components'],
-      recentChanges: [], // TODO: Get from git history
-      userPreferences: memory.memory?.codePatterns?.userPreferences || {},
-      codingPatterns: [], // TODO: Get from memory
-      architectureDecisions: memory.memory?.architecture?.decisions?.map((d: any) => d.id) || []
+      filesChanged: filesMatch ? parseInt(filesMatch[1] || '0', 10) : 0,
+      insertions: insertionsMatch ? parseInt(insertionsMatch[1] || '0', 10) : 0,
+      deletions: deletionsMatch ? parseInt(deletionsMatch[1] || '0', 10) : 0
     };
+  }
+
+  /**
+   * Parse changes from git diff
+   */
+  private parseChangesFromDiff(diff: string): string[] {
+    if (!diff) return [];
+    
+    const changes: string[] = [];
+    const lines = diff.split('\n');
+    
+    for (const line of lines) {
+      // Only include added or modified lines (not deletions)
+      if (line.startsWith('+') && !line.startsWith('+++')) {
+        changes.push(line.substring(1).trim());
+      }
+    }
+    
+    return changes;
   }
 
   /**

@@ -218,6 +218,7 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "rimraf": "^5.0.10",
+    "simple-git": "^3.28.0",
     "socket.io-client": "^4.7.5",
     "tailwindcss": "^3.4.0",
     "tsc-alias": "^1.8.8",
