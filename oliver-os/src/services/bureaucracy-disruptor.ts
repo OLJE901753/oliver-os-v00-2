@@ -21,7 +21,6 @@ export class BureaucracyDisruptorService {
   private reports: BureaucracyReport[] = [];
 
   constructor(_config: Config) {
-    // this._config = config; // Unused for now
     this._logger = new Logger('BureaucracyDisruptor');
   }
 

@@ -80,7 +80,7 @@ export class MonitoringService extends EventEmitter {
   private testResults: TestResult[] = [];
   private qualityGates: QualityGate[] = [];
   private systemHealth: SystemHealth;
-  private updateInterval: NodeJS.Timeout | null = null;
+  private updateInterval: ReturnType<typeof setInterval> | null = null;
 
   constructor() {
     super();
