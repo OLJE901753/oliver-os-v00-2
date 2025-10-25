@@ -102,7 +102,31 @@ class GitHubWorkflowAnalyzer {
       }
 
       // Generate fix commands
-      this.generateFixCommands(finalJobs);
+      const fixes = this.generateFixCommands(finalJobs);
+      
+      if (fixes.length === 0) {
+        console.log('✅ No errors or warnings found requiring fixes');
+      } else {
+        console.log(`\n🎯 Summary: Generated ${fixes.length} unique fix commands`);
+        console.log('💡 Run these commands to fix the detected issues:');
+        fixes.forEach((fix, index) => {
+          console.log(`   ${index + 1}. ${fix}`);
+        });
+      }
+
+      // Save fix commands to file
+      writeFileSync('github-workflow-fixes.json', JSON.stringify({
+        timestamp: new Date().toISOString(),
+        fixes,
+        jobs: finalJobs.map(j => ({
+          name: j.name,
+          conclusion: j.conclusion,
+          errorCount: j.errors.length,
+          warningCount: j.warnings.length
+        }))
+      }, null, 2));
+
+      console.log('\n💾 Fix commands saved to: github-workflow-fixes.json');
 
     } catch (error) {
       console.error('❌ Analysis failed:', error);
@@ -356,52 +380,69 @@ class GitHubWorkflowAnalyzer {
   /**
    * Generate fix commands based on analysis
    */
-  private generateFixCommands(jobs: JobResult[]): void {
+  private generateFixCommands(jobs: JobResult[]): string[] {
     console.log('\n⚡ Generated Fix Commands:');
     console.log('================================\n');
 
     const fixes: string[] = [];
 
     for (const job of jobs) {
-      if (job.conclusion === 'failure') {
-        // Generate specific fixes based on errors
-        if (job.errors.some(e => e.includes('No files were found'))) {
+      // Handle cache-related errors
+      if (job.errors.some(e => e.includes('Cache not found'))) {
+        if (!fixes.includes('pnpm ci:clear-cache')) {
+          fixes.push('pnpm ci:clear-cache');
+          console.log('1. Clear GitHub Actions cache:');
+          console.log('   pnpm ci:clear-cache\n');
+        }
+      }
+
+      // Handle missing artifact errors
+      if (job.errors.some(e => e.includes('No files were found'))) {
+        if (!fixes.includes('pnpm ci:generate-report')) {
           fixes.push('pnpm ci:generate-report');
-          console.log('1. Generate missing CI reports:');
+          console.log('2. Generate missing CI reports:');
           console.log('   pnpm ci:generate-report\n');
         }
+      }
 
-        if (job.errors.some(e => e.includes('eslint') || e.includes('Unexpected any'))) {
+      // Handle path validation errors
+      if (job.errors.some(e => e.includes('Path Validation Error'))) {
+        if (!fixes.includes('pnpm ci:fix-paths')) {
+          fixes.push('pnpm ci:fix-paths');
+          console.log('3. Fix file path issues:');
+          console.log('   pnpm ci:fix-paths\n');
+        }
+      }
+
+      // Handle QualityGateService errors
+      if (job.errors.some(e => e.includes('QualityGateService'))) {
+        if (!fixes.includes('pnpm ci:fix-quality-gates')) {
+          fixes.push('pnpm ci:fix-quality-gates');
+          console.log('4. Fix Quality Gate Service issues:');
+          console.log('   pnpm ci:fix-quality-gates\n');
+        }
+      }
+
+      // Handle ESLint errors
+      if (job.errors.some(e => e.includes('eslint') || e.includes('Unexpected any'))) {
+        if (!fixes.includes('pnpm lint:fix')) {
           fixes.push('pnpm lint:fix');
-          console.log('2. Fix ESLint errors:');
+          console.log('5. Fix ESLint errors:');
           console.log('   pnpm lint:fix\n');
         }
+      }
 
-        if (job.errors.some(e => e.includes('typescript') || e.includes('TS'))) {
+      // Handle TypeScript errors
+      if (job.errors.some(e => e.includes('typescript') || e.includes('TS'))) {
+        if (!fixes.includes('pnpm type-check')) {
           fixes.push('pnpm type-check');
-          console.log('3. Fix TypeScript errors:');
+          console.log('6. Fix TypeScript errors:');
           console.log('   pnpm type-check\n');
         }
       }
     }
 
-    if (fixes.length === 0) {
-      console.log('✅ No critical errors found requiring fixes');
-    }
-
-    // Save fix commands to file
-    writeFileSync('github-workflow-fixes.json', JSON.stringify({
-      timestamp: new Date().toISOString(),
-      fixes,
-      jobs: jobs.map(j => ({
-        name: j.name,
-        conclusion: j.conclusion,
-        errorCount: j.errors.length,
-        warningCount: j.warnings.length
-      }))
-    }, null, 2));
-
-    console.log('💾 Fix commands saved to: github-workflow-fixes.json');
+    return fixes;
   }
 }
 

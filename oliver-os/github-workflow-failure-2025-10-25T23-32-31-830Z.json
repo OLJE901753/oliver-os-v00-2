@@ -1,0 +1,24 @@
+{
+  "workflow": {
+    "id": "18809775248",
+    "name": "Docker CI/CD Pipeline",
+    "conclusion": "failure",
+    "status": "completed",
+    "created_at": "2025-10-25T23:16:15Z",
+    "html_url": "https://github.com/OLJE901753/oliver-os-v00-2/actions/runs/18809775248"
+  },
+  "analysis": {
+    "workflowId": "1234567890",
+    "timestamp": "2025-10-25T23:32:31.827Z",
+    "failures": [],
+    "categories": {
+      "test": 0,
+      "coverage": 0,
+      "quality": 0,
+      "build": 0,
+      "security": 0
+    },
+    "severity": "medium"
+  },
+  "timestamp": "2025-10-25T23:32:31.830Z"
+}

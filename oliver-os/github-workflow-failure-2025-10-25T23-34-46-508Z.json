@@ -1,0 +1,85 @@
+{
+  "workflow": {
+    "id": "18809775254",
+    "name": "Enhanced Smart Assistance CI/CD Pipeline",
+    "conclusion": "failure",
+    "status": "completed",
+    "created_at": "2025-10-25T23:16:15Z",
+    "html_url": "https://github.com/OLJE901753/oliver-os-v00-2/actions/runs/18809775254"
+  },
+  "analysis": {
+    "workflowId": "1234567890",
+    "timestamp": "2025-10-25T23:34:46.508Z",
+    "failures": [
+      {
+        "type": "TypeScript Error",
+        "description": "TypeError: Cannot read property of undefined",
+        "severity": "high",
+        "category": "test",
+        "quickFix": "pnpm type-check && pnpm lint:fix",
+        "suggestions": [
+          "Check for undefined variables",
+          "Verify object property access",
+          "Add null checks"
+        ]
+      },
+      {
+        "type": "Test Timeout",
+        "description": "Test timed out - Async callback was not invoked",
+        "severity": "medium",
+        "category": "test",
+        "quickFix": "pnpm test:smart --timeout=60000",
+        "suggestions": [
+          "Increase test timeout",
+          "Check for infinite loops",
+          "Optimize async operations"
+        ]
+      },
+      {
+        "type": "Low Coverage",
+        "description": "Test coverage below threshold (65% < 80%)",
+        "severity": "medium",
+        "category": "coverage",
+        "quickFix": "pnpm test:smart:coverage",
+        "suggestions": [
+          "Add missing test cases",
+          "Improve existing tests",
+          "Remove unused code"
+        ]
+      },
+      {
+        "type": "Low Quality Score",
+        "description": "Quality score below threshold (75 < 80)",
+        "severity": "medium",
+        "category": "quality",
+        "quickFix": "pnpm lint:fix && pnpm type-check",
+        "suggestions": [
+          "Improve code quality",
+          "Reduce complexity",
+          "Add documentation"
+        ]
+      },
+      {
+        "type": "TypeScript Build Error",
+        "description": "TypeScript compilation errors detected",
+        "severity": "high",
+        "category": "build",
+        "quickFix": "pnpm type-check",
+        "suggestions": [
+          "Fix TypeScript errors",
+          "Check type definitions",
+          "Update imports"
+        ]
+      }
+    ],
+    "categories": {
+      "test": 2,
+      "coverage": 1,
+      "quality": 1,
+      "build": 1,
+      "security": 0
+    },
+    "severity": "high"
+  },
+  "timestamp": "2025-10-25T23:34:46.508Z"
+}
