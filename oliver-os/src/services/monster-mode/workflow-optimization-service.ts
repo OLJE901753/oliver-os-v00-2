@@ -988,7 +988,7 @@ export class WorkflowOptimizationService extends EventEmitter {
       action.status = 'completed';
     } catch (error) {
       action.status = 'failed';
-      action.error = error.message;
+      action.error = error instanceof Error ? error.message : String(error);
       throw error;
     }
   }

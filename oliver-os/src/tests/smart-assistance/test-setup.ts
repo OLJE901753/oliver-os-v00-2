@@ -317,7 +317,7 @@ export class TestDataGenerator {
     const types = ['performance', 'security', 'maintainability', 'readability'];
     
     for (let i = 0; i < count; i++) {
-      const type = types[Math.floor(Math.random() * types.length)];
+      const type = types[Math.floor(Math.random() * types.length)] || 'performance';
       suggestions.push(TestUtils.createMockSuggestion(
         `suggestion-${i}`,
         type,

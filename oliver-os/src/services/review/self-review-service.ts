@@ -530,7 +530,7 @@ export class SelfReviewService extends EventEmitter {
       if (line && (line.includes('function') || line.includes('=>'))) {
         // Find function end (simplified)
         let endLine = i;
-        while (endLine < lines.length && lines[endLine] && !lines[endLine].includes('}')) {
+        while (endLine < lines.length && lines[endLine] && !lines[endLine]!.includes('}')) {
           endLine++;
         }
         
@@ -538,7 +538,7 @@ export class SelfReviewService extends EventEmitter {
           functions.push({
             name: 'function',
             length: endLine - i,
-            code: lines.slice(i, endLine + 1).join('\n')
+            code: lines.slice(i, Math.min(endLine + 1, lines.length)).join('\n')
           });
         }
       }
