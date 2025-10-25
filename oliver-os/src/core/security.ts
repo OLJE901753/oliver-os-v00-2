@@ -79,7 +79,7 @@ export class SecurityManager {
       },
       cors: {
         origin: Array.isArray(config.get('cors.origin'))
-          ? config.get('cors.origin')
+          ? config.get('cors.origin') as string[]
           : ['http://localhost:3000', 'http://localhost:3001'],
         credentials: true,
       },

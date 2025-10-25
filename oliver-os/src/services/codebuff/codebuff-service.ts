@@ -31,7 +31,7 @@ export class CodebuffService {
     this._logger = new Logger('CodebuffService');
     
     const codebuffConfig: CodebuffClientConfig = {
-      apiKey: this._config.get('codebuff.apiKey') || process.env['CODEBUFF_API_KEY'] || '',
+      apiKey: (this._config.get('codebuff.apiKey') as string) || process.env['CODEBUFF_API_KEY'] || '',
       cwd: process.cwd(),
       onError: (error) => this._logger.error('Codebuff client error:', error.message),
       timeout: this._config.get('codebuff.timeout') as number || 300000,

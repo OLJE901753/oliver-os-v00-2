@@ -152,7 +152,7 @@ export function createHttpServerWithWebSocket(config: Config, serviceManager?: a
   const httpServer = createHttpServer(app);
   
   // Initialize WebSocket manager
-  const aiServicesUrl = config.get('aiServices.url', 'http://localhost:8000');
+  const aiServicesUrl = config.get('aiServices.url', 'http://localhost:8000') as string;
   const wsManager = new WebSocketManager(httpServer, aiServicesUrl);
   
   // Set WebSocket manager reference for routes

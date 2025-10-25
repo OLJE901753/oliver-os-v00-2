@@ -41,7 +41,7 @@ export class OliverOSMCPServerImpl extends EventEmitter implements OliverOSMCPSe
       name: 'oliver-os-mcp-server',
       version: '1.0.0',
       description: 'MCP Server for Oliver-OS AI-brain interface system',
-      port: this.oliverConfig.get('port') + 1000, // MCP server on different port
+      port: (this.oliverConfig.get('port') as number) + 1000, // MCP server on different port
       host: 'localhost',
       tools: this.createTools(),
       resources: this.createResources()
