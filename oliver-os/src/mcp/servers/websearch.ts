@@ -464,7 +464,8 @@ export class WebSearchMCPServer extends EventEmitter implements OliverOSMCPServe
   }
 
   private async handleGetPageContent(args: Record<string, unknown>): Promise<any> {
-    const { url, include_images, include_links, max_length: _maxLength } = args;
+    const { url, include_images, include_links } = args;
+    // const { max_length: _maxLength } = args; // Unused parameter
     
     this._logger.info(`📄 Extracting content from: ${url}`);
     

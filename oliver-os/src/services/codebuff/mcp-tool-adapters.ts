@@ -141,14 +141,14 @@ export class FilesystemMCPAdapter implements MCPToolAdapter {
       case 'read_file': {
         const filePath = args['path'] as string;
         const encoding = (args['encoding'] as string) || 'utf8';
-        return await fs.readFile(filePath, { encoding: encoding as BufferEncoding });
+        return await fs.readFile(filePath, { encoding: encoding as 'utf8' | 'ascii' | 'base64' | 'hex' | 'latin1' | 'utf16le' });
       }
 
       case 'write_file': {
         const writePath = args['path'] as string;
         const content = args['content'] as string;
         const writeEncoding = (args['encoding'] as string) || 'utf8';
-        await fs.writeFile(writePath, content, { encoding: writeEncoding as BufferEncoding });
+        await fs.writeFile(writePath, content, { encoding: writeEncoding as 'utf8' | 'ascii' | 'base64' | 'hex' | 'latin1' | 'utf16le' });
         return { success: true, message: `File written to ${writePath}` };
       }
 

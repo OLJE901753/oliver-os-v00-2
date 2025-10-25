@@ -50,8 +50,8 @@ export class EnhancedCodebuffService extends EventEmitter {
   private mcpToolManager: MCPToolRegistryManager;
   
   // Supervision and monitoring
-  private supervisionTimers: Map<string, NodeJS.Timeout> = new Map();
-  private metricsTimer?: NodeJS.Timeout;
+  private supervisionTimers: Map<string, ReturnType<typeof setTimeout>> = new Map();
+  private metricsTimer?: ReturnType<typeof setTimeout>;
   // private _isRunning: boolean = false; // Unused for now
   
   // Event bus for internal communication

@@ -774,8 +774,8 @@ export class MemoryMCPServer extends EventEmitter implements OliverOSMCPServer {
     };
   }
 
-  private async handleMemoryStats(args: Record<string, unknown>): Promise<any> {
-    const { include_details: _includeDetails } = args;
+  private async handleMemoryStats(_args: Record<string, unknown>): Promise<any> {
+    // const { include_details: _includeDetails } = args; // Unused parameter
     
     this._logger.info(`📊 Getting memory statistics`);
     
