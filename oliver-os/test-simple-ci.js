@@ -51,6 +51,43 @@ try {
 }
 console.log('');
 
+// Test 2.5: Validate GitHub Actions Workflow
+console.log('🔍 Validating GitHub Actions Workflow...');
+try {
+  const workflowContent = readFileSync('../.github/workflows/ci-enhanced.yml', 'utf8');
+  
+  // Check for deprecated actions
+  const deprecatedActions = [];
+  if (workflowContent.includes('actions/upload-artifact@v3')) {
+    deprecatedActions.push('actions/upload-artifact@v3');
+  }
+  if (workflowContent.includes('actions/download-artifact@v3')) {
+    deprecatedActions.push('actions/download-artifact@v3');
+  }
+  
+  if (deprecatedActions.length > 0) {
+    console.log('   ❌ Deprecated GitHub Actions detected:');
+    deprecatedActions.forEach(action => {
+      console.log(`      - ${action}`);
+    });
+    console.log('   💡 Quick fix: Update to v4 versions');
+  } else {
+    console.log('   ✅ No deprecated GitHub Actions detected');
+  }
+  
+  // Check for basic YAML syntax
+  if (workflowContent.includes('name:') && workflowContent.includes('on:') && workflowContent.includes('jobs:')) {
+    console.log('   ✅ Basic workflow structure looks valid');
+  } else {
+    console.log('   ⚠️  Workflow structure may be incomplete');
+  }
+  
+} catch (error) {
+  console.log('   ❌ Could not validate workflow file');
+  console.log('   📝 Error:', error.message);
+}
+console.log('');
+
 // Test 3: Test ESLint (quick check)
 console.log('🔍 Testing ESLint (quick check)...');
 try {

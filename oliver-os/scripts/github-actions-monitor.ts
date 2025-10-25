@@ -187,6 +187,23 @@ error TS2322: Type 'string' is not assignable to type 'number'
       severity: 'medium'
     };
 
+    // Analyze GitHub Actions deprecation errors
+    if (logs.includes('deprecated version') || logs.includes('actions/upload-artifact@v3') || logs.includes('actions/download-artifact@v3')) {
+      analysis.failures.push({
+        type: 'GitHub Actions Deprecated',
+        description: 'Using deprecated GitHub Actions version',
+        severity: 'high',
+        category: 'workflow',
+        quickFix: 'sed -i \'s/actions\\/upload-artifact@v3/actions\\/upload-artifact@v4/g\' .github/workflows/*.yml && sed -i \'s/actions\\/download-artifact@v3/actions\\/download-artifact@v4/g\' .github/workflows/*.yml',
+        suggestions: [
+          'Update deprecated GitHub Actions to latest version',
+          'Check GitHub Actions marketplace for current versions',
+          'Test workflow after updating actions'
+        ]
+      });
+      analysis.categories.build++;
+    }
+
     // Analyze test failures
     if (logs.includes('TypeError: Cannot read property')) {
       analysis.failures.push({

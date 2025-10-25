@@ -217,6 +217,72 @@ class TestFailureAnalyzer {
         confidence: 0.7
       },
 
+      // GitHub Actions Issues
+      {
+        id: 'github-actions-deprecated',
+        name: 'GitHub Actions Deprecated Version',
+        description: 'Using deprecated GitHub Actions version',
+        regex: /uses a deprecated version of `([^`]+)`/g,
+        severity: 'high',
+        category: 'workflow',
+        quickFix: 'sed -i \'s/$1@v3/$1@v4/g\' .github/workflows/*.yml',
+        suggestions: [
+          'Update deprecated GitHub Actions to latest version',
+          'Check GitHub Actions marketplace for current versions',
+          'Test workflow after updating actions'
+        ],
+        autoFixable: true,
+        confidence: 0.95
+      },
+      {
+        id: 'github-actions-upload-artifact-v3',
+        name: 'Upload Artifact v3 Deprecated',
+        description: 'actions/upload-artifact@v3 is deprecated',
+        regex: /actions\/upload-artifact@v3/g,
+        severity: 'high',
+        category: 'workflow',
+        quickFix: 'sed -i \'s/actions\\/upload-artifact@v3/actions\\/upload-artifact@v4/g\' .github/workflows/*.yml',
+        suggestions: [
+          'Update to actions/upload-artifact@v4',
+          'Check for breaking changes in v4',
+          'Test artifact upload/download functionality'
+        ],
+        autoFixable: true,
+        confidence: 0.95
+      },
+      {
+        id: 'github-actions-download-artifact-v3',
+        name: 'Download Artifact v3 Deprecated',
+        description: 'actions/download-artifact@v3 is deprecated',
+        regex: /actions\/download-artifact@v3/g,
+        severity: 'high',
+        category: 'workflow',
+        quickFix: 'sed -i \'s/actions\\/download-artifact@v3/actions\\/download-artifact@v4/g\' .github/workflows/*.yml',
+        suggestions: [
+          'Update to actions/download-artifact@v4',
+          'Check for breaking changes in v4',
+          'Test artifact download functionality'
+        ],
+        autoFixable: true,
+        confidence: 0.95
+      },
+      {
+        id: 'github-actions-workflow-syntax',
+        name: 'GitHub Actions Workflow Syntax Error',
+        description: 'Invalid workflow syntax',
+        regex: /Invalid workflow file|Workflow syntax error|YAML parsing error/g,
+        severity: 'critical',
+        category: 'workflow',
+        quickFix: 'yamllint .github/workflows/*.yml',
+        suggestions: [
+          'Check YAML syntax in workflow files',
+          'Validate workflow structure',
+          'Use GitHub Actions validator'
+        ],
+        autoFixable: false,
+        confidence: 0.8
+      },
+
       // Security Issues
       {
         id: 'security-vulnerability',
