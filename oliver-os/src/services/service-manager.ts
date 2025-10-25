@@ -22,10 +22,10 @@ export class ServiceManager {
   private _logger: Logger;
   // private _config: Config; // Unused for now
 
-  constructor(config: Config) {
-    this._config = config;
+  constructor(_config: Config) {
+    // this._config = _config; // Unused for now
     this._logger = new Logger('ServiceManager');
-    this._agentManager = new AgentManager(config);
+    this._agentManager = new AgentManager(_config);
   }
 
   async initialize(): Promise<void> {
