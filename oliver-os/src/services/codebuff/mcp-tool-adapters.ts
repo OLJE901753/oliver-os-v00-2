@@ -445,7 +445,7 @@ export class WebSearchMCPAdapter implements MCPToolAdapter {
     const fetch = (await import('node-fetch')).default;
 
     switch (toolName) {
-      case 'search_web':
+      case 'search_web': {
         const query = args['query'] as string;
         const limit = (args['limit'] as number) || 10;
         const language = (args['language'] as string) || 'en';
@@ -459,8 +459,9 @@ export class WebSearchMCPAdapter implements MCPToolAdapter {
           limit,
           language
         };
+      }
 
-      case 'get_page_content':
+      case 'get_page_content': {
         const url = args['url'] as string;
         const selector = args['selector'] as string;
         
@@ -484,6 +485,7 @@ export class WebSearchMCPAdapter implements MCPToolAdapter {
             success: false
           };
         }
+      }
 
       default:
         throw new Error(`Unknown tool: ${toolName}`);
@@ -559,7 +561,7 @@ export class TerminalMCPAdapter implements MCPToolAdapter {
     const execAsync = promisify(exec);
 
     switch (toolName) {
-      case 'execute_command':
+      case 'execute_command': {
         const command = args['command'] as string;
         const workingDirectory = args['workingDirectory'] as string || process.cwd();
         const timeout = (args['timeout'] as number) || 30000;
@@ -585,8 +587,9 @@ export class TerminalMCPAdapter implements MCPToolAdapter {
             workingDirectory
           };
         }
+      }
 
-      case 'run_script':
+      case 'run_script': {
         const scriptPath = args['scriptPath'] as string;
         const scriptArgs = (args['args'] as string[]) || [];
         const interpreter = (args['interpreter'] as string) || 'node';
@@ -613,6 +616,7 @@ export class TerminalMCPAdapter implements MCPToolAdapter {
             success: false
           };
         }
+      }
 
       default:
         throw new Error(`Unknown tool: ${toolName}`);
@@ -710,7 +714,7 @@ export class MemoryMCPAdapter implements MCPToolAdapter {
 
   async executeTool(toolName: string, args: Record<string, unknown>): Promise<unknown> {
     switch (toolName) {
-      case 'store_memory':
+      case 'store_memory': {
         const key = args['key'] as string;
         const value = args['value'] as string;
         const ttl = (args['ttl'] as number) || 3600; // 1 hour default
@@ -726,8 +730,9 @@ export class MemoryMCPAdapter implements MCPToolAdapter {
           message: `Stored memory with key: ${key}`,
           ttl
         };
+      }
 
-      case 'retrieve_memory':
+      case 'retrieve_memory': {
         const retrieveKey = args['key'] as string;
         const memoryItem = this.memoryStore.get(retrieveKey);
         
@@ -752,8 +757,9 @@ export class MemoryMCPAdapter implements MCPToolAdapter {
           value: memoryItem.value,
           timestamp: memoryItem.timestamp
         };
+      }
 
-      case 'search_memory':
+      case 'search_memory': {
         const pattern = args['pattern'] as string;
         const limit = (args['limit'] as number) || 10;
         
@@ -773,8 +779,9 @@ export class MemoryMCPAdapter implements MCPToolAdapter {
           pattern,
           count: matches.length
         };
+      }
 
-      case 'delete_memory':
+      case 'delete_memory': {
         const deleteKey = args['key'] as string;
         const existed = this.memoryStore.has(deleteKey);
         this.memoryStore.delete(deleteKey);
@@ -784,6 +791,7 @@ export class MemoryMCPAdapter implements MCPToolAdapter {
           message: existed ? `Deleted memory with key: ${deleteKey}` : `No memory found for key: ${deleteKey}`,
           existed
         };
+      }
 
       default:
         throw new Error(`Unknown tool: ${toolName}`);
