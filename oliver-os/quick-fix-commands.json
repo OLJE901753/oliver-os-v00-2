@@ -1,0 +1,30 @@
+[
+  {
+    "command": "pnpm test:smart --timeout=60000",
+    "description": "Increase test timeout for slow operations",
+    "category": "test",
+    "severity": "medium",
+    "autoFixable": true
+  },
+  {
+    "command": "pnpm test:performance --timeout=60000",
+    "description": "Run performance tests with increased timeout",
+    "category": "test",
+    "severity": "medium",
+    "autoFixable": true
+  },
+  {
+    "command": "pnpm test:edge-cases --reporter=verbose",
+    "description": "Run edge case tests with verbose output",
+    "category": "test",
+    "severity": "high",
+    "autoFixable": false
+  },
+  {
+    "command": "pnpm lint:fix && pnpm type-check",
+    "description": "Fix linting and type issues",
+    "category": "quality",
+    "severity": "medium",
+    "autoFixable": true
+  }
+]
