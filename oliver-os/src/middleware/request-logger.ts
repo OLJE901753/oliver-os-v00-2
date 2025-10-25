@@ -25,7 +25,7 @@ export function requestLogger(req: Request, res: Response, next: NextFunction): 
 
   // Override res.end to log response
   const originalEnd = res.end;
-  res.end = function(chunk?: any, encoding?: any) {
+  res.end = function(chunk?: any, encoding?: any, _cb?: any): any {
     const responseTime = Date.now() - startTime;
     
     logger.info('Response sent', {

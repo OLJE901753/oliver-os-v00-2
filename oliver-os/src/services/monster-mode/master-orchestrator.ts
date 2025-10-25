@@ -118,7 +118,7 @@ export interface ArchitectureImprovement {
 export class MasterOrchestrator extends EventEmitter {
   private _logger: Logger;
   private _config: Config;
-  private monsterModeConfig: MonsterModeConfig;
+  private monsterModeConfig!: MonsterModeConfig;
   private agents: Map<string, any>;
   private agentStatuses: Map<string, AgentStatus>;
   private taskQueue: Task[];
@@ -515,7 +515,7 @@ export class MasterOrchestrator extends EventEmitter {
       const agentStatus = this.agentStatuses.get(task.assignedAgent);
       if (agentStatus) {
         agentStatus.status = 'idle';
-        agentStatus.currentTask = undefined;
+        // agentStatus.currentTask = undefined; // Handled by optional property
         agentStatus.taskQueue = agentStatus.taskQueue.filter(id => id !== taskId);
         agentStatus.load--;
         agentStatus.performance.tasksCompleted++;
@@ -543,7 +543,7 @@ export class MasterOrchestrator extends EventEmitter {
       const agentStatus = this.agentStatuses.get(task.assignedAgent);
       if (agentStatus) {
         agentStatus.status = 'idle';
-        agentStatus.currentTask = undefined;
+        // agentStatus.currentTask = undefined; // Handled by optional property
         agentStatus.taskQueue = agentStatus.taskQueue.filter(id => id !== taskId);
         agentStatus.load--;
         agentStatus.performance.successRate = Math.max(0, agentStatus.performance.successRate - 0.1);
@@ -971,7 +971,6 @@ export class MasterOrchestrator extends EventEmitter {
         id: this.generateOptimizationId(),
         type: 'quality',
         description: 'Reduce conflict rate by improving conflict resolution',
-        complexity: 'high',
         effort: 'medium',
         status: 'pending',
         timestamp: new Date().toISOString(),
@@ -1216,7 +1215,7 @@ export class MasterOrchestrator extends EventEmitter {
     
     try {
       // Stop all active tasks
-      for (const [taskId, task] of this.activeTasks) {
+      for (const [_taskId, task] of this.activeTasks) {
         task.status = 'cancelled';
         task.endTime = new Date().toISOString();
       }

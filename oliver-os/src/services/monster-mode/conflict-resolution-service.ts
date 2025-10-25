@@ -91,7 +91,7 @@ export interface ConflictPattern {
 
 export class ConflictResolutionService extends EventEmitter {
   private _logger: Logger;
-  private _config!: Config;
+  // private _config!: Config; // Unused for now
   private conflictConfig: ConflictConfig;
   private conflicts: Map<string, Conflict>;
   private conflictHistory: Map<string, Conflict[]>;

@@ -83,16 +83,15 @@ export interface OptimizationPattern {
 
 export class WorkflowOptimizationService extends EventEmitter {
   private _logger: Logger;
-  private _config: Config;
+  // private _config: Config; // Unused for now
   private optimizationConfig: OptimizationConfig;
   private optimizations: Map<string, WorkflowOptimization>;
   private optimizationHistory: Map<string, WorkflowOptimization[]>;
   private optimizationPatterns: Map<string, OptimizationPattern>;
   private optimizationStrategies: Map<string, any>;
 
-  constructor(config: Config) {
+  constructor(_config: Config) {
     super();
-    this._config = config;
     this._logger = new Logger('WorkflowOptimizationService');
     this.optimizationConfig = this.getDefaultOptimizationConfig();
     this.optimizations = new Map();

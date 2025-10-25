@@ -66,7 +66,7 @@ export interface SchedulingStrategy {
 
 export class TaskPrioritizationService extends EventEmitter {
   private _logger: Logger;
-  private _config: Config;
+  // private _config: Config; // Unused for now
   private priorityConfig: PriorityConfig;
   private schedulingStrategies: Map<string, SchedulingStrategy>;
   private taskPriorities: Map<string, TaskPriority>;

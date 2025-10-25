@@ -58,13 +58,12 @@ export interface QualityGateConfig {
 
 export class QualityGateService extends EventEmitter {
   private _logger: Logger;
-  private config: Config;
+  // private config: Config; // Unused for now
   private qualityGateConfig!: QualityGateConfig;
   private gateHistory: Map<string, QualityGateResult>;
 
-  constructor(config: Config) {
+  constructor(_config: Config) {
     super();
-    this.config = config;
     this._logger = new Logger('QualityGateService');
     this.gateHistory = new Map();
     this.loadQualityGateConfig();

@@ -42,17 +42,15 @@ export class CodebuffService {
     this.initializeAgentDefinitions();
   }
 
-  /**
-   * Sanitize configuration data to prevent sensitive information exposure
-   */
-  private sanitizeConfig(config: any): any {
-    const sanitized = { ...config };
-    if (sanitized.apiKey) sanitized.apiKey = '***';
-    if (sanitized.secret) sanitized.secret = '***';
-    if (sanitized.token) sanitized.token = '***';
-    if (sanitized.password) sanitized.password = '***';
-    return sanitized;
-  }
+  // Unused - will be implemented in future iteration
+  // private _sanitizeConfig(config: any): any {
+  //   const sanitized = { ...config };
+  //   if (sanitized.apiKey) sanitized.apiKey = '***';
+  //   if (sanitized.secret) sanitized.secret = '***';
+  //   if (sanitized.token) sanitized.token = '***';
+  //   if (sanitized.password) sanitized.password = '***';
+  //   return sanitized;
+  // }
 
   /**
    * Initialize Oliver-OS specific agent definitions
@@ -161,7 +159,6 @@ export class CodebuffService {
       const result = await this.client.run({
         agent: options.agent,
         prompt: options.prompt,
-        agentDefinitions: options.agentDefinitions,
         customToolDefinitions: options.customToolDefinitions as any,
         handleEvent: ((_event: any) => {
           const codebuffEvent: CodebuffEvent = {

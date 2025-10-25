@@ -52,13 +52,13 @@ export const requestSchemas = {
   createThought: z.object({
     content: z.string().min(1, 'Thought content cannot be empty').max(10000, 'Thought content too long'),
     type: z.enum(['text', 'voice', 'image']).optional(),
-    metadata: z.record(z.any()).optional(),
+    metadata: z.record(z.string(), z.any()).optional(),
   }),
   
   createCollaborationSession: z.object({
     name: commonSchemas.nonEmptyString,
     description: commonSchemas.optionalString,
-    settings: z.record(z.any()).optional(),
+    settings: z.record(z.string(), z.any()).optional(),
   }),
 };
 
@@ -87,7 +87,7 @@ export class ValidationMiddleware {
         next();
       } catch (error) {
         if (error instanceof z.ZodError) {
-          logger.warn(`Validation failed for ${req.method} ${req.path}:`, error.issues);
+          logger.warn(`Validation failed for ${req.method} ${req.path}:`, { issues: error.issues });
           res.status(400).json({
             success: false,
             error: 'Validation failed',
@@ -189,12 +189,12 @@ export class ValidationMiddleware {
    */
   validateFileUpload = (maxSize: number = 10 * 1024 * 1024, allowedTypes: string[] = ['image/jpeg', 'image/png', 'image/gif']) => {
     return (req: Request, res: Response, next: NextFunction): void => {
-      if (!req.file) {
+      if (!(req as any).file) {
         next();
         return;
       }
 
-      const { size, mimetype } = req.file;
+      const { size, mimetype } = (req as any).file;
 
       if (size > maxSize) {
         res.status(400).json({

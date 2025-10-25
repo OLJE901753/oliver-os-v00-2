@@ -173,8 +173,8 @@ export class AuthService {
           userId: tokenRecord.user.id, 
           email: tokenRecord.user.email 
         },
-        this.jwtSecret,
-        { expiresIn: this.accessTokenExpiry }
+        this.jwtSecret!,
+        { expiresIn: this.accessTokenExpiry } as jwt.SignOptions
       );
 
       const expiresIn = this.getTokenExpiry(this.accessTokenExpiry);
@@ -252,8 +252,8 @@ export class AuthService {
         userId: user.id, 
         email: user.email 
       },
-      this.jwtSecret,
-      { expiresIn: this.accessTokenExpiry }
+      this.jwtSecret!,
+      { expiresIn: this.accessTokenExpiry } as jwt.SignOptions
     );
 
     // Generate refresh token
@@ -262,8 +262,8 @@ export class AuthService {
         userId: user.id, 
         tokenId: crypto.randomUUID() 
       },
-      this.jwtRefreshSecret,
-      { expiresIn: this.refreshTokenExpiry }
+      this.jwtRefreshSecret!,
+      { expiresIn: this.refreshTokenExpiry } as jwt.SignOptions
     );
 
     // Store refresh token in database
@@ -295,9 +295,9 @@ export class AuthService {
       id: user.id,
       email: user.email,
       name: user.name,
-      avatarUrl: user.avatarUrl,
+      avatarUrl: user.avatarUrl || '',
       isActive: user.isActive,
-      lastLoginAt: user.lastLoginAt,
+      lastLoginAt: user.lastLoginAt || new Date(),
       createdAt: user.createdAt
     };
   }
@@ -344,4 +344,4 @@ export class AuthService {
 }
 
 // Export singleton instance
-export const authService = new AuthService();
+export const authService = new AuthService(new PrismaClient());

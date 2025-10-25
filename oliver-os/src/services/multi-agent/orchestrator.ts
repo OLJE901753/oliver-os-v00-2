@@ -20,7 +20,7 @@ import type {
 
 export class CentralOrchestrator extends EventEmitter {
   private _logger: Logger;
-  private _config!: Config;
+  // private _config!: Config; // Unused for now
   private agents: Map<AgentType, AgentStatus> = new Map();
   private activeTasks: Map<string, TaskDefinition> = new Map();
   private taskProgress: Map<string, TaskProgress> = new Map();
@@ -142,7 +142,15 @@ export class CentralOrchestrator extends EventEmitter {
       await this.simulateAgentProcessing(agentType, taskId, task);
     } else {
       // In run mode, this would communicate with real agents
-      await this.sendRealMessageToAgent(agentType, { type: 'task-assignment', content: { task } });
+      await this.sendRealMessageToAgent(agentType, { 
+        id: `msg-${Date.now()}`,
+        type: 'task-assignment', 
+        sender: 'orchestrator',
+        recipient: agentType,
+        content: { task }, 
+        timestamp: new Date().toISOString(),
+        priority: 'normal'
+      });
     }
   }
 

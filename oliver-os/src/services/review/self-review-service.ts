@@ -278,7 +278,7 @@ export class SelfReviewService extends EventEmitter {
     const suggestions: ReviewSuggestion[] = [];
     
     // Check for inefficient loops
-    const inefficientLoops = this.findInefficientLoops(fileContent);
+    const inefficientLoops = this.findInefficientLoops(_fileContent);
     for (const loop of inefficientLoops) {
       suggestions.push({
         id: `performance-${Date.now()}-${Math.random()}`,
@@ -403,11 +403,11 @@ export class SelfReviewService extends EventEmitter {
   /**
    * Analyze architecture
    */
-  private async analyzeArchitecture(_fileContent: string, _fileType: string, context: ReviewContext): Promise<ReviewSuggestion[]> {
+  private async analyzeArchitecture(_fileContent: string, _fileType: string, _context: ReviewContext): Promise<ReviewSuggestion[]> {
     const suggestions: ReviewSuggestion[] = [];
     
     // Check for architectural violations
-    const violations = this.findArchitecturalViolations(fileContent, context);
+    const violations = this.findArchitecturalViolations(_fileContent, _context);
     for (const violation of violations) {
       suggestions.push({
         id: `architecture-${Date.now()}-${Math.random()}`,
@@ -527,10 +527,10 @@ export class SelfReviewService extends EventEmitter {
     // This is a simplified example - real implementation would use AST parsing
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i];
-      if (line && line.includes('function') || line.includes('=>')) {
+      if (line && (line.includes('function') || line.includes('=>'))) {
         // Find function end (simplified)
         let endLine = i;
-        while (endLine < lines.length && !lines[endLine].includes('}')) {
+        while (endLine < lines.length && lines[endLine] && !lines[endLine].includes('}')) {
           endLine++;
         }
         
@@ -554,7 +554,7 @@ export class SelfReviewService extends EventEmitter {
     
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i];
-      if (line.length > 100 && (line.includes('&&') || line.includes('||'))) {
+      if (line && line.length > 100 && (line.includes('&&') || line.includes('||'))) {
         expressions.push({
           line: i + 1,
           code: line
@@ -644,7 +644,7 @@ export class SelfReviewService extends EventEmitter {
     
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i];
-      if (line && line.includes('"http://') || line.includes('"https://') || line.includes('"localhost')) {
+      if (line && (line.includes('"http://') || line.includes('"https://') || line.includes('"localhost'))) {
         values.push({
           line: i + 1,
           code: line,

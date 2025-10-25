@@ -20,7 +20,7 @@ export class ServiceManager {
   private services: Map<string, Service> = new Map();
   private _agentManager: AgentManager;
   private _logger: Logger;
-  private _config: Config;
+  // private _config: Config; // Unused for now
 
   constructor(config: Config) {
     this._config = config;

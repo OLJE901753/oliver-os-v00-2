@@ -29,10 +29,10 @@ router.get('/status', (_req: Request, res: Response) => {
     }
 
     const healthStatus = wsManager.getHealthStatus();
-    res.json(healthStatus);
+    return res.json(healthStatus);
   } catch (error) {
     logger.error('Error getting WebSocket status:', error);
-    res.status(500).json({
+    return res.status(500).json({
       status: 'error',
       message: 'Failed to get WebSocket status',
       error: error instanceof Error ? error.message : 'Unknown error'
@@ -53,7 +53,7 @@ router.get('/clients', (_req: Request, res: Response) => {
     }
 
     const clients = wsManager.getConnectedClients();
-    res.json({
+    return res.json({
       clients: clients.map((client: any) => ({
         id: client.id,
         user_id: client.user_id,
@@ -64,7 +64,7 @@ router.get('/clients', (_req: Request, res: Response) => {
     });
   } catch (error) {
     logger.error('Error getting connected clients:', error);
-    res.status(500).json({
+    return res.status(500).json({
       status: 'error',
       message: 'Failed to get connected clients',
       error: error instanceof Error ? error.message : 'Unknown error'
@@ -85,7 +85,7 @@ router.get('/sessions', (_req: Request, res: Response) => {
     }
 
     const sessions = wsManager.getThoughtSessions();
-    res.json({
+    return res.json({
       sessions: sessions.map((session: any) => ({
         client_id: session.client_id,
         thought_count: session.thoughts.length,
@@ -96,7 +96,7 @@ router.get('/sessions', (_req: Request, res: Response) => {
     });
   } catch (error) {
     logger.error('Error getting thought sessions:', error);
-    res.status(500).json({
+    return res.status(500).json({
       status: 'error',
       message: 'Failed to get thought sessions',
       error: error instanceof Error ? error.message : 'Unknown error'
@@ -129,7 +129,7 @@ router.post('/send/:clientId', (req: Request, res: Response) => {
     const success = wsManager.sendToClient(clientId, event, data);
     
     if (success) {
-      res.json({
+      return res.json({
         status: 'success',
         message: 'Message sent successfully',
         client_id: clientId,
@@ -144,7 +144,7 @@ router.post('/send/:clientId', (req: Request, res: Response) => {
     }
   } catch (error) {
     logger.error('Error sending message to client:', error);
-    res.status(500).json({
+    return res.status(500).json({
       status: 'error',
       message: 'Failed to send message',
       error: error instanceof Error ? error.message : 'Unknown error'
@@ -175,7 +175,7 @@ router.post('/broadcast/channel', (req: Request, res: Response) => {
 
     wsManager.sendToChannel(channel, event, data);
     
-    res.json({
+    return res.json({
       status: 'success',
       message: 'Message broadcasted successfully',
       channel,
@@ -183,7 +183,7 @@ router.post('/broadcast/channel', (req: Request, res: Response) => {
     });
   } catch (error) {
     logger.error('Error broadcasting to channel:', error);
-    res.status(500).json({
+    return res.status(500).json({
       status: 'error',
       message: 'Failed to broadcast message',
       error: error instanceof Error ? error.message : 'Unknown error'

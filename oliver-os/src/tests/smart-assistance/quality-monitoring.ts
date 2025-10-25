@@ -5,7 +5,7 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { SmartAssistanceExample } from '../../../examples/smart-assistance-example';
+import { SmartAssistanceExample } from '../../examples/smart-assistance-example';
 import { Config } from '../../core/config';
 import { Logger } from '../../core/logger';
 import fs from 'fs-extra';
@@ -30,7 +30,7 @@ interface QualityAlert {
 }
 
 export class QualityMonitor {
-  private _config: Config;
+  // private _config: Config; // Unused for now
   private _logger: Logger;
   private metrics: QualityMetric[] = [];
   private alerts: QualityAlert[] = [];
@@ -221,8 +221,10 @@ export class QualityMonitor {
     
     if (recentMetrics.length < 2) return 'stable';
     
-    const latest = recentMetrics[recentMetrics.length - 1].value;
-    const previous = recentMetrics[recentMetrics.length - 2].value;
+    const latest = recentMetrics[recentMetrics.length - 1]?.value;
+    const previous = recentMetrics[recentMetrics.length - 2]?.value;
+    
+    if (!latest || !previous) return 'stable';
     
     const change = (latest - previous) / previous;
     

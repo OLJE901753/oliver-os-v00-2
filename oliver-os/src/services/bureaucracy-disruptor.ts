@@ -17,11 +17,11 @@ export interface BureaucracyReport {
 
 export class BureaucracyDisruptorService {
   private _logger: Logger;
-  private _config: Config;
+  // private _config: Config; // Unused for now
   private reports: BureaucracyReport[] = [];
 
-  constructor(config: Config) {
-    this._config = config;
+  constructor(_config: Config) {
+    // this._config = config; // Unused for now
     this._logger = new Logger('BureaucracyDisruptor');
   }
 

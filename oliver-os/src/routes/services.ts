@@ -43,7 +43,7 @@ router.get('/:id', (req: Request, res: Response) => {
   }
   
   logger.info(`Service details requested: ${id}`);
-  res.json(service);
+  return res.json(service);
 });
 
 router.post('/', (req: Request, res: Response) => {
@@ -68,7 +68,7 @@ router.post('/', (req: Request, res: Response) => {
   
   logger.info(`New service created: ${name} (${newService.id})`);
   
-  res.status(201).json({
+  return res.status(201).json({
     message: 'Service created successfully',
     service: newService
   });
@@ -89,9 +89,17 @@ router.delete('/:id', (req: Request, res: Response) => {
   
   const deletedService = mockServices.splice(serviceIndex, 1)[0];
   
+  if (!deletedService) {
+    logger.warn(`Service deletion failed: ${id}`);
+    return res.status(500).json({
+      error: 'Service deletion failed',
+      message: 'Failed to delete the service'
+    });
+  }
+  
   logger.info(`Service deleted: ${deletedService.name} (${id})`);
   
-  res.json({
+  return res.json({
     message: 'Service deleted successfully',
     service: deletedService
   });

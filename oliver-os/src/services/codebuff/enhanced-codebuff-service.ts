@@ -176,7 +176,7 @@ export class EnhancedCodebuffService extends EventEmitter {
         message: 'Task broken down into orchestrated components',
         data: { breakdown: taskBreakdown, executionId },
         timestamp: new Date().toISOString(),
-        workflowId: options.workflowId
+        ...(options.workflowId && { workflowId: options.workflowId })
       });
 
       // Map orchestration dependencies and create execution plan
@@ -186,7 +186,7 @@ export class EnhancedCodebuffService extends EventEmitter {
         message: 'Orchestration dependencies mapped and execution plan created',
         data: { plan: orchestrationPlan, executionId },
         timestamp: new Date().toISOString(),
-        workflowId: options.workflowId
+        ...(options.workflowId && { workflowId: options.workflowId })
       });
 
       // Execute the orchestrated task
@@ -199,7 +199,7 @@ export class EnhancedCodebuffService extends EventEmitter {
         message: 'Orchestrated task completed successfully',
         data: { documentation, executionId },
         timestamp: new Date().toISOString(),
-        workflowId: options.workflowId
+        ...(options.workflowId && { workflowId: options.workflowId })
       });
 
       return {
@@ -222,7 +222,7 @@ export class EnhancedCodebuffService extends EventEmitter {
         type: 'error',
         message: `Orchestrated task failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
         timestamp: new Date().toISOString(),
-        workflowId: options.workflowId
+        ...(options.workflowId && { workflowId: options.workflowId })
       };
       events.push(errorEvent);
 
@@ -376,7 +376,7 @@ export class EnhancedCodebuffService extends EventEmitter {
 
         if (!stepResult.success) {
           stepExecution.status = 'failed';
-          stepExecution.error = stepResult.error;
+          stepExecution.error = stepResult.error || 'Unknown error';
           throw new Error(`Workflow step failed: ${stepResult.error}`);
         }
 
@@ -461,7 +461,6 @@ export class EnhancedCodebuffService extends EventEmitter {
     const result = await this.client.run({
       agent: options.agent,
       prompt: options.prompt,
-      agentDefinitions: options.agentDefinitions,
       customToolDefinitions: options.customToolDefinitions as any,
       handleEvent: ((_event: any) => {
         const codebuffEvent: CodebuffEvent = {
@@ -469,7 +468,7 @@ export class EnhancedCodebuffService extends EventEmitter {
           message: (_event as any).message || 'Processing...',
           data: (_event as any).data,
           timestamp: new Date().toISOString(),
-          workflowId: options.workflowId
+          ...(options.workflowId && { workflowId: options.workflowId })
         };
         events.push(codebuffEvent);
         options.handleEvent?.(codebuffEvent);
@@ -593,9 +592,9 @@ export class EnhancedCodebuffService extends EventEmitter {
 
     // Perform health checks
     const healthChecks = [
-      { name: 'heartbeat', status: 'pass' as const, message: 'Agent responsive' },
-      { name: 'memory', status: 'pass' as const, message: 'Memory usage normal' },
-      { name: 'tasks', status: 'pass' as const, message: 'Task queue healthy' }
+      { name: 'heartbeat', status: 'pass' as const, message: 'Agent responsive', timestamp: new Date().toISOString() },
+      { name: 'memory', status: 'pass' as const, message: 'Memory usage normal', timestamp: new Date().toISOString() },
+      { name: 'tasks', status: 'pass' as const, message: 'Task queue healthy', timestamp: new Date().toISOString() }
     ];
 
     if (agent.supervision) {
@@ -643,7 +642,11 @@ export class EnhancedCodebuffService extends EventEmitter {
     for (const [serverName, health] of Object.entries(serverHealth)) {
       const info = serverInfo[serverName];
       this.mcpServers.set(serverName, {
-        ...info,
+        name: info?.name || serverName,
+        port: info?.port || 0,
+        tools: info?.tools || [],
+        lastError: info?.lastError,
+        healthCheck: info?.healthCheck,
         status: health ? 'running' : 'error'
       });
     }

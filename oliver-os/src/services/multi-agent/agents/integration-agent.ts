@@ -180,7 +180,7 @@ export class IntegrationAgent extends BaseAgent {
       }
     };
 
-    return mockResults[task.name] || {
+    return mockResults[task.name as keyof typeof mockResults] || {
       message: `Mock integration implementation for task: ${task.name}`,
       artifacts: [
         'integration-config.json',

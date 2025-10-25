@@ -184,7 +184,7 @@ describe('WebSocket Connection', () => {
       }
     };
 
-    return mockResults[task.name] || {
+    return mockResults[task.name as keyof typeof mockResults] || {
       message: `Mock backend implementation for task: ${task.name}`,
       artifacts: [
         'route.ts',

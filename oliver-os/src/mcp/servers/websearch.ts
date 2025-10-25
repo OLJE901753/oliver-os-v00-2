@@ -280,7 +280,7 @@ export class WebSearchMCPServer extends EventEmitter implements OliverOSMCPServe
   }
 
   private async handleToolsList(request: MCPRequest): Promise<MCPResponse> {
-    const tools = this.config.tools.map(tool => ({
+    const tools = this.config.tools.map((tool: any) => ({
       name: tool.name,
       description: tool.description,
       inputSchema: tool.inputSchema
@@ -296,7 +296,7 @@ export class WebSearchMCPServer extends EventEmitter implements OliverOSMCPServe
   private async handleToolsCall(request: MCPRequest): Promise<MCPResponse> {
     const { name, arguments: args } = request.params as { name: string; arguments: Record<string, unknown> };
     
-    const tool = this.config.tools.find(t => t.name === name);
+    const tool = this.config.tools.find((t: any) => t.name === name);
     if (!tool) {
       return this.createErrorResponse(request.id, -32601, `Tool not found: ${name}`);
     }
@@ -315,7 +315,7 @@ export class WebSearchMCPServer extends EventEmitter implements OliverOSMCPServe
   }
 
   private async handleResourcesList(request: MCPRequest): Promise<MCPResponse> {
-    const resources = this.config.resources.map(resource => ({
+    const resources = this.config.resources.map((resource: any) => ({
       uri: resource.uri,
       name: resource.name,
       description: resource.description,
@@ -332,7 +332,7 @@ export class WebSearchMCPServer extends EventEmitter implements OliverOSMCPServe
   private async handleResourcesRead(request: MCPRequest): Promise<MCPResponse> {
     const { uri } = request.params as { uri: string };
     
-    const resource = this.config.resources.find(r => r.uri === uri);
+    const resource = this.config.resources.find((r: any) => r.uri === uri);
     if (!resource) {
       return this.createErrorResponse(request.id, -32601, `Resource not found: ${uri}`);
     }

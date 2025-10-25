@@ -491,7 +491,7 @@ export class MemoryMCPServer extends EventEmitter implements OliverOSMCPServer {
             return new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime();
           case 'priority':
             const priorityOrder = { critical: 4, high: 3, medium: 2, low: 1 };
-            return priorityOrder[b.priority] - priorityOrder[a.priority];
+            return priorityOrder[b.priority as keyof typeof priorityOrder] - priorityOrder[a.priority as keyof typeof priorityOrder];
           default:
             return 0;
         }
@@ -746,7 +746,7 @@ export class MemoryMCPServer extends EventEmitter implements OliverOSMCPServer {
       .filter(([_key, memory]) => {
         if (memory.deleted) return true;
         if (new Date(memory.created_at) < cutoffDate) return true;
-        if (priority_filter && priorityOrder[memory.priority] <= filterPriority) return true;
+        if (priority_filter && priorityOrder[memory.priority as keyof typeof priorityOrder] <= filterPriority) return true;
         if (memory.expires_at && new Date(memory.expires_at) < new Date()) return true;
         return false;
       });

@@ -41,7 +41,7 @@ router.get('/:id', (req: Request, res: Response) => {
   }
   
   logger.info(`Process details requested: ${id}`);
-  res.json(process);
+  return res.json(process);
 });
 
 router.post('/', (req: Request, res: Response) => {
@@ -67,7 +67,7 @@ router.post('/', (req: Request, res: Response) => {
   
   logger.info(`New process created: ${name} (${newProcess.id})`);
   
-  res.status(201).json({
+  return res.status(201).json({
     message: 'Process created successfully',
     process: newProcess
   });
@@ -88,9 +88,17 @@ router.delete('/:id', (req: Request, res: Response) => {
   
   const deletedProcess = mockProcesses.splice(processIndex, 1)[0];
   
+  if (!deletedProcess) {
+    logger.warn(`Process deletion failed: ${id}`);
+    return res.status(500).json({
+      error: 'Process deletion failed',
+      message: 'Failed to delete the process'
+    });
+  }
+  
   logger.info(`Process deleted: ${deletedProcess.name} (${id})`);
   
-  res.json({
+  return res.json({
     message: 'Process deleted successfully',
     process: deletedProcess
   });

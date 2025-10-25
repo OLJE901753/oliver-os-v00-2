@@ -187,7 +187,7 @@ model Thought {
       }
     };
 
-    return mockResults[task.name] || {
+    return mockResults[task.name as keyof typeof mockResults] || {
       message: `Mock database implementation for task: ${task.name}`,
       artifacts: [
         'schema.sql',

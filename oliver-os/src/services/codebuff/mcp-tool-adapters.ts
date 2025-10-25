@@ -139,20 +139,20 @@ export class FilesystemMCPAdapter implements MCPToolAdapter {
 
     switch (toolName) {
       case 'read_file':
-        const filePath = args.path as string;
-        const encoding = (args.encoding as string) || 'utf8';
-        return await fs.readFile(filePath, encoding);
+        const filePath = args['path'] as string;
+        const encoding = (args['encoding'] as string) || 'utf8';
+        return await fs.readFile(filePath, { encoding: encoding as BufferEncoding });
 
       case 'write_file':
-        const writePath = args.path as string;
-        const content = args.content as string;
-        const writeEncoding = (args.encoding as string) || 'utf8';
-        await fs.writeFile(writePath, content, writeEncoding);
+        const writePath = args['path'] as string;
+        const content = args['content'] as string;
+        const writeEncoding = (args['encoding'] as string) || 'utf8';
+        await fs.writeFile(writePath, content, { encoding: writeEncoding as BufferEncoding });
         return { success: true, message: `File written to ${writePath}` };
 
       case 'list_directory':
-        const dirPath = args.path as string;
-        const recursive = args.recursive as boolean || false;
+        const dirPath = args['path'] as string;
+        const recursive = args['recursive'] as boolean || false;
         if (recursive) {
           // Simple recursive implementation
           const items = await fs.readdir(dirPath, { withFileTypes: true });
@@ -170,14 +170,14 @@ export class FilesystemMCPAdapter implements MCPToolAdapter {
         }
 
       case 'create_directory':
-        const createPath = args.path as string;
-        const createRecursive = args.recursive as boolean || false;
+        const createPath = args['path'] as string;
+        const createRecursive = args['recursive'] as boolean || false;
         await fs.mkdir(createPath, { recursive: createRecursive });
         return { success: true, message: `Directory created: ${createPath}` };
 
       case 'delete_file':
-        const deletePath = args.path as string;
-        const deleteRecursive = args.recursive as boolean || false;
+        const deletePath = args['path'] as string;
+        const deleteRecursive = args['recursive'] as boolean || false;
         const stat = await fs.stat(deletePath);
         if (stat.isDirectory()) {
           await fs.rmdir(deletePath, { recursive: deleteRecursive });
@@ -187,9 +187,9 @@ export class FilesystemMCPAdapter implements MCPToolAdapter {
         return { success: true, message: `Deleted: ${deletePath}` };
 
       case 'search_files':
-        const pattern = args.pattern as string;
-        const searchDir = (args.directory as string) || process.cwd();
-        const searchRecursive = args.recursive as boolean || false;
+        const pattern = args['pattern'] as string;
+        const searchDir = (args['directory'] as string) || process.cwd();
+        // const _searchRecursive = args.recursive as boolean || false; // Unused for now
         
         // Simple glob-like search implementation
         const items = await fs.readdir(searchDir, { withFileTypes: true });
@@ -321,14 +321,14 @@ export class DatabaseMCPAdapter implements MCPToolAdapter {
     try {
       switch (toolName) {
         case 'query_database':
-          const query = args.query as string;
-          const parameters = args.parameters as any[] || [];
+          const query = args['query'] as string;
+          const parameters = args['parameters'] as any[] || [];
           // Note: This is a simplified implementation
           // In production, you'd want proper SQL query execution
           return { message: 'Query execution not fully implemented', query, parameters };
 
         case 'get_table_schema':
-          const tableName = args.tableName as string;
+          const tableName = args['tableName'] as string;
           // Simplified schema retrieval
           return { 
             tableName, 
@@ -344,8 +344,8 @@ export class DatabaseMCPAdapter implements MCPToolAdapter {
           };
 
         case 'create_table':
-          const createTableName = args.tableName as string;
-          const columns = args.columns as any[];
+          const createTableName = args['tableName'] as string;
+          const columns = args['columns'] as any[];
           return { 
             success: true, 
             message: `Table ${createTableName} creation not fully implemented`,
@@ -353,8 +353,8 @@ export class DatabaseMCPAdapter implements MCPToolAdapter {
           };
 
         case 'insert_data':
-          const insertTableName = args.tableName as string;
-          const data = args.data as Record<string, unknown>;
+          const insertTableName = args['tableName'] as string;
+          const data = args['data'] as Record<string, unknown>;
           return { 
             success: true, 
             message: `Data insertion into ${insertTableName} not fully implemented`,
@@ -420,7 +420,10 @@ export class WebSearchMCPAdapter implements MCPToolAdapter {
     try {
       // Simple health check - verify we can make HTTP requests
       const fetch = (await import('node-fetch')).default;
-      const response = await fetch('https://httpbin.org/status/200', { timeout: 5000 });
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000);
+      const response = await fetch('https://httpbin.org/status/200', { signal: controller.signal });
+      clearTimeout(timeoutId);
       return response.ok;
     } catch (error) {
       this._logger.error('Web search health check failed', error);
@@ -433,9 +436,9 @@ export class WebSearchMCPAdapter implements MCPToolAdapter {
 
     switch (toolName) {
       case 'search_web':
-        const query = args.query as string;
-        const limit = (args.limit as number) || 10;
-        const language = (args.language as string) || 'en';
+        const query = args['query'] as string;
+        const limit = (args['limit'] as number) || 10;
+        const language = (args['language'] as string) || 'en';
         
         // Simplified web search implementation
         // In production, you'd integrate with a real search API
@@ -448,11 +451,14 @@ export class WebSearchMCPAdapter implements MCPToolAdapter {
         };
 
       case 'get_page_content':
-        const url = args.url as string;
-        const selector = args.selector as string;
+        const url = args['url'] as string;
+        const selector = args['selector'] as string;
         
         try {
-          const response = await fetch(url, { timeout: 10000 });
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 10000);
+          const response = await fetch(url, { signal: controller.signal });
+          clearTimeout(timeoutId);
           const content = await response.text();
           
           return {

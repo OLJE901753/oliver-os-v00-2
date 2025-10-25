@@ -144,7 +144,7 @@ export class AIServicesAgent extends BaseAgent {
       }
     };
 
-    return mockResults[task.name] || {
+    return mockResults[task.name as keyof typeof mockResults] || {
       message: `Mock AI services implementation for task: ${task.name}`,
       artifacts: [
         'analysis.py',
@@ -261,7 +261,7 @@ export class AIServicesAgent extends BaseAgent {
    */
   private generateMockSentiment(): string {
     const sentiments = ['positive', 'negative', 'neutral', 'mixed'];
-    return sentiments[Math.floor(Math.random() * sentiments.length)];
+    return sentiments[Math.floor(Math.random() * sentiments.length)] || 'neutral';
   }
 
   /**

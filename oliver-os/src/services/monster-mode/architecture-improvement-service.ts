@@ -114,7 +114,7 @@ export interface ArchitecturePattern {
 
 export class ArchitectureImprovementService extends EventEmitter {
   private _logger: Logger;
-  private _config!: Config;
+  // private _config!: Config; // Unused for now
   private architectureConfig: ArchitectureConfig;
   private improvements: Map<string, ArchitectureImprovement>;
   private improvementHistory: Map<string, ArchitectureImprovement[]>;
@@ -1204,13 +1204,6 @@ export class ArchitectureImprovementService extends EventEmitter {
    */
   private async executeDesignPhase(_phase: ImplementationPhase): Promise<void> {
     // Implementation for design phase
-  }
-
-  /**
-   * Execute implementation phase
-   */
-  private async executeImplementationPhase(_phase: ImplementationPhase): Promise<void> {
-    // Implementation for implementation phase
   }
 
   /**

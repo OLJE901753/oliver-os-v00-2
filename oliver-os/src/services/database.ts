@@ -23,7 +23,7 @@ export class DatabaseService {
 
     // Log queries in development
     if (process.env['NODE_ENV'] === 'development') {
-      this.prisma.$on('query', (e) => {
+      this.prisma.$on('query' as any, (e: any) => {
         this._logger.debug(`Query: ${e.query}`);
         this._logger.debug(`Params: ${e.params}`);
         this._logger.debug(`Duration: ${e.duration}ms`);
@@ -85,7 +85,7 @@ export class DatabaseService {
     return this.prisma.user.create({
       data: {
         ...data,
-        preferences: data.preferences || {}
+        ...(data.preferences && { preferences: data.preferences })
       }
     });
   }
@@ -194,7 +194,7 @@ export class DatabaseService {
       where: { id: sessionId },
       data: {
         participants: {
-          push: userId
+          connect: { id: userId }
         }
       }
     });

@@ -55,7 +55,7 @@ export interface DiagramConfig {
 
 export class VisualDocumentationService extends EventEmitter {
   private _logger: Logger;
-  private _config!: Config;
+  // private _config!: Config; // Unused for now
   private diagramConfig!: DiagramConfig;
   private diagramHistory: Map<string, VisualDocumentation>;
 
@@ -447,7 +447,7 @@ export class VisualDocumentationService extends EventEmitter {
         mermaidCode += `    ${func.name}[${func.name}]\n`;
         
         // Add function calls
-        func.calls.forEach(call => {
+        func.calls.forEach((call: any) => {
           mermaidCode += `    ${func.name} --> ${call}\n`;
         });
       });

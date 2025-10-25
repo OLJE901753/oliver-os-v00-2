@@ -65,9 +65,9 @@ export interface SuggestionConfig {
 
 export class ImprovementSuggestionsService extends EventEmitter {
   private _logger: Logger;
-  private _config!: Config;
+  // private _config!: Config; // Unused for now
   private _memoryService: MemoryService;
-  private _learningService!: LearningService;
+  // private _learningService!: LearningService; // Unused for now
   private suggestionConfig: SuggestionConfig;
   private suggestionHistory: Map<string, ImprovementSuggestion[]>;
 
@@ -740,7 +740,7 @@ export class ImprovementSuggestionsService extends EventEmitter {
       const line = lines[i];
       if (line && (line.includes('function') || line.includes('=>'))) {
         let endLine = i;
-        while (endLine < lines.length && lines[endLine] && !lines[endLine].includes('}')) {
+        while (endLine < lines.length && lines[endLine] && !lines[endLine]?.includes('}')) {
           endLine++;
         }
         

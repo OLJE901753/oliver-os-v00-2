@@ -328,7 +328,7 @@ export class TestDataGenerator {
     return suggestions;
   }
 
-  static generateTestFiles(count: number, lineCount: number = 100) {
+  static generateTestFiles(count: number, _lineCount: number = 100) {
     const files = [];
     
     for (let i = 0; i < count; i++) {

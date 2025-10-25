@@ -67,8 +67,8 @@ export interface DocumentationConfig {
 
 export class ChangeDocumentationService extends EventEmitter {
   private _logger: Logger;
-  private _config: Config;
-  private documentationConfig: DocumentationConfig;
+  // private _config: Config; // Unused for now
+  private documentationConfig!: DocumentationConfig;
   private documentationHistory: Map<string, ChangeDocumentation>;
 
   constructor(_config: Config) {
@@ -247,7 +247,7 @@ export class ChangeDocumentationService extends EventEmitter {
       const { stdout } = await execAsync('git status --porcelain');
       return stdout;
     } catch (error) {
-      this._logger.warn('Failed to get git status:', error);
+      this._logger.warn('Failed to get git status:', { error: error instanceof Error ? error.message : String(error) });
       return '';
     }
   }

@@ -143,7 +143,7 @@ export const useMockStore = create<MockState>((set) => ({
       }
     };
 
-    return mockResults[task.name] || {
+    return mockResults[task.name as keyof typeof mockResults] || {
       message: `Mock frontend implementation for task: ${task.name}`,
       artifacts: [
         'component.tsx',
