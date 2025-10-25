@@ -16,11 +16,14 @@ COPY oliver-os/pnpm-lock.yaml* ./
 # Install pnpm
 RUN npm install -g pnpm@9
 
-# Install dependencies
-RUN pnpm install
-
 # Copy source code
 COPY oliver-os ./
+
+# Fix bmad-global path in package.json before installing
+RUN sed -i 's|file:../bmad-global|file:./bmad-global|' package.json
+
+# Install dependencies
+RUN pnpm install
 
 # Build the application
 RUN pnpm build
