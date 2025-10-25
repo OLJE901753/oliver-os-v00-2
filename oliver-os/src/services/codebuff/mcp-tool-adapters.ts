@@ -550,9 +550,9 @@ export class TerminalMCPAdapter implements MCPToolAdapter {
 
     switch (toolName) {
       case 'execute_command':
-        const command = args.command as string;
-        const workingDirectory = args.workingDirectory as string || process.cwd();
-        const timeout = (args.timeout as number) || 30000;
+        const command = args['command'] as string;
+        const workingDirectory = args['workingDirectory'] as string || process.cwd();
+        const timeout = (args['timeout'] as number) || 30000;
         
         try {
           const { stdout, stderr } = await execAsync(command, {
@@ -577,9 +577,9 @@ export class TerminalMCPAdapter implements MCPToolAdapter {
         }
 
       case 'run_script':
-        const scriptPath = args.scriptPath as string;
-        const scriptArgs = (args.args as string[]) || [];
-        const interpreter = (args.interpreter as string) || 'node';
+        const scriptPath = args['scriptPath'] as string;
+        const scriptArgs = (args['args'] as string[]) || [];
+        const interpreter = (args['interpreter'] as string) || 'node';
         
         const fullCommand = `${interpreter} ${scriptPath} ${scriptArgs.join(' ')}`;
         
@@ -701,9 +701,9 @@ export class MemoryMCPAdapter implements MCPToolAdapter {
   async executeTool(toolName: string, args: Record<string, unknown>): Promise<unknown> {
     switch (toolName) {
       case 'store_memory':
-        const key = args.key as string;
-        const value = args.value as string;
-        const ttl = (args.ttl as number) || 3600; // 1 hour default
+        const key = args['key'] as string;
+        const value = args['value'] as string;
+        const ttl = (args['ttl'] as number) || 3600; // 1 hour default
         
         this.memoryStore.set(key, {
           value,
@@ -718,7 +718,7 @@ export class MemoryMCPAdapter implements MCPToolAdapter {
         };
 
       case 'retrieve_memory':
-        const retrieveKey = args.key as string;
+        const retrieveKey = args['key'] as string;
         const memoryItem = this.memoryStore.get(retrieveKey);
         
         if (!memoryItem) {
@@ -744,8 +744,8 @@ export class MemoryMCPAdapter implements MCPToolAdapter {
         };
 
       case 'search_memory':
-        const pattern = args.pattern as string;
-        const limit = (args.limit as number) || 10;
+        const pattern = args['pattern'] as string;
+        const limit = (args['limit'] as number) || 10;
         
         const matches: Array<{ key: string; value: string }> = [];
         
@@ -765,7 +765,7 @@ export class MemoryMCPAdapter implements MCPToolAdapter {
         };
 
       case 'delete_memory':
-        const deleteKey = args.key as string;
+        const deleteKey = args['key'] as string;
         const existed = this.memoryStore.has(deleteKey);
         this.memoryStore.delete(deleteKey);
         

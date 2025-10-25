@@ -438,7 +438,7 @@ class OliverOSBMADService implements OliverOSBMADIntegration {
         github: true,
         docker: true,
         ci: true,
-        ...updates.integrations
+        ...updates['integrations']
       },
       automation: {
         autoCommit: true,
@@ -447,7 +447,7 @@ class OliverOSBMADService implements OliverOSBMADIntegration {
         qualityGates: true,
         codeReview: true,
         dependencyUpdates: true,
-        ...updates.automation
+        ...updates['automation']
       }
     };
   }
