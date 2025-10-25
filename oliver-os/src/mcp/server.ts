@@ -18,9 +18,9 @@ import type {
 } from './types';
 
 export class OliverOSMCPServerImpl extends EventEmitter implements OliverOSMCPServer {
-  private logger: Logger;
+  private _logger: Logger;
   private oliverConfig: Config;
-  public config: MCPServerConfig;
+  public config!: MCPServerConfig;
   private serverConfig: MCPServerConfig;
   private isRunning: boolean = false;
   private codebuffService: CodebuffService;
@@ -29,7 +29,7 @@ export class OliverOSMCPServerImpl extends EventEmitter implements OliverOSMCPSe
   constructor(config: Config) {
     super();
     this.oliverConfig = config;
-    this.logger = new Logger('MCP-Server');
+    this._logger = new Logger('MCP-Server');
     this.codebuffService = new CodebuffService(config);
     this.codebuffTools = new CodebuffMCPTools(this.codebuffService);
     this.serverConfig = this.createServerConfig();
@@ -130,7 +130,7 @@ export class OliverOSMCPServerImpl extends EventEmitter implements OliverOSMCPSe
     // Add Codebuff tools
     const codebuffTools = this.codebuffTools.getTools();
     
-    this.logger.info(`🔧 Integrated ${codebuffTools.length} Codebuff MCP tools`);
+    this._logger.info(`🔧 Integrated ${codebuffTools.length} Codebuff MCP tools`);
     
     return [...baseTools, ...codebuffTools];
   }
@@ -163,49 +163,49 @@ export class OliverOSMCPServerImpl extends EventEmitter implements OliverOSMCPSe
 
   async start(): Promise<void> {
     if (this.isRunning) {
-      this.logger.warn('MCP Server is already running');
+      this._logger.warn('MCP Server is already running');
       return;
     }
 
     try {
-      this.logger.info(`🚀 Starting MCP Server on ${this.serverConfig.host}:${this.serverConfig.port}`);
-      this.logger.info(`📋 Available tools: ${this.serverConfig.tools.length}`);
-      this.logger.info(`📚 Available resources: ${this.serverConfig.resources.length}`);
+      this._logger.info(`🚀 Starting MCP Server on ${this.serverConfig.host}:${this.serverConfig.port}`);
+      this._logger.info(`📋 Available tools: ${this.serverConfig.tools.length}`);
+      this._logger.info(`📚 Available resources: ${this.serverConfig.resources.length}`);
       
       this.isRunning = true;
       this.emit('started');
       
-      this.logger.info('✅ MCP Server started successfully');
+      this._logger.info('✅ MCP Server started successfully');
     } catch (error) {
-      this.logger.error('❌ Failed to start MCP Server', error);
+      this._logger.error('❌ Failed to start MCP Server', error);
       throw error;
     }
   }
 
   async stop(): Promise<void> {
     if (!this.isRunning) {
-      this.logger.warn('MCP Server is not running');
+      this._logger.warn('MCP Server is not running');
       return;
     }
 
     try {
-      this.logger.info('🛑 Stopping MCP Server...');
+      this._logger.info('🛑 Stopping MCP Server...');
       
       // Shutdown Codebuff service
       await this.codebuffService.shutdown();
       
       this.isRunning = false;
       this.emit('stopped');
-      this.logger.info('✅ MCP Server stopped successfully');
+      this._logger.info('✅ MCP Server stopped successfully');
     } catch (error) {
-      this.logger.error('❌ Failed to stop MCP Server', error);
+      this._logger.error('❌ Failed to stop MCP Server', error);
       throw error;
     }
   }
 
   async handleRequest(request: MCPRequest): Promise<MCPResponse> {
     try {
-      this.logger.debug(`📨 Handling MCP request: ${request.method}`);
+      this._logger.debug(`📨 Handling MCP request: ${request.method}`);
 
       switch (request.method) {
         case 'tools/list':
@@ -222,7 +222,7 @@ export class OliverOSMCPServerImpl extends EventEmitter implements OliverOSMCPSe
           return this.createErrorResponse(request.id, -32601, `Method not found: ${request.method}`);
       }
     } catch (error) {
-      this.logger.error('❌ Error handling MCP request', error);
+      this._logger.error('❌ Error handling MCP request', error);
       return this.createErrorResponse(request.id, -32603, 'Internal error', error);
     }
   }
@@ -257,7 +257,7 @@ export class OliverOSMCPServerImpl extends EventEmitter implements OliverOSMCPSe
         result
       };
     } catch (error) {
-      this.logger.error(`❌ Error executing tool ${name}`, error);
+      this._logger.error(`❌ Error executing tool ${name}`, error);
       return this.createErrorResponse(request.id, -32603, `Tool execution failed: ${error}`);
     }
   }
@@ -293,7 +293,7 @@ export class OliverOSMCPServerImpl extends EventEmitter implements OliverOSMCPSe
         result
       };
     } catch (error) {
-      this.logger.error(`❌ Error reading resource ${uri}`, error);
+      this._logger.error(`❌ Error reading resource ${uri}`, error);
       return this.createErrorResponse(request.id, -32603, `Resource read failed: ${error}`);
     }
   }
@@ -343,7 +343,7 @@ export class OliverOSMCPServerImpl extends EventEmitter implements OliverOSMCPSe
     const { thought, userId, context } = args;
     
     // This would integrate with your actual thought processing service
-    this.logger.info(`🧠 Processing thought for user ${userId}: ${thought}`);
+    this._logger.info(`🧠 Processing thought for user ${userId}: ${thought}`);
     
     return {
       content: [{
@@ -377,7 +377,7 @@ export class OliverOSMCPServerImpl extends EventEmitter implements OliverOSMCPSe
   private async handleSpawnAgent(args: Record<string, unknown>): Promise<any> {
     const { agentType, capabilities, config } = args;
     
-    this.logger.info(`🤖 Spawning agent of type: ${agentType}`);
+    this._logger.info(`🤖 Spawning agent of type: ${agentType}`);
     
     return {
       content: [{
@@ -413,7 +413,7 @@ export class OliverOSMCPServerImpl extends EventEmitter implements OliverOSMCPSe
   private async handleExecuteBmadCommand(args: Record<string, unknown>): Promise<any> {
     const { command, target, options } = args;
     
-    this.logger.info(`🔧 Executing BMAD command: ${command} on ${target}`);
+    this._logger.info(`🔧 Executing BMAD command: ${command} on ${target}`);
     
     return {
       content: [{

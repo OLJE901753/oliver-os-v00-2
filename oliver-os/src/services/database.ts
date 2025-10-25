@@ -8,10 +8,10 @@ import { Logger } from '../core/logger';
 
 export class DatabaseService {
   private prisma: PrismaClient;
-  private logger: Logger;
+  private _logger: Logger;
 
   constructor() {
-    this.logger = new Logger('DatabaseService');
+    this._logger = new Logger('DatabaseService');
     this.prisma = new PrismaClient({
       log: [
         { level: 'query', emit: 'event' },
@@ -22,11 +22,11 @@ export class DatabaseService {
     });
 
     // Log queries in development
-    if (process.env.NODE_ENV === 'development') {
+    if (process.env['NODE_ENV'] === 'development') {
       this.prisma.$on('query', (e) => {
-        this.logger.debug(`Query: ${e.query}`);
-        this.logger.debug(`Params: ${e.params}`);
-        this.logger.debug(`Duration: ${e.duration}ms`);
+        this._logger.debug(`Query: ${e.query}`);
+        this._logger.debug(`Params: ${e.params}`);
+        this._logger.debug(`Duration: ${e.duration}ms`);
       });
     }
   }
@@ -37,9 +37,9 @@ export class DatabaseService {
   async initialize(): Promise<void> {
     try {
       await this.prisma.$connect();
-      this.logger.info('✅ Database connected successfully');
+      this._logger.info('✅ Database connected successfully');
     } catch (error) {
-      this.logger.error(`❌ Database connection failed: ${error}`);
+      this._logger.error(`❌ Database connection failed: ${error}`);
       throw error;
     }
   }
@@ -50,9 +50,9 @@ export class DatabaseService {
   async close(): Promise<void> {
     try {
       await this.prisma.$disconnect();
-      this.logger.info('✅ Database connection closed');
+      this._logger.info('✅ Database connection closed');
     } catch (error) {
-      this.logger.error(`❌ Error closing database connection: ${error}`);
+      this._logger.error(`❌ Error closing database connection: ${error}`);
     }
   }
 
@@ -67,7 +67,7 @@ export class DatabaseService {
         timestamp: new Date()
       };
     } catch (error) {
-      this.logger.error(`Database health check failed: ${error}`);
+      this._logger.error(`Database health check failed: ${error}`);
       return {
         status: 'unhealthy',
         timestamp: new Date()

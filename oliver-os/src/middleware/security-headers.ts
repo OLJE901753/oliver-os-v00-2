@@ -10,10 +10,10 @@ import { Logger } from '../core/logger';
 const logger = new Logger('SecurityHeadersMiddleware');
 
 export class SecurityHeadersMiddleware {
-  private securityManager: SecurityManager;
+  private _securityManager: SecurityManager;
 
   constructor(securityManager: SecurityManager) {
-    this.securityManager = securityManager;
+    this._securityManager = securityManager;
   }
 
   /**
@@ -21,7 +21,7 @@ export class SecurityHeadersMiddleware {
    */
   addSecurityHeaders = (req: Request, res: Response, next: NextFunction): void => {
     try {
-      const headers = this.securityManager.getSecurityHeaders();
+      const headers = this._securityManager.getSecurityHeaders();
       
       // Add security headers
       Object.entries(headers).forEach(([key, value]) => {
@@ -49,7 +49,7 @@ export class SecurityHeadersMiddleware {
   /**
    * Remove sensitive headers
    */
-  removeSensitiveHeaders = (req: Request, res: Response, next: NextFunction): void => {
+  removeSensitiveHeaders = (_req: Request, res: Response, next: NextFunction): void => {
     // Remove server information
     res.removeHeader('X-Powered-By');
     res.removeHeader('Server');
@@ -61,7 +61,7 @@ export class SecurityHeadersMiddleware {
    * Add CORS headers
    */
   addCorsHeaders = (req: Request, res: Response, next: NextFunction): void => {
-    const config = this.securityManager.getConfig();
+    const config = this._securityManager.getConfig();
     
     res.setHeader('Access-Control-Allow-Origin', config.cors.origin.join(', '));
     res.setHeader('Access-Control-Allow-Credentials', config.cors.credentials.toString());
@@ -99,13 +99,16 @@ export class SecurityHeadersMiddleware {
   /**
    * Add timing headers
    */
-  addTimingHeaders = (req: Request, res: Response, next: NextFunction): void => {
+  addTimingHeaders = (_req: Request, res: Response, next: NextFunction): void => {
     const startTime = Date.now();
     
-    res.on('finish', () => {
+    // Set timing header before response is sent
+    const originalSend = res.send;
+    res.send = function(data) {
       const duration = Date.now() - startTime;
       res.setHeader('X-Response-Time', `${duration}ms`);
-    });
+      return originalSend.call(this, data);
+    };
     
     next();
   };
@@ -113,10 +116,10 @@ export class SecurityHeadersMiddleware {
   /**
    * Add security event logging
    */
-  logSecurityEvents = (req: Request, res: Response, next: NextFunction): void => {
+  logSecurityEvents = (req: Request, _res: Response, next: NextFunction): void => {
     // Log suspicious patterns
-    if (this.securityManager.checkSuspiciousActivity(req)) {
-      this.securityManager.logSecurityEvent('Suspicious request detected', {
+    if (this._securityManager.checkSuspiciousActivity(req)) {
+      this._securityManager.logSecurityEvent('Suspicious request detected', {
         ip: req.ip,
         userAgent: req.get('User-Agent'),
         path: req.path,
@@ -127,7 +130,7 @@ export class SecurityHeadersMiddleware {
 
     // Log authentication attempts
     if (req.path.startsWith('/api/auth/')) {
-      this.securityManager.logSecurityEvent('Authentication attempt', {
+      this._securityManager.logSecurityEvent('Authentication attempt', {
         ip: req.ip,
         path: req.path,
         method: req.method,

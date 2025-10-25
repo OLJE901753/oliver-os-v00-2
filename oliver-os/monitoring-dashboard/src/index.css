@@ -1,0 +1,66 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    @apply border-gray-200;
+  }
+  
+  body {
+    @apply bg-gray-50 text-gray-900;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+}
+
+@layer components {
+  .card {
+    @apply bg-white rounded-lg shadow-sm border border-gray-200 p-6;
+  }
+  
+  .metric-card {
+    @apply card hover:shadow-md transition-shadow duration-200;
+  }
+  
+  .status-indicator {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+  }
+  
+  .status-healthy {
+    @apply bg-success-100 text-success-800;
+  }
+  
+  .status-warning {
+    @apply bg-warning-100 text-warning-800;
+  }
+  
+  .status-critical {
+    @apply bg-danger-100 text-danger-800;
+  }
+  
+  .chart-container {
+    @apply w-full h-64 p-4;
+  }
+  
+  .alert-item {
+    @apply p-4 border-l-4 rounded-r-lg mb-2;
+  }
+  
+  .alert-critical {
+    @apply bg-danger-50 border-danger-500 text-danger-800;
+  }
+  
+  .alert-warning {
+    @apply bg-warning-50 border-warning-500 text-warning-800;
+  }
+  
+  .alert-info {
+    @apply bg-primary-50 border-primary-500 text-primary-800;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}

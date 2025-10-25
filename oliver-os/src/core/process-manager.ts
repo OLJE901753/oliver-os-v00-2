@@ -18,22 +18,20 @@ export interface Process {
 
 export class ProcessManager {
   private processes: Map<string, Process> = new Map();
-  private logger: Logger;
-  private config: Config;
+  private _logger: Logger;
   private nextProcessId = 1;
 
-  constructor(config: Config) {
-    this.config = config;
-    this.logger = new Logger('ProcessManager');
+  constructor(_config: Config) {
+    this._logger = new Logger('ProcessManager');
   }
 
   async initialize(): Promise<void> {
-    this.logger.info('🚀 Initializing Process Manager...');
+    this._logger.info('🚀 Initializing Process Manager...');
     
     // Start system processes
     await this.startSystemProcesses();
     
-    this.logger.info(`✅ Process Manager initialized`);
+    this._logger.info(`✅ Process Manager initialized`);
   }
 
   private async startSystemProcesses(): Promise<void> {
@@ -64,7 +62,7 @@ export class ProcessManager {
     };
 
     this.processes.set(id, process);
-    this.logger.info(`🚀 Starting process: ${name} (${id})`);
+    this._logger.info(`🚀 Starting process: ${name} (${id})`);
     
     // Simulate process startup
     setTimeout(() => {
@@ -72,7 +70,7 @@ export class ProcessManager {
       if (proc) {
         proc.status = 'running';
         proc.pid = Math.floor(Math.random() * 10000) + 1000; // Mock PID
-        this.logger.info(`✅ Process started: ${name} (PID: ${proc.pid})`);
+        this._logger.info(`✅ Process started: ${name} (PID: ${proc.pid})`);
       }
     }, 200);
     
@@ -86,13 +84,13 @@ export class ProcessManager {
     }
 
     process.status = 'stopping';
-    this.logger.info(`🛑 Stopping process: ${process.name} (${id})`);
+    this._logger.info(`🛑 Stopping process: ${process.name} (${id})`);
     
     // Simulate process shutdown
     setTimeout(() => {
       process.status = 'stopped';
       process.endTime = new Date();
-      this.logger.info(`✅ Process stopped: ${process.name}`);
+      this._logger.info(`✅ Process stopped: ${process.name}`);
     }, 100);
   }
 
@@ -109,7 +107,7 @@ export class ProcessManager {
   }
 
   async shutdown(): Promise<void> {
-    this.logger.info('🛑 Shutting down Process Manager...');
+    this._logger.info('🛑 Shutting down Process Manager...');
     
     const processes = Array.from(this.processes.values());
     for (const process of processes) {
@@ -118,6 +116,6 @@ export class ProcessManager {
       }
     }
     
-    this.logger.info('✅ Process Manager shutdown complete');
+    this._logger.info('✅ Process Manager shutdown complete');
   }
 }

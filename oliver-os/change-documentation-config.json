@@ -1,0 +1,20 @@
+{
+  "enabled": true,
+  "autoGenerate": true,
+  "includeDiagrams": true,
+  "includeImpact": true,
+  "includeTesting": true,
+  "includeRollback": true,
+  "templates": {
+    "feature": "Added new feature: {summary}\n\nWhat changed: {whatChanged}\nWhy changed: {whyChanged}\nImpact: {impact}\nTesting: {testing}",
+    "bugfix": "Fixed bug: {summary}\n\nWhat changed: {whatChanged}\nWhy changed: {whyChanged}\nImpact: {impact}\nTesting: {testing}",
+    "refactor": "Refactored code: {summary}\n\nWhat changed: {whatChanged}\nWhy changed: {whyChanged}\nImpact: {impact}\nTesting: {testing}",
+    "performance": "Performance improvement: {summary}\n\nWhat changed: {whatChanged}\nWhy changed: {whyChanged}\nImpact: {impact}\nTesting: {testing}",
+    "security": "Security improvement: {summary}\n\nWhat changed: {whatChanged}\nWhy changed: {whyChanged}\nImpact: {impact}\nTesting: {testing}",
+    "documentation": "Documentation update: {summary}\n\nWhat changed: {whatChanged}\nWhy changed: {whyChanged}\nImpact: {impact}\nTesting: {testing}"
+  },
+  "notifications": {
+    "enabled": true,
+    "channels": ["console", "file"]
+  }
+}

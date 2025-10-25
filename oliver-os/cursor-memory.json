@@ -1,0 +1,440 @@
+{
+  "version": "1.0.0",
+  "lastUpdated": "2025-10-25T11:31:48.781Z",
+  "codePatterns": {
+    "frequentlyUsed": [
+      {
+        "id": "react-component-pattern",
+        "pattern": "React.FC<Props> with useState and useEffect",
+        "frequency": 15,
+        "successRate": 0.95,
+        "lastUsed": "2024-01-01T00:00:00.000Z",
+        "example": "export const Component: React.FC<Props> = ({ prop1, prop2 }) => { const [state, setState] = useState(); useEffect(() => {}, []); return <div>...</div>; };"
+      },
+      {
+        "id": "service-class-pattern",
+        "pattern": "Service class with constructor and async methods",
+        "frequency": 12,
+        "successRate": 0.92,
+        "lastUsed": "2024-01-01T00:00:00.000Z",
+        "example": "export class Service { constructor(config: Config) { this.config = config; } async method(): Promise<Result> { try { ... } catch (error) { ... } } }"
+      },
+      {
+        "id": "error-handling-pattern",
+        "pattern": "Try-catch with logging and error propagation",
+        "frequency": 20,
+        "successRate": 0.98,
+        "lastUsed": "2024-01-01T00:00:00.000Z",
+        "example": "try { const result = await operation(); return result; } catch (error) { this.logger.error('Operation failed:', error); throw error; }"
+      },
+      {
+        "id": "review-pattern-1761359919013",
+        "pattern": "High-quality code review",
+        "frequency": 1,
+        "successRate": 0.86,
+        "lastUsed": "2025-10-25T02:38:39.013Z",
+        "example": "Code review completed with overall score of 86.0%. 2 high priority issues found. "
+      },
+      {
+        "id": "review-pattern-1761359919545",
+        "pattern": "High-quality code review",
+        "frequency": 1,
+        "successRate": 0.86,
+        "lastUsed": "2025-10-25T02:38:39.545Z",
+        "example": "Code review completed with overall score of 86.0%. 2 high priority issues found. "
+      },
+      {
+        "id": "review-pattern-1761360186007",
+        "pattern": "High-quality code review",
+        "frequency": 1,
+        "successRate": 0.86,
+        "lastUsed": "2025-10-25T02:43:06.007Z",
+        "example": "Code review completed with overall score of 86.0%. 2 high priority issues found. "
+      },
+      {
+        "id": "review-pattern-1761361039346",
+        "pattern": "High-quality code review",
+        "frequency": 1,
+        "successRate": 0.86,
+        "lastUsed": "2025-10-25T02:57:19.346Z",
+        "example": "Code review completed with overall score of 86.0%. 2 high priority issues found. "
+      },
+      {
+        "id": "review-pattern-1761361126891",
+        "pattern": "High-quality code review",
+        "frequency": 1,
+        "successRate": 0.86,
+        "lastUsed": "2025-10-25T02:58:46.891Z",
+        "example": "Code review completed with overall score of 86.0%. 2 high priority issues found. "
+      },
+      {
+        "id": "review-pattern-1761361176128",
+        "pattern": "High-quality code review",
+        "frequency": 1,
+        "successRate": 0.86,
+        "lastUsed": "2025-10-25T02:59:36.128Z",
+        "example": "Code review completed with overall score of 86.0%. 2 high priority issues found. "
+      },
+      {
+        "id": "review-pattern-1761380372845",
+        "pattern": "High-quality code review",
+        "frequency": 1,
+        "successRate": 0.86,
+        "lastUsed": "2025-10-25T08:19:32.845Z",
+        "example": "Code review completed with overall score of 86.0%. 2 high priority issues found. "
+      },
+      {
+        "id": "review-pattern-1761380924579",
+        "pattern": "High-quality code review",
+        "frequency": 1,
+        "successRate": 0.86,
+        "lastUsed": "2025-10-25T08:28:44.579Z",
+        "example": "Code review completed with overall score of 86.0%. 2 high priority issues found. "
+      },
+      {
+        "id": "review-pattern-1761380966050",
+        "pattern": "High-quality code review",
+        "frequency": 1,
+        "successRate": 0.86,
+        "lastUsed": "2025-10-25T08:29:26.050Z",
+        "example": "Code review completed with overall score of 86.0%. 2 high priority issues found. "
+      },
+      {
+        "id": "review-pattern-1761381504401",
+        "pattern": "High-quality code review",
+        "frequency": 1,
+        "successRate": 0.86,
+        "lastUsed": "2025-10-25T08:38:24.401Z",
+        "example": "Code review completed with overall score of 86.0%. 2 high priority issues found. "
+      },
+      {
+        "id": "review-pattern-1761391549034",
+        "pattern": "High-quality code review",
+        "frequency": 1,
+        "successRate": 0.86,
+        "lastUsed": "2025-10-25T11:25:49.034Z",
+        "example": "Code review completed with overall score of 86.0%. 2 high priority issues found. "
+      },
+      {
+        "id": "review-pattern-1761391879130",
+        "pattern": "High-quality code review",
+        "frequency": 1,
+        "successRate": 0.86,
+        "lastUsed": "2025-10-25T11:31:19.130Z",
+        "example": "Code review completed with overall score of 86.0%. 2 high priority issues found. "
+      }
+    ],
+    "successfulPatterns": [
+      {
+        "id": "smart-component-pattern",
+        "pattern": "Smart component with loading states and error handling",
+        "successRate": 0.96,
+        "userApprovalRate": 0.89,
+        "lastUsed": "2024-01-01T00:00:00.000Z"
+      },
+      {
+        "id": "multi-agent-pattern",
+        "pattern": "Multi-agent orchestration with event handling",
+        "successRate": 0.94,
+        "userApprovalRate": 0.91,
+        "lastUsed": "2024-01-01T00:00:00.000Z"
+      }
+    ],
+    "userPreferences": {
+      "preferredImports": [
+        "import { useState, useEffect } from 'react'",
+        "import { Logger } from '@/core/logger'",
+        "import { Config } from '@/core/config'"
+      ],
+      "preferredNaming": {
+        "variables": "camelCase",
+        "functions": "camelCase",
+        "components": "PascalCase",
+        "files": "kebab-case",
+        "constants": "UPPER_SNAKE_CASE"
+      },
+      "preferredPatterns": [
+        "TypeScript interfaces for props",
+        "Error handling with try-catch",
+        "Async/await over promises",
+        "Functional components over class components"
+      ]
+    }
+  },
+  "architecture": {
+    "decisions": [
+      {
+        "id": "microservices-architecture",
+        "decision": "Use microservices architecture for Oliver-OS",
+        "rationale": "Better scalability and maintainability",
+        "date": "2024-01-01T00:00:00.000Z",
+        "impact": "high"
+      },
+      {
+        "id": "typescript-first",
+        "decision": "TypeScript-first development approach",
+        "rationale": "Better type safety and developer experience",
+        "date": "2024-01-01T00:00:00.000Z",
+        "impact": "high"
+      },
+      {
+        "id": "bmad-methodology",
+        "decision": "Follow BMAD methodology (Break, Map, Automate, Document)",
+        "rationale": "Structured development approach",
+        "date": "2024-01-01T00:00:00.000Z",
+        "impact": "medium"
+      }
+    ],
+    "patterns": [
+      {
+        "id": "service-layer-pattern",
+        "pattern": "Service layer with dependency injection",
+        "usage": "All business logic services",
+        "successRate": 0.93
+      },
+      {
+        "id": "event-driven-pattern",
+        "pattern": "Event-driven architecture for agent communication",
+        "usage": "Multi-agent orchestration",
+        "successRate": 0.95
+      }
+    ],
+    "preferences": {
+      "architectureStyle": "microservices",
+      "communicationPattern": "event-driven",
+      "dataFlow": "unidirectional",
+      "stateManagement": "zustand"
+    }
+  },
+  "namingConventions": {
+    "variables": {
+      "userData": "camelCase",
+      "isLoading": "camelCase with boolean prefix",
+      "userService": "camelCase with service suffix"
+    },
+    "functions": {
+      "getUserData": "camelCase with verb prefix",
+      "handleSubmit": "camelCase with handle prefix",
+      "validateInput": "camelCase with action prefix"
+    },
+    "components": {
+      "UserProfile": "PascalCase",
+      "SmartComponent": "PascalCase with descriptive name",
+      "MultiAgentService": "PascalCase with service suffix"
+    },
+    "files": {
+      "user-service.ts": "kebab-case with type suffix",
+      "smart-component.tsx": "kebab-case with type suffix",
+      "multi-agent-example.ts": "kebab-case with descriptive name"
+    },
+    "constants": {
+      "API_ENDPOINTS": "UPPER_SNAKE_CASE",
+      "DEFAULT_CONFIG": "UPPER_SNAKE_CASE",
+      "MAX_RETRY_ATTEMPTS": "UPPER_SNAKE_CASE"
+    }
+  },
+  "projectHistory": {
+    "sessions": [
+      {
+        "id": "session-001",
+        "date": "2024-01-01T00:00:00.000Z",
+        "duration": 7200000,
+        "filesModified": 15,
+        "patternsUsed": [
+          "react-component",
+          "service-class",
+          "error-handling"
+        ],
+        "decisionsMade": [
+          "microservices-architecture",
+          "typescript-first"
+        ],
+        "successRate": 0.92
+      }
+    ],
+    "decisions": [
+      {
+        "id": "decision-001",
+        "type": "architecture",
+        "decision": "Use CodeBuff SDK for multi-agent orchestration",
+        "context": "Multi-agent system implementation",
+        "date": "2024-01-01T00:00:00.000Z",
+        "impact": "high"
+      }
+    ],
+    "evolution": [
+      {
+        "phase": "initial-setup",
+        "date": "2024-01-01T00:00:00.000Z",
+        "description": "Project initialization and basic structure",
+        "keyDecisions": [
+          "typescript-first",
+          "microservices-architecture"
+        ]
+      },
+      {
+        "phase": "multi-agent-implementation",
+        "date": "2024-01-01T00:00:00.000Z",
+        "description": "Multi-agent orchestration system implementation",
+        "keyDecisions": [
+          "codebuff-sdk",
+          "event-driven-architecture"
+        ]
+      }
+    ]
+  },
+  "learning": {
+    "successfulSuggestions": [
+      {
+        "id": "suggestion-001",
+        "type": "code-generation",
+        "suggestion": "Generate React component with TypeScript",
+        "accepted": true,
+        "userFeedback": "positive",
+        "date": "2024-01-01T00:00:00.000Z"
+      },
+      {
+        "id": "suggestion-002",
+        "type": "refactoring",
+        "suggestion": "Extract common error handling pattern",
+        "accepted": true,
+        "userFeedback": "positive",
+        "date": "2024-01-01T00:00:00.000Z"
+      }
+    ],
+    "rejectedSuggestions": [
+      {
+        "id": "suggestion-003",
+        "type": "code-generation",
+        "suggestion": "Generate class component instead of functional",
+        "accepted": false,
+        "userFeedback": "negative",
+        "reason": "Prefer functional components",
+        "date": "2024-01-01T00:00:00.000Z"
+      }
+    ],
+    "userFeedback": {
+      "preferredSuggestions": [
+        "TypeScript interfaces",
+        "Error handling patterns",
+        "React functional components",
+        "Async/await patterns"
+      ],
+      "avoidedSuggestions": [
+        "Class components",
+        "Promise chains",
+        "Any types",
+        "Console.log statements"
+      ]
+    }
+  },
+  "feedback": [
+    {
+      "id": "feedback_1761359919014_i1q725fsz",
+      "suggestionId": "test-suggestion-1",
+      "action": "accepted",
+      "reason": "Good suggestion",
+      "date": "2025-10-25T02:38:39.013Z",
+      "timestamp": "2025-10-25T02:38:39.014Z"
+    },
+    {
+      "id": "feedback_1761359919546_w34prl18y",
+      "suggestionId": "test-suggestion-1",
+      "action": "accepted",
+      "reason": "Good suggestion",
+      "date": "2025-10-25T02:38:39.546Z",
+      "timestamp": "2025-10-25T02:38:39.546Z"
+    },
+    {
+      "id": "feedback_1761360186007_diqizxyb5",
+      "suggestionId": "test-suggestion-1",
+      "action": "accepted",
+      "reason": "Good suggestion",
+      "date": "2025-10-25T02:43:06.007Z",
+      "timestamp": "2025-10-25T02:43:06.007Z"
+    },
+    {
+      "id": "feedback_1761361039346_kkiqgwsxg",
+      "suggestionId": "test-suggestion-1",
+      "action": "accepted",
+      "reason": "Good suggestion",
+      "date": "2025-10-25T02:57:19.346Z",
+      "timestamp": "2025-10-25T02:57:19.346Z"
+    },
+    {
+      "id": "feedback_1761361126891_sxtuzzrbi",
+      "suggestionId": "test-suggestion-1",
+      "action": "accepted",
+      "reason": "Good suggestion",
+      "date": "2025-10-25T02:58:46.891Z",
+      "timestamp": "2025-10-25T02:58:46.891Z"
+    },
+    {
+      "id": "feedback_1761361176128_b66coynqd",
+      "suggestionId": "test-suggestion-1",
+      "action": "accepted",
+      "reason": "Good suggestion",
+      "date": "2025-10-25T02:59:36.128Z",
+      "timestamp": "2025-10-25T02:59:36.128Z"
+    },
+    {
+      "id": "feedback_1761380372845_nk022gd2f",
+      "suggestionId": "test-suggestion-1",
+      "action": "accepted",
+      "reason": "Good suggestion",
+      "date": "2025-10-25T08:19:32.845Z",
+      "timestamp": "2025-10-25T08:19:32.845Z"
+    },
+    {
+      "id": "feedback_1761380924580_0pysvo6vv",
+      "suggestionId": "test-suggestion-1",
+      "action": "accepted",
+      "reason": "Good suggestion",
+      "date": "2025-10-25T08:28:44.580Z",
+      "timestamp": "2025-10-25T08:28:44.580Z"
+    },
+    {
+      "id": "feedback_1761380966050_tk45bw8w2",
+      "suggestionId": "test-suggestion-1",
+      "action": "accepted",
+      "reason": "Good suggestion",
+      "date": "2025-10-25T08:29:26.050Z",
+      "timestamp": "2025-10-25T08:29:26.050Z"
+    },
+    {
+      "id": "feedback_1761381504402_uaow7ph6e",
+      "suggestionId": "test-suggestion-1",
+      "action": "accepted",
+      "reason": "Good suggestion",
+      "date": "2025-10-25T08:38:24.402Z",
+      "timestamp": "2025-10-25T08:38:24.402Z"
+    },
+    {
+      "id": "feedback_1761391549035_t6s55enht",
+      "suggestionId": "test-suggestion-1",
+      "action": "accepted",
+      "reason": "Good suggestion",
+      "date": "2025-10-25T11:25:49.034Z",
+      "timestamp": "2025-10-25T11:25:49.035Z"
+    },
+    {
+      "id": "feedback_1761391879131_f3e4j96pp",
+      "suggestionId": "test-suggestion-1",
+      "action": "accepted",
+      "reason": "Good suggestion",
+      "date": "2025-10-25T11:31:19.130Z",
+      "timestamp": "2025-10-25T11:31:19.131Z"
+    }
+  ],
+  "preferences": {
+    "preferredPatterns": [
+      "async/await",
+      "error-handling"
+    ],
+    "avoidPatterns": [
+      "eval",
+      "var"
+    ],
+    "lastUpdated": "2025-10-25T11:31:33.422Z"
+  }
+}

@@ -1,0 +1,53 @@
+{
+  "memory": {
+    "enabled": true,
+    "persistence": true,
+    "learningRate": 0.8,
+    "maxMemorySize": 10000,
+    "retentionPeriod": "30d",
+    "compressionEnabled": true
+  },
+  "patterns": {
+    "trackCodePatterns": true,
+    "learnFromUsage": true,
+    "suggestBasedOnHistory": true,
+    "patternRecognitionThreshold": 0.7,
+    "minPatternFrequency": 3,
+    "patternSimilarityThreshold": 0.85
+  },
+  "context": {
+    "rememberSessions": true,
+    "learnFromDecisions": true,
+    "improveOverTime": true,
+    "contextWindowSize": 50,
+    "sessionTimeout": 3600000,
+    "crossSessionLearning": true
+  },
+  "suggestions": {
+    "enableContextualSuggestions": true,
+    "suggestionConfidenceThreshold": 0.8,
+    "maxSuggestionsPerContext": 5,
+    "learnFromRejections": true,
+    "adaptiveSuggestionRanking": true
+  },
+  "learning": {
+    "enableMachineLearning": true,
+    "learningAlgorithm": "adaptive",
+    "feedbackIntegration": true,
+    "patternEvolution": true,
+    "userPreferenceLearning": true
+  },
+  "performance": {
+    "cacheEnabled": true,
+    "cacheSize": 1000,
+    "cacheTTL": 3600000,
+    "asyncProcessing": true,
+    "backgroundLearning": true
+  },
+  "security": {
+    "encryptMemory": false,
+    "privacyMode": false,
+    "dataRetention": "30d",
+    "anonymizeData": false
+  }
+}

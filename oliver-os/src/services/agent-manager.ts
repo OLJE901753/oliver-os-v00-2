@@ -35,21 +35,20 @@ export interface SpawnedAgent {
 export class AgentManager {
   private agents: Map<string, AgentDefinition> = new Map();
   private spawnedAgents: Map<string, SpawnedAgent> = new Map();
-  private logger: Logger;
-  private config: Config;
+  private _logger: Logger;
 
-  constructor(config: Config) {
-    this.config = config;
-    this.logger = new Logger('AgentManager');
+  constructor(_config: Config) {
+    // Config stored for future use
+    this._logger = new Logger('AgentManager');
   }
 
   async initialize(): Promise<void> {
-    this.logger.info('🚀 Initializing Agent Manager with CodeBuff SDK...');
+    this._logger.info('🚀 Initializing Agent Manager with CodeBuff SDK...');
     
     // Register core agents
     await this.registerCoreAgents();
     
-    this.logger.info(`✅ Agent Manager initialized with ${this.agents.size} agent types`);
+    this._logger.info(`✅ Agent Manager initialized with ${this.agents.size} agent types`);
   }
 
   private async registerCoreAgents(): Promise<void> {
@@ -117,7 +116,7 @@ export class AgentManager {
 
   async registerAgent(agent: AgentDefinition): Promise<void> {
     this.agents.set(agent.id, agent);
-    this.logger.info(`📝 Registered agent: ${agent.displayName} (${agent.id})`);
+    this._logger.info(`📝 Registered agent: ${agent.displayName} (${agent.id})`);
   }
 
   async spawnAgent(request: SpawnRequest): Promise<SpawnedAgent> {
@@ -138,7 +137,7 @@ export class AgentManager {
     };
 
     this.spawnedAgents.set(agentId, spawnedAgent);
-    this.logger.info(`🚀 Spawning agent: ${agentDef.displayName} (${agentId})`);
+    this._logger.info(`🚀 Spawning agent: ${agentDef.displayName} (${agentId})`);
 
     try {
       // Simulate agent execution (in real implementation, this would use CodeBuff SDK)
@@ -150,17 +149,17 @@ export class AgentManager {
       spawnedAgent.status = 'completed';
       spawnedAgent.result = result;
       
-      this.logger.info(`✅ Agent completed: ${agentDef.displayName} (${agentId})`);
+      this._logger.info(`✅ Agent completed: ${agentDef.displayName} (${agentId})`);
       
     } catch (error) {
       spawnedAgent.status = 'failed';
-      this.logger.error(`❌ Agent failed: ${agentDef.displayName} (${agentId}) - ${error}`);
+      this._logger.error(`❌ Agent failed: ${agentDef.displayName} (${agentId}) - ${error}`);
     }
 
     return spawnedAgent;
   }
 
-  private async executeAgent(agent: SpawnedAgent, agentDef: AgentDefinition): Promise<unknown> {
+  private async executeAgent(agent: SpawnedAgent, _agentDef: AgentDefinition): Promise<unknown> {
     // This would integrate with CodeBuff SDK in real implementation
     // For now, we'll simulate agent execution
     
@@ -199,7 +198,7 @@ export class AgentManager {
     };
   }
 
-  private async executeCodeReviewer(agent: SpawnedAgent): Promise<unknown> {
+  private async executeCodeReviewer(_agent: SpawnedAgent): Promise<unknown> {
     // TODO: Replace with actual code review logic
     // This could integrate with ESLint, SonarQube, or custom analysis tools
     
@@ -214,7 +213,7 @@ export class AgentManager {
     };
   }
 
-  private async executeTestGenerator(agent: SpawnedAgent): Promise<unknown> {
+  private async executeTestGenerator(_agent: SpawnedAgent): Promise<unknown> {
     // TODO: Replace with actual test generation logic
     // This could integrate with Jest, Vitest, or other testing frameworks
     
@@ -228,7 +227,7 @@ export class AgentManager {
     };
   }
 
-  private async executeSecurityAnalyzer(agent: SpawnedAgent): Promise<unknown> {
+  private async executeSecurityAnalyzer(_agent: SpawnedAgent): Promise<unknown> {
     // TODO: Replace with actual security analysis logic
     // This could integrate with OWASP ZAP, Snyk, or custom security tools
     
@@ -240,7 +239,7 @@ export class AgentManager {
     };
   }
 
-  private async executeDocumentationGenerator(agent: SpawnedAgent): Promise<unknown> {
+  private async executeDocumentationGenerator(_agent: SpawnedAgent): Promise<unknown> {
     // TODO: Replace with actual documentation generation logic
     // This could integrate with JSDoc, TypeDoc, or custom documentation tools
     
@@ -255,7 +254,7 @@ export class AgentManager {
     };
   }
 
-  private async executeBureaucracyDisruptor(agent: SpawnedAgent): Promise<unknown> {
+  private async executeBureaucracyDisruptor(_agent: SpawnedAgent): Promise<unknown> {
     // TODO: Replace with actual bureaucracy disruption logic
     // This could integrate with workflow automation, process optimization tools
     
@@ -275,7 +274,7 @@ export class AgentManager {
   }
 
   async spawnMultipleAgents(requests: SpawnRequest[]): Promise<SpawnedAgent[]> {
-    this.logger.info(`🚀 Spawning ${requests.length} agents in parallel`);
+    this._logger.info(`🚀 Spawning ${requests.length} agents in parallel`);
     
     const promises = requests.map(request => this.spawnAgent(request));
     const results = await Promise.allSettled(promises);
@@ -302,7 +301,7 @@ export class AgentManager {
   }
 
   async shutdown(): Promise<void> {
-    this.logger.info('🛑 Shutting down Agent Manager...');
+    this._logger.info('🛑 Shutting down Agent Manager...');
     
     // Stop all running agents
     const runningAgents = Array.from(this.spawnedAgents.values())
@@ -312,7 +311,7 @@ export class AgentManager {
       agent.status = 'failed';
     }
     
-    this.logger.info('✅ Agent Manager shutdown complete');
+    this._logger.info('✅ Agent Manager shutdown complete');
   }
 
   /**

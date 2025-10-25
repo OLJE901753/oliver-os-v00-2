@@ -17,7 +17,7 @@ export function errorHandler(
   error: AppError,
   req: Request,
   res: Response,
-  next: NextFunction
+  _next: NextFunction
 ): void {
   // Log the error
   logger.error('Unhandled error', error, {
@@ -32,7 +32,7 @@ export function errorHandler(
   const isOperational = error.isOperational || false;
 
   // Prepare error response
-  const errorResponse = {
+  const errorResponse: { error: any } = {
     error: {
       message: isOperational ? error.message : 'Internal Server Error',
       statusCode,
@@ -43,12 +43,9 @@ export function errorHandler(
   };
 
   // Add stack trace in development
-  if (process.env.NODE_ENV === 'development') {
-    errorResponse.error = {
-      ...errorResponse.error,
-      stack: error.stack,
-      details: error
-    };
+  if (process.env['NODE_ENV'] === 'development') {
+    (errorResponse.error as any).stack = error.stack || undefined;
+    (errorResponse.error as any).details = error;
   }
 
   res.status(statusCode).json(errorResponse);

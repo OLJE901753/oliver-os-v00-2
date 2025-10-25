@@ -20,16 +20,12 @@ import { websocketRouter, setWebSocketManager } from '../routes/websocket';
 import { createAuthRoutes } from '../routes/auth';
 import { errorHandler } from '../middleware/error-handler';
 import { requestLogger } from '../middleware/request-logger';
-import { createAuthMiddleware } from '../middleware/auth';
 import { 
   generalRateLimit, 
   authRateLimit, 
-  strictRateLimit, 
-  slowDownMiddleware,
-  userRateLimit 
+  slowDownMiddleware
 } from '../middleware/rate-limit';
 import { SecurityManager } from './security';
-import { createValidationMiddleware } from '../middleware/validation';
 import { createSecurityHeadersMiddleware } from '../middleware/security-headers';
 import { WebSocketManager } from './websocket-manager';
 

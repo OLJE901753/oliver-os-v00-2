@@ -1,0 +1,66 @@
+{
+  "smartAssistance": {
+    "enabled": true,
+    "mode": "suggestions-only",
+    "requireApproval": true,
+    "confidenceThreshold": 80,
+    "features": {
+      "codeSuggestions": true,
+      "qualityMonitoring": true,
+      "refactoringSuggestions": true,
+      "performanceSuggestions": true,
+      "securitySuggestions": true,
+      "documentationSuggestions": true
+    },
+    "safety": {
+      "noAutomaticModifications": true,
+      "alwaysShowPreview": true,
+      "backupBeforeChanges": true,
+      "easyRollback": true
+    },
+    "tools": {
+      "eslint": {
+        "smartMode": true,
+        "suggestionsOnly": true,
+        "requireApproval": true,
+        "confidenceThreshold": 80
+      },
+      "prettier": {
+        "smartFormatting": true,
+        "previewChanges": true,
+        "batchMode": false
+      },
+      "typescript": {
+        "smartTypeChecking": true,
+        "suggestTypes": true,
+        "autoImport": false,
+        "requireApproval": true
+      },
+      "vitest": {
+        "smartTesting": true,
+        "suggestTests": true,
+        "coverageAnalysis": true
+      }
+    },
+    "workflow": {
+      "codeQuality": {
+        "linting": "smart-suggestions",
+        "formatting": "preview-and-approve",
+        "typeChecking": "suggestions-only",
+        "testing": "smart-suggestions"
+      },
+      "safety": {
+        "requireApproval": true,
+        "previewChanges": true,
+        "backupBeforeChanges": true,
+        "easyRollback": true
+      },
+      "intelligence": {
+        "contextAware": true,
+        "patternRecognition": true,
+        "smartSuggestions": true,
+        "learningMode": true
+      }
+    }
+  }
+}

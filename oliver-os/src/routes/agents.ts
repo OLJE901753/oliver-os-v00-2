@@ -13,16 +13,17 @@ const router = Router();
 export function createAgentRoutes(serviceManager: ServiceManager): Router {
   
   // Spawn a single agent
-  router.post('/spawn', async (req: Request, res: Response) => {
+  router.post('/spawn', async (req: Request, res: Response): Promise<void> => {
     try {
       const spawnRequest: SpawnRequest = req.body;
       
       // Validate request
       if (!spawnRequest.agentType || !spawnRequest.prompt) {
-        return res.status(400).json({
+        res.status(400).json({
           error: 'Invalid request',
           details: 'agentType and prompt are required'
         });
+        return;
       }
 
       const spawnedAgent = await serviceManager.spawnAgent(spawnRequest);
@@ -41,24 +42,26 @@ export function createAgentRoutes(serviceManager: ServiceManager): Router {
   });
 
   // Spawn multiple agents
-  router.post('/spawn-multiple', async (req: Request, res: Response) => {
+  router.post('/spawn-multiple', async (req: Request, res: Response): Promise<void> => {
     try {
       const spawnRequests: SpawnRequest[] = req.body.requests || req.body;
       
       // Validate requests
       if (!Array.isArray(spawnRequests) || spawnRequests.length === 0) {
-        return res.status(400).json({
+        res.status(400).json({
           error: 'Invalid request',
           details: 'requests array is required and cannot be empty'
         });
+        return;
       }
 
       for (const request of spawnRequests) {
         if (!request.agentType || !request.prompt) {
-          return res.status(400).json({
+          res.status(400).json({
             error: 'Invalid request',
             details: 'Each request must have agentType and prompt'
           });
+          return;
         }
       }
 
@@ -81,7 +84,7 @@ export function createAgentRoutes(serviceManager: ServiceManager): Router {
   });
 
   // Get all available agent types
-  router.get('/', async (req: Request, res: Response) => {
+  router.get('/', async (_req: Request, res: Response): Promise<void> => {
     try {
       const agents = serviceManager.getAgents();
       
@@ -102,7 +105,7 @@ export function createAgentRoutes(serviceManager: ServiceManager): Router {
   });
 
   // Get all spawned agent instances
-  router.get('/spawned', async (req: Request, res: Response) => {
+  router.get('/spawned', async (_req: Request, res: Response): Promise<void> => {
     try {
       const spawnedAgents = serviceManager.getSpawnedAgents();
       
@@ -123,16 +126,23 @@ export function createAgentRoutes(serviceManager: ServiceManager): Router {
   });
 
   // Get specific agent type
-  router.get('/:agentId', async (req: Request, res: Response) => {
+  router.get('/:agentId', async (req: Request, res: Response): Promise<void> => {
     try {
       const { agentId } = req.params;
+      if (!agentId) {
+        res.status(400).json({
+          error: 'Agent ID required'
+        });
+        return;
+      }
       const agent = serviceManager.getAgent(agentId);
       
       if (!agent) {
-        return res.status(404).json({
+        res.status(404).json({
           error: 'Agent not found',
           details: `No agent found with ID: ${agentId}`
         });
+        return;
       }
 
       res.json({
@@ -149,16 +159,23 @@ export function createAgentRoutes(serviceManager: ServiceManager): Router {
   });
 
   // Get specific spawned agent instance
-  router.get('/spawned/:spawnedAgentId', async (req: Request, res: Response) => {
+  router.get('/spawned/:spawnedAgentId', async (req: Request, res: Response): Promise<void> => {
     try {
       const { spawnedAgentId } = req.params;
+      if (!spawnedAgentId) {
+        res.status(400).json({
+          error: 'Spawned agent ID required'
+        });
+        return;
+      }
       const spawnedAgent = serviceManager.getSpawnedAgent(spawnedAgentId);
       
       if (!spawnedAgent) {
-        return res.status(404).json({
+        res.status(404).json({
           error: 'Spawned agent not found',
           details: `No spawned agent found with ID: ${spawnedAgentId}`
         });
+        return;
       }
 
       res.json({
@@ -175,7 +192,7 @@ export function createAgentRoutes(serviceManager: ServiceManager): Router {
   });
 
   // Get agent status and health
-  router.get('/health/status', async (req: Request, res: Response) => {
+  router.get('/health/status', async (_req: Request, res: Response): Promise<void> => {
     try {
       const agents = serviceManager.getAgents();
       const spawnedAgents = serviceManager.getSpawnedAgents();

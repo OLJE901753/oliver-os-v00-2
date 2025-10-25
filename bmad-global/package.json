@@ -3,8 +3,27 @@
   "version": "2.0.0",
   "description": "BMAD Method - Enhanced Edition: Break, Map, Automate, Document",
   "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "bin": {
     "bmad": "./dist/index.js"
+  },
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./cli": {
+      "import": "./dist/cli.js",
+      "types": "./dist/cli.d.ts"
+    },
+    "./core/*": {
+      "import": "./dist/core/*.js",
+      "types": "./dist/core/*.d.ts"
+    },
+    "./types/*": {
+      "import": "./dist/types/*.js",
+      "types": "./dist/types/*.d.ts"
+    }
   },
   "scripts": {
     "build": "tsc",

@@ -7,10 +7,10 @@ import { Logger } from '../../core/logger';
 import type { MCPTool, MCPToolResult } from '../types';
 
 export class CollaborationTools {
-  private logger: Logger;
+  private _logger: Logger;
 
   constructor() {
-    this.logger = new Logger('Collaboration-Tools');
+    this._logger = new Logger('Collaboration-Tools');
   }
 
   createTools(): MCPTool[] {
@@ -133,7 +133,7 @@ export class CollaborationTools {
   private async handleGetWorkspaceStatus(args: Record<string, unknown>): Promise<MCPToolResult> {
     const { workspaceId, includeUsers, includeActivity } = args;
     
-    this.logger.info(`👥 Getting workspace status: ${workspaceId}`);
+    this._logger.info(`👥 Getting workspace status: ${workspaceId}`);
     
     try {
       const status = await this.getWorkspaceStatus(
@@ -153,7 +153,7 @@ export class CollaborationTools {
         }]
       };
     } catch (error) {
-      this.logger.error('❌ Error getting workspace status', error);
+      this._logger.error('❌ Error getting workspace status', error);
       return this.createErrorResult('Failed to get workspace status', error);
     }
   }
@@ -161,7 +161,7 @@ export class CollaborationTools {
   private async handleJoinWorkspace(args: Record<string, unknown>): Promise<MCPToolResult> {
     const { workspaceId, userId, userRole, capabilities } = args;
     
-    this.logger.info(`🚪 User ${userId} joining workspace ${workspaceId} as ${userRole}`);
+    this._logger.info(`🚪 User ${userId} joining workspace ${workspaceId} as ${userRole}`);
     
     try {
       const result = await this.joinWorkspace(
@@ -184,7 +184,7 @@ export class CollaborationTools {
         }]
       };
     } catch (error) {
-      this.logger.error('❌ Error joining workspace', error);
+      this._logger.error('❌ Error joining workspace', error);
       return this.createErrorResult('Failed to join workspace', error);
     }
   }
@@ -192,7 +192,7 @@ export class CollaborationTools {
   private async handleLeaveWorkspace(args: Record<string, unknown>): Promise<MCPToolResult> {
     const { workspaceId, userId } = args;
     
-    this.logger.info(`🚪 User ${userId} leaving workspace ${workspaceId}`);
+    this._logger.info(`🚪 User ${userId} leaving workspace ${workspaceId}`);
     
     try {
       const result = await this.leaveWorkspace(workspaceId as string, userId as string);
@@ -209,7 +209,7 @@ export class CollaborationTools {
         }]
       };
     } catch (error) {
-      this.logger.error('❌ Error leaving workspace', error);
+      this._logger.error('❌ Error leaving workspace', error);
       return this.createErrorResult('Failed to leave workspace', error);
     }
   }
@@ -217,7 +217,7 @@ export class CollaborationTools {
   private async handleShareThought(args: Record<string, unknown>): Promise<MCPToolResult> {
     const { workspaceId, thought, userId, visibility, targetUsers } = args;
     
-    this.logger.info(`💭 User ${userId} sharing thought in workspace ${workspaceId}`);
+    this._logger.info(`💭 User ${userId} sharing thought in workspace ${workspaceId}`);
     
     try {
       const result = await this.shareThought(
@@ -242,7 +242,7 @@ export class CollaborationTools {
         }]
       };
     } catch (error) {
-      this.logger.error('❌ Error sharing thought', error);
+      this._logger.error('❌ Error sharing thought', error);
       return this.createErrorResult('Failed to share thought', error);
     }
   }
@@ -250,7 +250,7 @@ export class CollaborationTools {
   private async handleGetCollaborationHistory(args: Record<string, unknown>): Promise<MCPToolResult> {
     const { workspaceId, userId, limit, since, includeMetadata } = args;
     
-    this.logger.info(`📚 Getting collaboration history for workspace ${workspaceId}`);
+    this._logger.info(`📚 Getting collaboration history for workspace ${workspaceId}`);
     
     try {
       const history = await this.getCollaborationHistory(
@@ -274,7 +274,7 @@ export class CollaborationTools {
         }]
       };
     } catch (error) {
-      this.logger.error('❌ Error getting collaboration history', error);
+      this._logger.error('❌ Error getting collaboration history', error);
       return this.createErrorResult('Failed to get collaboration history', error);
     }
   }
@@ -282,7 +282,7 @@ export class CollaborationTools {
   private async handleCreateWorkspace(args: Record<string, unknown>): Promise<MCPToolResult> {
     const { name, description, creatorId, settings } = args;
     
-    this.logger.info(`🏗️ Creating workspace: ${name} by user ${creatorId}`);
+    this._logger.info(`🏗️ Creating workspace: ${name} by user ${creatorId}`);
     
     try {
       const workspace = await this.createWorkspace(
@@ -302,7 +302,7 @@ export class CollaborationTools {
         }]
       };
     } catch (error) {
-      this.logger.error('❌ Error creating workspace', error);
+      this._logger.error('❌ Error creating workspace', error);
       return this.createErrorResult('Failed to create workspace', error);
     }
   }
@@ -310,7 +310,7 @@ export class CollaborationTools {
   private async handleSyncWorkspaceState(args: Record<string, unknown>): Promise<MCPToolResult> {
     const { workspaceId, userId, includeThoughts, includeUsers, includeSettings } = args;
     
-    this.logger.info(`🔄 Syncing workspace state: ${workspaceId}`);
+    this._logger.info(`🔄 Syncing workspace state: ${workspaceId}`);
     
     try {
       const state = await this.syncWorkspaceState(
@@ -333,7 +333,7 @@ export class CollaborationTools {
         }]
       };
     } catch (error) {
-      this.logger.error('❌ Error syncing workspace state', error);
+      this._logger.error('❌ Error syncing workspace state', error);
       return this.createErrorResult('Failed to sync workspace state', error);
     }
   }

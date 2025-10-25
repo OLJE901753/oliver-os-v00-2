@@ -18,26 +18,26 @@ export interface Service {
 
 export class ServiceManager {
   private services: Map<string, Service> = new Map();
-  private agentManager: AgentManager;
-  private logger: Logger;
-  private config: Config;
+  private _agentManager: AgentManager;
+  private _logger: Logger;
+  private _config: Config;
 
   constructor(config: Config) {
-    this.config = config;
-    this.logger = new Logger('ServiceManager');
-    this.agentManager = new AgentManager(config);
+    this._config = config;
+    this._logger = new Logger('ServiceManager');
+    this._agentManager = new AgentManager(config);
   }
 
   async initialize(): Promise<void> {
-    this.logger.info('🚀 Initializing Service Manager...');
+    this._logger.info('🚀 Initializing Service Manager...');
     
     // Initialize agent manager
-    await this.agentManager.initialize();
+    await this._agentManager.initialize();
     
     // Register core services
     await this.registerCoreServices();
     
-    this.logger.info(`✅ Service Manager initialized with ${this.services.size} services`);
+    this._logger.info(`✅ Service Manager initialized with ${this.services.size} services`);
   }
 
   private async registerCoreServices(): Promise<void> {
@@ -63,13 +63,13 @@ export class ServiceManager {
     };
 
     this.services.set(id, service);
-    this.logger.info(`📝 Registered service: ${name} (${id})`);
+    this._logger.info(`📝 Registered service: ${name} (${id})`);
     
     // Actual service initialization
     await this.initializeService(service);
     service.status = 'running';
     service.startTime = new Date();
-    this.logger.info(`✅ Service started: ${name}`);
+    this._logger.info(`✅ Service started: ${name}`);
   }
 
   /**
@@ -86,7 +86,7 @@ export class ServiceManager {
     }
     
     // Additional initialization steps would go here
-    this.logger.debug(`Initialized service: ${service.name}`);
+    this._logger.debug(`Initialized service: ${service.name}`);
   }
 
   async unregisterService(id: string): Promise<void> {
@@ -96,13 +96,13 @@ export class ServiceManager {
     }
 
     service.status = 'stopping';
-    this.logger.info(`🛑 Stopping service: ${service.name}`);
+    this._logger.info(`🛑 Stopping service: ${service.name}`);
     
     // Actual service shutdown
     await this.shutdownService(service);
     service.status = 'stopped';
     this.services.delete(id);
-    this.logger.info(`✅ Service stopped: ${service.name}`);
+    this._logger.info(`✅ Service stopped: ${service.name}`);
   }
 
   /**
@@ -114,7 +114,7 @@ export class ServiceManager {
     await new Promise(resolve => setTimeout(resolve, 50));
     
     // Cleanup resources, close connections, etc.
-    this.logger.debug(`Shutdown service: ${service.name}`);
+    this._logger.debug(`Shutdown service: ${service.name}`);
   }
 
   getServices(): Service[] {
@@ -131,40 +131,40 @@ export class ServiceManager {
 
   // Agent Management Methods
   async spawnAgent(request: SpawnRequest) {
-    return await this.agentManager.spawnAgent(request);
+    return await this._agentManager.spawnAgent(request);
   }
 
   async spawnMultipleAgents(requests: SpawnRequest[]) {
-    return await this.agentManager.spawnMultipleAgents(requests);
+    return await this._agentManager.spawnMultipleAgents(requests);
   }
 
   getAgents() {
-    return this.agentManager.getAgents();
+    return this._agentManager.getAgents();
   }
 
   getSpawnedAgents() {
-    return this.agentManager.getSpawnedAgents();
+    return this._agentManager.getSpawnedAgents();
   }
 
   getAgent(id: string) {
-    return this.agentManager.getAgent(id);
+    return this._agentManager.getAgent(id);
   }
 
   getSpawnedAgent(id: string) {
-    return this.agentManager.getSpawnedAgent(id);
+    return this._agentManager.getSpawnedAgent(id);
   }
 
   async shutdown(): Promise<void> {
-    this.logger.info('🛑 Shutting down Service Manager...');
+    this._logger.info('🛑 Shutting down Service Manager...');
     
     // Shutdown agent manager
-    await this.agentManager.shutdown();
+    await this._agentManager.shutdown();
     
     const services = Array.from(this.services.values());
     for (const service of services) {
       await this.unregisterService(service.id);
     }
     
-    this.logger.info('✅ Service Manager shutdown complete');
+    this._logger.info('✅ Service Manager shutdown complete');
   }
 }

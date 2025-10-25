@@ -16,22 +16,22 @@ export interface BureaucracyReport {
 }
 
 export class BureaucracyDisruptorService {
-  private logger: Logger;
-  private config: Config;
+  private _logger: Logger;
+  private _config: Config;
   private reports: BureaucracyReport[] = [];
 
   constructor(config: Config) {
-    this.config = config;
-    this.logger = new Logger('BureaucracyDisruptor');
+    this._config = config;
+    this._logger = new Logger('BureaucracyDisruptor');
   }
 
   async initialize(): Promise<void> {
-    this.logger.info('🚀 Initializing Bureaucracy Disruptor Service...');
+    this._logger.info('🚀 Initializing Bureaucracy Disruptor Service...');
     
     // Start the disruption process
     await this.startDisruptionProcess();
     
-    this.logger.info('✅ Bureaucracy Disruptor Service initialized');
+    this._logger.info('✅ Bureaucracy Disruptor Service initialized');
   }
 
   private async startDisruptionProcess(): Promise<void> {
@@ -51,13 +51,13 @@ export class BureaucracyDisruptorService {
     };
 
     this.reports.push(report);
-    this.logger.info('🔥 Bureaucracy disruption initiated!');
-    this.logger.info(`📊 Efficiency gained: ${report.efficiencyGained}%`);
+    this._logger.info('🔥 Bureaucracy disruption initiated!');
+    this._logger.info(`📊 Efficiency gained: ${report.efficiencyGained}%`);
     
     // Simulate ongoing disruption
     setTimeout(() => {
       report.status = 'completed';
-      this.logger.info('✅ Bureaucracy disruption completed successfully!');
+      this._logger.info('✅ Bureaucracy disruption completed successfully!');
     }, 5000);
   }
 
@@ -93,7 +93,7 @@ export class BureaucracyDisruptorService {
   }
 
   async shutdown(): Promise<void> {
-    this.logger.info('🛑 Shutting down Bureaucracy Disruptor Service...');
+    this._logger.info('🛑 Shutting down Bureaucracy Disruptor Service...');
     
     // Complete any active disruptions
     const activeReports = this.reports.filter(r => r.status === 'active');
@@ -101,6 +101,6 @@ export class BureaucracyDisruptorService {
       report.status = 'completed';
     }
     
-    this.logger.info('✅ Bureaucracy Disruptor Service shutdown complete');
+    this._logger.info('✅ Bureaucracy Disruptor Service shutdown complete');
   }
 }

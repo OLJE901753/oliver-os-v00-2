@@ -21,7 +21,7 @@ declare global {
 }
 
 export class AuthMiddleware {
-  private authService: AuthService;
+  private authService!: AuthService;
 
   constructor(prisma: PrismaClient) {
     this.authService = new AuthService(prisma);
@@ -30,12 +30,12 @@ export class AuthMiddleware {
   /**
    * Verify JWT token and attach user to request
    */
-  verifyToken = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  verifyToken = async (req: Request, _res: Response, next: NextFunction): Promise<void> => {
     try {
       const authHeader = req.headers.authorization;
       
       if (!authHeader || !authHeader.startsWith('Bearer ')) {
-        res.status(401).json({
+        _res.status(401).json({
           error: 'Unauthorized',
           message: 'No valid authorization header provided'
         });
@@ -50,7 +50,7 @@ export class AuthMiddleware {
       next();
     } catch (error) {
       logger.error('Token verification failed:', error);
-      res.status(401).json({
+      _res.status(401).json({
         error: 'Unauthorized',
         message: 'Invalid or expired token'
       });
@@ -60,7 +60,7 @@ export class AuthMiddleware {
   /**
    * Optional token verification (doesn't fail if no token)
    */
-  optionalAuth = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  optionalAuth = async (req: Request, _res: Response, next: NextFunction): Promise<void> => {
     try {
       const authHeader = req.headers.authorization;
       
@@ -73,7 +73,7 @@ export class AuthMiddleware {
       next();
     } catch (error) {
       // Log but don't fail for optional auth
-      logger.warn('Optional auth failed:', error);
+      logger.warn('Optional auth failed:', { error: error instanceof Error ? error.message : String(error) });
       next();
     }
   };

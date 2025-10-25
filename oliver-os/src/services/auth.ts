@@ -47,10 +47,10 @@ export class AuthService {
 
   constructor(prisma: PrismaClient) {
     this.prisma = prisma;
-    this.jwtSecret = process.env.JWT_SECRET || 'oliver-os-secret-key-change-in-production';
-    this.jwtRefreshSecret = process.env.JWT_REFRESH_SECRET || 'oliver-os-refresh-secret-change-in-production';
-    this.accessTokenExpiry = process.env.JWT_ACCESS_EXPIRY || '15m';
-    this.refreshTokenExpiry = process.env.JWT_REFRESH_EXPIRY || '7d';
+    this.jwtSecret = process.env['JWT_SECRET'] || 'oliver-os-secret-key-change-in-production';
+    this.jwtRefreshSecret = process.env['JWT_REFRESH_SECRET'] || 'oliver-os-refresh-secret-change-in-production';
+    this.accessTokenExpiry = process.env['JWT_ACCESS_EXPIRY'] || '15m';
+    this.refreshTokenExpiry = process.env['JWT_REFRESH_EXPIRY'] || '7d';
   }
 
   /**
@@ -151,7 +151,7 @@ export class AuthService {
   async refreshToken(refreshToken: string): Promise<{ accessToken: string; expiresIn: number }> {
     try {
       // Verify refresh token
-      const decoded = jwt.verify(refreshToken, this.jwtRefreshSecret) as { userId: string; tokenId: string };
+      jwt.verify(refreshToken, this.jwtRefreshSecret) as { userId: string; tokenId: string };
       
       // Find refresh token in database
       const tokenRecord = await this.prisma.refreshToken.findUnique({
@@ -309,8 +309,8 @@ export class AuthService {
     const match = expiry.match(/(\d+)([smhd])/);
     if (!match) return 900; // 15 minutes default
 
-    const value = parseInt(match[1]);
-    const unit = match[2];
+    const value = parseInt(match[1]!);
+    const unit = match[2]!;
 
     switch (unit) {
       case 's': return value;

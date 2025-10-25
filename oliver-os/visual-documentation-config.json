@@ -1,0 +1,25 @@
+{
+  "enabled": true,
+  "autoGenerate": true,
+  "formats": {
+    "mermaid": true,
+    "plantuml": false,
+    "graphviz": false
+  },
+  "types": {
+    "flowchart": true,
+    "sequence": true,
+    "architecture": true,
+    "class": true,
+    "component": true,
+    "state": true
+  },
+  "complexity": {
+    "minComplexity": "medium",
+    "maxDiagrams": 5
+  },
+  "notifications": {
+    "enabled": true,
+    "channels": ["console", "file"]
+  }
+}

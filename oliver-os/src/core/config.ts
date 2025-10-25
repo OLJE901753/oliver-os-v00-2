@@ -37,47 +37,53 @@ type ConfigType = z.infer<typeof configSchema>;
 
 export class Config {
   private config: ConfigType;
-  private logger: Logger;
+  private _logger: Logger;
 
   constructor() {
-    this.logger = new Logger('Config');
+    this._logger = new Logger('Config');
     this.config = this.getDefaultConfig();
   }
 
   async load(): Promise<void> {
     try {
-      // Load environment variables
       await this.loadEnvironment();
-      
-      // Load config file if exists
       await this.loadConfigFile();
-      
-      // Validate configuration
       this.config = configSchema.parse(this.config);
-      
-      this.logger.info('✅ Configuration loaded successfully');
+      this._logger.info('✅ Configuration loaded successfully');
     } catch (error) {
-      this.logger.error('❌ Failed to load configuration', error);
-      throw error;
+      this._logger.error('❌ Failed to load configuration', error);
+      throw new Error(`Configuration loading failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
 
   private async loadEnvironment(): Promise<void> {
-    const envFile = process.env['NODE_ENV'] === 'production' ? '.env.production' : '.env.local';
-    
-    if (await fs.pathExists(envFile)) {
-      require('dotenv').config({ path: envFile });
-      this.logger.info(`📄 Loaded environment from ${envFile}`);
+    try {
+      const envFile = process.env['NODE_ENV'] === 'production' ? '.env.production' : '.env.local';
+      const pathExists = await fs.pathExists(envFile);
+      
+      if (pathExists) {
+        require('dotenv').config({ path: envFile });
+        this._logger.info(`📄 Loaded environment from ${envFile}`);
+      }
+    } catch (error) {
+      this._logger.warn(`⚠️ Could not load environment file: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      // Continue without environment file
     }
   }
 
   private async loadConfigFile(): Promise<void> {
-    const configPath = path.join(process.cwd(), 'config.json');
-    
-    if (await fs.pathExists(configPath)) {
-      const configData = await fs.readJSON(configPath);
-      this.config = { ...this.config, ...configData };
-      this.logger.info('📄 Loaded configuration file');
+    try {
+      const configPath = path.join(process.cwd(), 'config.json');
+      const pathExists = await fs.pathExists(configPath);
+      
+      if (pathExists) {
+        const configData = await fs.readJSON(configPath);
+        this.config = { ...this.config, ...configData };
+        this._logger.info('📄 Loaded configuration file');
+      }
+    } catch (error) {
+      this._logger.warn(`⚠️ Could not load config file: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      // Continue without config file
     }
   }
 
@@ -118,15 +124,15 @@ export class Config {
     const keys = key.split('.');
     let target: any = this.config;
     
-    // Navigate to the parent of the target key
-    for (let i = 0; i < keys.length - 1; i++) {
-      const k = keys[i];
-      if (!k) continue;
-      if (!target[k] || typeof target[k] !== 'object') {
-        target[k] = {};
+    // Navigate to the parent of the target key (optimized with reduce)
+    const parentKeys = keys.slice(0, -1);
+    target = parentKeys.reduce((current, k) => {
+      if (!k) return current;
+      if (!current[k] || typeof current[k] !== 'object') {
+        current[k] = {};
       }
-      target = target[k] as any;
-    }
+      return current[k];
+    }, target);
     
     // Set the final value
     const finalKey = keys[keys.length - 1];

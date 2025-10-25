@@ -12,6 +12,7 @@ import { Config } from './core/config';
 import { ServiceManager } from './services/service-manager';
 import { ProcessManager } from './core/process-manager';
 import { BureaucracyDisruptorService } from './services/bureaucracy-disruptor';
+import { MonitoringService } from './services/monitoring-service';
 import { PrismaClient } from '@prisma/client';
 
 const logger = new Logger('Oliver-OS');
@@ -48,14 +49,37 @@ async function initialize(): Promise<void> {
     await disruptorService.initialize();
     logger.info('✅ Bureaucracy disruptor service initialized');
     
+    // Initialize monitoring service
+    const monitoringService = new MonitoringService();
+    logger.info('✅ Monitoring service initialized');
+    
     // Create and start server with WebSocket support
     const { httpServer, wsManager } = createHttpServerWithWebSocket(config, serviceManager, prisma);
+    
+    // Connect monitoring service to WebSocket manager
+    wsManager.setMonitoringService(monitoringService);
+    
     const port = config.get('port', 3000);
     
     httpServer.listen(port, () => {
       logger.info(`🎯 Oliver-OS running on port ${port}`);
       logger.info('🔥 Ready to disrupt bureaucracy with clean code!');
       logger.info('🌐 WebSocket server enabled for real-time communication');
+      
+      // Open browser automatically
+      import('child_process').then(({ exec }) => {
+        const url = `http://localhost:${port}`;
+        exec(`start firefox ${url}`, (error: any) => {
+          if (error) {
+            // Fallback to default browser if Firefox is not available
+            exec(`start ${url}`, (fallbackError: any) => {
+              if (fallbackError) {
+                logger.info(`🌐 Server running at ${url}`);
+              }
+            });
+          }
+        });
+      });
       
       // Log available endpoints
       logger.info('📡 Available endpoints:');

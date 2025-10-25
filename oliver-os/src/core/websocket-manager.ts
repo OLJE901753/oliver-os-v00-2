@@ -33,11 +33,12 @@ export class WebSocketManager {
   private io: Server;
   private connectedClients: Map<string, ConnectedClient> = new Map();
   private thoughtSessions: Map<string, ThoughtSession> = new Map();
-  private logger: Logger;
+  private _logger: Logger;
   private aiServicesUrl: string;
+  private monitoringService: any = null;
 
   constructor(httpServer: HTTPServer, aiServicesUrl: string = 'http://localhost:8000') {
-    this.logger = new Logger('WebSocketManager');
+    this._logger = new Logger('WebSocketManager');
     this.aiServicesUrl = aiServicesUrl;
     
     // Initialize Socket.IO server
@@ -51,13 +52,13 @@ export class WebSocketManager {
     });
     
     this.setupEventHandlers();
-    this.logger.info('WebSocket Manager initialized');
+    this._logger.info('WebSocket Manager initialized');
   }
 
   private setupEventHandlers(): void {
     this.io.on('connection', (socket) => {
       const clientId = socket.id;
-      this.logger.info(`Client connected: ${clientId}`);
+      this._logger.info(`Client connected: ${clientId}`);
       
       // Store client connection
       this.connectedClients.set(clientId, {
@@ -110,6 +111,35 @@ export class WebSocketManager {
         this.handleUnsubscription(socket, channel);
       });
 
+      // Handle monitoring data requests
+      socket.on('dashboard:request', () => {
+        this.handleDashboardRequest(socket);
+      });
+
+      socket.on('metrics:request', () => {
+        this.handleMetricsRequest(socket);
+      });
+
+      socket.on('alerts:request', () => {
+        this.handleAlertsRequest(socket);
+      });
+
+      socket.on('health:request', () => {
+        this.handleHealthRequest(socket);
+      });
+
+      socket.on('performance:request', () => {
+        this.handlePerformanceRequest(socket);
+      });
+
+      socket.on('tests:request', () => {
+        this.handleTestsRequest(socket);
+      });
+
+      socket.on('quality-gates:request', () => {
+        this.handleQualityGatesRequest(socket);
+      });
+
       // Handle ping/pong for connection health
       socket.on('ping', () => {
         socket.emit('pong', { timestamp: new Date().toISOString() });
@@ -131,7 +161,7 @@ export class WebSocketManager {
 
   private async handleThoughtCreate(socket: any, data: any): Promise<void> {
     try {
-      this.logger.info(`Processing thought creation from client: ${socket.id}`);
+      this._logger.info(`Processing thought creation from client: ${socket.id}`);
       
       // Forward to AI services
       const response = await fetch(`${this.aiServicesUrl}/api/thoughts/process`, {
@@ -174,10 +204,10 @@ export class WebSocketManager {
         });
       }
 
-      this.logger.info(`Thought processed successfully: ${processedThought.id}`);
+      this._logger.info(`Thought processed successfully: ${processedThought.id}`);
       
     } catch (error) {
-      this.logger.error(`Error processing thought: ${error}`);
+      this._logger.error(`Error processing thought: ${error}`);
       socket.emit('thought:error', {
         type: 'thought_error',
         error: error instanceof Error ? error.message : 'Unknown error',
@@ -189,7 +219,7 @@ export class WebSocketManager {
 
   private async handleThoughtAnalyze(socket: any, data: any): Promise<void> {
     try {
-      this.logger.info(`Analyzing thought: ${data.thought_id}`);
+      this._logger.info(`Analyzing thought: ${data.thought_id}`);
       
       const response = await fetch(`${this.aiServicesUrl}/api/thoughts/${data.thought_id}/analyze`, {
         method: 'POST',
@@ -206,10 +236,10 @@ export class WebSocketManager {
         timestamp: new Date().toISOString()
       });
 
-      this.logger.info(`Thought analysis completed: ${data.thought_id}`);
+      this._logger.info(`Thought analysis completed: ${data.thought_id}`);
       
     } catch (error) {
-      this.logger.error(`Error analyzing thought: ${error}`);
+      this._logger.error(`Error analyzing thought: ${error}`);
       socket.emit('thought:analysis_error', {
         type: 'thought_analysis_error',
         error: error instanceof Error ? error.message : 'Unknown error',
@@ -221,20 +251,20 @@ export class WebSocketManager {
 
   private async handleCollaborationEvent(socket: any, data: any): Promise<void> {
     try {
-      this.logger.info(`Handling collaboration event: ${data.type}`);
+      this._logger.info(`Handling collaboration event: ${data.type}`);
       
       // Broadcast to all connected clients
       this.broadcast('collaboration:event', {
         type: 'collaboration_event',
-        data: data,
+        data,
         client_id: socket.id,
         timestamp: new Date().toISOString()
       });
 
-      this.logger.info(`Collaboration event broadcasted: ${data.type}`);
+      this._logger.info(`Collaboration event broadcasted: ${data.type}`);
       
     } catch (error) {
-      this.logger.error(`Error handling collaboration event: ${error}`);
+      this._logger.error(`Error handling collaboration event: ${error}`);
       socket.emit('collaboration:error', {
         type: 'collaboration_error',
         error: error instanceof Error ? error.message : 'Unknown error',
@@ -246,7 +276,7 @@ export class WebSocketManager {
 
   private async handleAgentSpawn(socket: any, data: any): Promise<void> {
     try {
-      this.logger.info(`Spawning agent: ${data.agent_type}`);
+      this._logger.info(`Spawning agent: ${data.agent_type}`);
       
       const response = await fetch(`${this.aiServicesUrl}/api/agents/spawn`, {
         method: 'POST',
@@ -269,10 +299,10 @@ export class WebSocketManager {
         timestamp: new Date().toISOString()
       });
 
-      this.logger.info(`Agent spawned successfully: ${spawnedAgent.id}`);
+      this._logger.info(`Agent spawned successfully: ${spawnedAgent.id}`);
       
     } catch (error) {
-      this.logger.error(`Error spawning agent: ${error}`);
+      this._logger.error(`Error spawning agent: ${error}`);
       socket.emit('agent:spawn_error', {
         type: 'agent_spawn_error',
         error: error instanceof Error ? error.message : 'Unknown error',
@@ -284,7 +314,7 @@ export class WebSocketManager {
 
   private async handleVoiceData(socket: any, data: any): Promise<void> {
     try {
-      this.logger.info(`Processing voice data from client: ${socket.id}`);
+      this._logger.info(`Processing voice data from client: ${socket.id}`);
       
       const response = await fetch(`${this.aiServicesUrl}/api/voice/transcribe`, {
         method: 'POST',
@@ -303,10 +333,10 @@ export class WebSocketManager {
         timestamp: new Date().toISOString()
       });
 
-      this.logger.info(`Voice data processed successfully`);
+      this._logger.info(`Voice data processed successfully`);
       
     } catch (error) {
-      this.logger.error(`Error processing voice data: ${error}`);
+      this._logger.error(`Error processing voice data: ${error}`);
       socket.emit('voice:error', {
         type: 'voice_error',
         error: error instanceof Error ? error.message : 'Unknown error',
@@ -320,7 +350,7 @@ export class WebSocketManager {
     const client = this.connectedClients.get(socket.id);
     if (client && !client.subscriptions.includes(channel)) {
       client.subscriptions.push(channel);
-      this.logger.info(`Client ${socket.id} subscribed to channel: ${channel}`);
+      this._logger.info(`Client ${socket.id} subscribed to channel: ${channel}`);
       
       socket.emit('subscribed', {
         channel,
@@ -335,7 +365,7 @@ export class WebSocketManager {
       const index = client.subscriptions.indexOf(channel);
       if (index > -1) {
         client.subscriptions.splice(index, 1);
-        this.logger.info(`Client ${socket.id} unsubscribed from channel: ${channel}`);
+        this._logger.info(`Client ${socket.id} unsubscribed from channel: ${channel}`);
         
         socket.emit('unsubscribed', {
           channel,
@@ -347,7 +377,7 @@ export class WebSocketManager {
 
   private handleDisconnection(socket: any, reason: string): void {
     const clientId = socket.id;
-    this.logger.info(`Client disconnected: ${clientId}, reason: ${reason}`);
+    this._logger.info(`Client disconnected: ${clientId}, reason: ${reason}`);
     
     // Clean up client data
     this.connectedClients.delete(clientId);
@@ -416,7 +446,7 @@ export class WebSocketManager {
   }
 
   public async shutdown(): Promise<void> {
-    this.logger.info('Shutting down WebSocket Manager...');
+    this._logger.info('Shutting down WebSocket Manager...');
     
     // Notify all clients
     this.broadcast('server:shutdown', {
@@ -428,6 +458,98 @@ export class WebSocketManager {
     // Close all connections
     this.io.close();
     
-    this.logger.info('WebSocket Manager shutdown complete');
+    this._logger.info('WebSocket Manager shutdown complete');
+  }
+
+  public setMonitoringService(monitoringService: any): void {
+    this.monitoringService = monitoringService;
+    
+    // Forward monitoring events to all connected clients
+    if (this.monitoringService) {
+      this.monitoringService.on('dashboard:data', (data: any) => {
+        this._logger.info('📊 Broadcasting dashboard data to clients', { 
+          clientCount: this.connectedClients.size,
+          dataKeys: Object.keys(data)
+        });
+        this.broadcast('dashboard:data', data);
+      });
+      
+      this.monitoringService.on('metrics:update', (data: any) => {
+        this.broadcast('metrics:update', data);
+      });
+      
+      this.monitoringService.on('alerts:new', (data: any) => {
+        this.broadcast('alerts:new', data);
+      });
+      
+      this.monitoringService.on('alerts:update', (data: any) => {
+        this.broadcast('alerts:update', data);
+      });
+      
+      this.monitoringService.on('health:update', (data: any) => {
+        this.broadcast('health:update', data);
+      });
+      
+      this.monitoringService.on('performance:update', (data: any) => {
+        this.broadcast('performance:update', data);
+      });
+      
+      this.monitoringService.on('tests:update', (data: any) => {
+        this.broadcast('tests:update', data);
+      });
+      
+      this.monitoringService.on('quality-gates:update', (data: any) => {
+        this.broadcast('quality-gates:update', data);
+      });
+    }
+  }
+
+  private handleDashboardRequest(socket: any): void {
+    if (this.monitoringService) {
+      const data = this.monitoringService.getDashboardData();
+      socket.emit('dashboard:data', data);
+    }
+  }
+
+  private handleMetricsRequest(socket: any): void {
+    if (this.monitoringService) {
+      const data = this.monitoringService.getMetrics();
+      socket.emit('metrics:update', data);
+    }
+  }
+
+  private handleAlertsRequest(socket: any): void {
+    if (this.monitoringService) {
+      const data = this.monitoringService.getAlerts();
+      socket.emit('alerts:update', data);
+    }
+  }
+
+  private handleHealthRequest(socket: any): void {
+    if (this.monitoringService) {
+      const data = this.monitoringService.getSystemHealth();
+      socket.emit('health:update', data);
+    }
+  }
+
+  private handlePerformanceRequest(socket: any): void {
+    if (this.monitoringService) {
+      const data = this.monitoringService.getPerformance();
+      socket.emit('performance:update', data);
+    }
+  }
+
+  private handleTestsRequest(socket: any): void {
+    if (this.monitoringService) {
+      const data = this.monitoringService.getTestResults();
+      socket.emit('tests:update', data);
+    }
+  }
+
+  private handleQualityGatesRequest(socket: any): void {
+    if (this.monitoringService) {
+      const data = this.monitoringService.getQualityGates();
+      socket.emit('quality-gates:update', data);
+    }
   }
 }

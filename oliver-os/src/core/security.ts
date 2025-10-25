@@ -46,7 +46,7 @@ export interface SecurityConfig {
 }
 
 export class SecurityManager {
-  private config: SecurityConfig;
+  private config!: SecurityConfig;
 
   constructor(config: Config) {
     this.config = this.loadSecurityConfig(config);
@@ -58,10 +58,10 @@ export class SecurityManager {
   private loadSecurityConfig(config: Config): SecurityConfig {
     return {
       jwt: {
-        secret: process.env.JWT_SECRET || 'oliver-os-secret-key-change-in-production',
-        refreshSecret: process.env.JWT_REFRESH_SECRET || 'oliver-os-refresh-secret-change-in-production',
-        accessExpiry: process.env.JWT_ACCESS_EXPIRY || '15m',
-        refreshExpiry: process.env.JWT_REFRESH_EXPIRY || '7d',
+        secret: process.env['JWT_SECRET'] || 'oliver-os-secret-key-change-in-production',
+        refreshSecret: process.env['JWT_REFRESH_SECRET'] || 'oliver-os-refresh-secret-change-in-production',
+        accessExpiry: process.env['JWT_ACCESS_EXPIRY'] || '15m',
+        refreshExpiry: process.env['JWT_REFRESH_EXPIRY'] || '7d',
       },
       rateLimiting: {
         general: {
@@ -184,7 +184,7 @@ export class SecurityManager {
    * Check if running in production
    */
   isProduction(): boolean {
-    return process.env.NODE_ENV === 'production';
+    return process.env['NODE_ENV'] === 'production';
   }
 
   /**

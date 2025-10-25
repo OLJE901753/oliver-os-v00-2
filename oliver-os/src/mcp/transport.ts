@@ -15,13 +15,13 @@ export interface MCPTransport {
 }
 
 export class StdioTransport extends EventEmitter implements MCPTransport {
-  private logger: Logger;
+  private _logger: Logger;
   private isRunning: boolean = false;
   private requestHandler?: (request: MCPRequest) => Promise<MCPResponse>;
 
   constructor() {
     super();
-    this.logger = new Logger('MCP-Transport');
+    this._logger = new Logger('MCP-Transport');
     this.setupStdioHandlers();
   }
 
@@ -34,12 +34,12 @@ export class StdioTransport extends EventEmitter implements MCPTransport {
       });
 
       process.stdin.on('end', () => {
-        this.logger.info('📡 STDIN ended, stopping transport');
+        this._logger.info('📡 STDIN ended, stopping transport');
         this.stop();
       });
 
       process.on('SIGINT', () => {
-        this.logger.info('📡 Received SIGINT, stopping transport');
+        this._logger.info('📡 Received SIGINT, stopping transport');
         this.stop();
       });
     }
@@ -52,7 +52,7 @@ export class StdioTransport extends EventEmitter implements MCPTransport {
       for (const line of lines) {
         if (line.trim()) {
           const request = JSON.parse(line) as MCPRequest;
-          this.logger.debug(`📨 Received MCP request: ${request.method}`);
+          this._logger.debug(`📨 Received MCP request: ${request.method}`);
           
           if (this.requestHandler) {
             const response = await this.requestHandler(request);
@@ -61,47 +61,47 @@ export class StdioTransport extends EventEmitter implements MCPTransport {
         }
       }
     } catch (error) {
-      this.logger.error('❌ Error handling input', error);
+      this._logger.error('❌ Error handling input', error);
       await this.sendErrorResponse('parse-error', -32700, 'Parse error');
     }
   }
 
   async start(): Promise<void> {
     if (this.isRunning) {
-      this.logger.warn('Transport is already running');
+      this._logger.warn('Transport is already running');
       return;
     }
 
     this.isRunning = true;
-    this.logger.info('📡 STDIO transport started');
+    this._logger.info('📡 STDIO transport started');
     this.emit('started');
   }
 
   async stop(): Promise<void> {
     if (!this.isRunning) {
-      this.logger.warn('Transport is not running');
+      this._logger.warn('Transport is not running');
       return;
     }
 
     this.isRunning = false;
-    this.logger.info('📡 STDIO transport stopped');
+    this._logger.info('📡 STDIO transport stopped');
     this.emit('stopped');
   }
 
   async sendResponse(response: MCPResponse): Promise<void> {
     try {
-      const jsonResponse = JSON.stringify(response) + '\n';
+      const jsonResponse = `${JSON.stringify(response)  }\n`;
       if (typeof process !== 'undefined') {
         process.stdout.write(jsonResponse);
       }
-      this.logger.debug(`📤 Sent MCP response: ${response.id}`);
+      this._logger.debug(`📤 Sent MCP response: ${response.id}`);
     } catch (error) {
-      this.logger.error('❌ Error sending response', error);
+      this._logger.error('❌ Error sending response', error);
     }
   }
 
   onRequest(callback: (request: MCPRequest) => Promise<MCPResponse>): void {
-    this._requestHandler = callback;
+    this.requestHandler = callback;
   }
 
   private async sendErrorResponse(id: string | number, code: number, message: string): Promise<void> {
@@ -115,42 +115,42 @@ export class StdioTransport extends EventEmitter implements MCPTransport {
 }
 
 export class WebSocketTransport extends EventEmitter implements MCPTransport {
-  private logger: Logger;
+  private _logger: Logger;
   private isRunning: boolean = false;
-  private _requestHandler?: (request: MCPRequest) => Promise<MCPResponse>;
+  // private _requestHandler?: (request: MCPRequest) => Promise<MCPResponse>; // Unused - will be implemented in future
   private ws?: any; // WebSocket instance
 
   constructor(private port: number = 3001) {
     super();
-    this.logger = new Logger('MCP-WebSocket-Transport');
+    this._logger = new Logger('MCP-WebSocket-Transport');
   }
 
   async start(): Promise<void> {
     if (this.isRunning) {
-      this.logger.warn('WebSocket transport is already running');
+      this._logger.warn('WebSocket transport is already running');
       return;
     }
 
     try {
       // This would be implemented with actual WebSocket server
       // For now, we'll use a placeholder
-      this.logger.info(`📡 WebSocket transport started on port ${this.port}`);
+      this._logger.info(`📡 WebSocket transport started on port ${this.port}`);
       this.isRunning = true;
       this.emit('started');
     } catch (error) {
-      this.logger.error('❌ Failed to start WebSocket transport', error);
+      this._logger.error('❌ Failed to start WebSocket transport', error);
       throw error;
     }
   }
 
   async stop(): Promise<void> {
     if (!this.isRunning) {
-      this.logger.warn('WebSocket transport is not running');
+      this._logger.warn('WebSocket transport is not running');
       return;
     }
 
     this.isRunning = false;
-    this.logger.info('📡 WebSocket transport stopped');
+    this._logger.info('📡 WebSocket transport stopped');
     this.emit('stopped');
   }
 
@@ -158,64 +158,66 @@ export class WebSocketTransport extends EventEmitter implements MCPTransport {
     try {
       if (this.ws) {
         this.ws.send(JSON.stringify(response));
-        this.logger.debug(`📤 Sent MCP response via WebSocket: ${response.id}`);
+        this._logger.debug(`📤 Sent MCP response via WebSocket: ${response.id}`);
       }
     } catch (error) {
-      this.logger.error('❌ Error sending WebSocket response', error);
+      this._logger.error('❌ Error sending WebSocket response', error);
     }
   }
 
-  onRequest(callback: (request: MCPRequest) => Promise<MCPResponse>): void {
-    this._requestHandler = callback;
+  onRequest(_callback: (request: MCPRequest) => Promise<MCPResponse>): void {
+    // Will be implemented in future iteration
+    this._logger.debug('Request handler registered (not yet implemented)');
   }
 }
 
 export class HTTPTransport extends EventEmitter implements MCPTransport {
-  private logger: Logger;
+  private _logger: Logger;
   private isRunning: boolean = false;
-  private _requestHandler?: (request: MCPRequest) => Promise<MCPResponse>;
-  private _server?: any; // HTTP server instance
+  // private _requestHandler?: (request: MCPRequest) => Promise<MCPResponse>; // Unused - will be implemented in future
+  // private _server?: any; // HTTP server instance // Unused - will be implemented in future
 
   constructor(private port: number = 3002) {
     super();
-    this.logger = new Logger('MCP-HTTP-Transport');
+    this._logger = new Logger('MCP-HTTP-Transport');
   }
 
   async start(): Promise<void> {
     if (this.isRunning) {
-      this.logger.warn('HTTP transport is already running');
+      this._logger.warn('HTTP transport is already running');
       return;
     }
 
     try {
       // This would be implemented with actual HTTP server
       // For now, we'll use a placeholder
-      this.logger.info(`📡 HTTP transport started on port ${this.port}`);
+      this._logger.info(`📡 HTTP transport started on port ${this.port}`);
       this.isRunning = true;
       this.emit('started');
     } catch (error) {
-      this.logger.error('❌ Failed to start HTTP transport', error);
+      this._logger.error('❌ Failed to start HTTP transport', error);
       throw error;
     }
   }
 
   async stop(): Promise<void> {
     if (!this.isRunning) {
-      this.logger.warn('HTTP transport is not running');
+      this._logger.warn('HTTP transport is not running');
       return;
     }
 
     this.isRunning = false;
-    this.logger.info('📡 HTTP transport stopped');
+    this._logger.info('📡 HTTP transport stopped');
     this.emit('stopped');
   }
 
   async sendResponse(response: MCPResponse): Promise<void> {
     // HTTP transport would send response in HTTP response
-    this.logger.debug(`📤 Sent MCP response via HTTP: ${response.id}`);
+    this._logger.debug(`📤 Sent MCP response via HTTP: ${response.id}`);
   }
 
-  onRequest(callback: (request: MCPRequest) => Promise<MCPResponse>): void {
-    this._requestHandler = callback;
+  onRequest(_callback: (request: MCPRequest) => Promise<MCPResponse>): void {
+    // Will be implemented in future iteration
+    this._logger.debug('Request handler registered (not yet implemented)');
   }
 }

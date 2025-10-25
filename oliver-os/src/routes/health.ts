@@ -3,20 +3,20 @@
  * Provides system health status and diagnostics
  */
 
-import { Router } from 'express';
+import { Router, type Request, type Response } from 'express';
 import { Logger } from '../core/logger';
 
 const router = Router();
 const logger = new Logger('HealthAPI');
 
-router.get('/', (req, res) => {
+router.get('/', (req: Request, res: Response) => {
   const health = {
     status: 'healthy',
     timestamp: new Date().toISOString(),
     uptime: process.uptime(),
     memory: process.memoryUsage(),
-    version: process.env.VERSION || '0.0.2',
-    environment: process.env.NODE_ENV || 'development',
+    version: process.env['VERSION'] || '0.0.2',
+    environment: process.env['NODE_ENV'] || 'development',
     message: 'Oliver-OS is running smoothly! 🚀'
   };
 
@@ -28,7 +28,7 @@ router.get('/', (req, res) => {
   res.json(health);
 });
 
-router.get('/detailed', (req, res) => {
+router.get('/detailed', (_req: Request, res: Response) => {
   const detailedHealth = {
     status: 'healthy',
     timestamp: new Date().toISOString(),
@@ -41,8 +41,8 @@ router.get('/detailed', (req, res) => {
       nodeVersion: process.version
     },
     application: {
-      version: process.env.VERSION || '0.0.2',
-      environment: process.env.NODE_ENV || 'development',
+      version: process.env['VERSION'] || '0.0.2',
+      environment: process.env['NODE_ENV'] || 'development',
       pid: process.pid
     },
     services: {

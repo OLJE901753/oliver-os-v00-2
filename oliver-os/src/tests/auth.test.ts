@@ -337,8 +337,8 @@ describe('Authentication System Tests', () => {
 // Mock jest for vitest compatibility
 const jest = {
   fn: () => ({
-    mockResolvedValue: (value: any) => {},
-    mockRejectedValue: (value: any) => {},
+    mockResolvedValue: ((_value: any) => {},
+    mockRejectedValue: ((_value: any) => {},
     toHaveBeenCalledWith: (...args: any[]) => {},
     toHaveBeenCalled: () => {},
   }),

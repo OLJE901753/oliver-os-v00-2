@@ -1,0 +1,23 @@
+{
+  "enabled": true,
+  "checks": {
+    "tests": true,
+    "linting": true,
+    "typeChecking": true,
+    "security": true,
+    "performance": true,
+    "documentation": true
+  },
+  "thresholds": {
+    "minScore": 0.8,
+    "testCoverage": 0.8,
+    "lintingErrors": 0,
+    "typeErrors": 0
+  },
+  "autoFix": false,
+  "failOnError": true,
+  "notifications": {
+    "enabled": true,
+    "channels": ["console", "file"]
+  }
+}

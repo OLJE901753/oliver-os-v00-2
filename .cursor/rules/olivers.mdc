@@ -26,3 +26,66 @@ The Process:
     Refine requirements
 
     THEN let it generate code
+
+## Command Execution Standards
+
+**NEVER use commands containing `&&` in any project files.**
+
+### Why This Rule Exists:
+- **Cross-platform compatibility** - `&&` doesn't work in PowerShell
+- **Docker best practices** - Multiple RUN statements are preferred over chained commands
+- **CI/CD reliability** - Separate steps provide better error handling and debugging
+- **Maintainability** - Easier to debug individual commands
+- **Consistency** - Uniform approach across the entire project
+
+### Proper Alternatives:
+
+**❌ BAD - Using &&**
+```bash
+npm install && npm run build && npm test
+cd oliver-os && pnpm install && pnpm build
+```
+
+**✅ GOOD - PowerShell**
+```powershell
+npm install; npm run build; npm test
+cd oliver-os; pnpm install; pnpm build
+```
+
+**✅ GOOD - Docker**
+```dockerfile
+RUN npm install
+RUN npm run build
+RUN npm test
+```
+
+**✅ GOOD - CI/CD (GitHub Actions)**
+```yaml
+- name: Install dependencies
+  run: npm install
+- name: Build project
+  run: npm run build
+- name: Run tests
+  run: npm test
+```
+
+**✅ GOOD - Shell Scripts**
+```bash
+npm install
+if [ $? -eq 0 ]; then
+  npm run build
+  if [ $? -eq 0 ]; then
+    npm test
+  fi
+fi
+```
+
+### Scope:
+This rule applies to ALL project files:
+- PowerShell scripts (`.ps1`)
+- Docker files (`Dockerfile`, `docker-compose.yml`)
+- CI/CD workflows (`.yml`, `.yaml`)
+- Documentation and README files
+- Shell scripts (`.sh`, `.bat`)
+- Package.json scripts
+- Any configuration files

@@ -6,12 +6,12 @@
 import { Router } from 'express';
 import type { Request, Response } from 'express';
 import { Logger } from '../core/logger';
-import { BureaucracyDisruptorService } from '../services/bureaucracy-disruptor';
-import { Config } from '../core/config';
+// import { BureaucracyDisruptorService } from '../services/bureaucracy-disruptor';
+// import { Config } from '../core/config';
 
 const router = Router();
 const logger = new Logger('DisruptorAPI');
-const config = new Config();
+// const config = new Config();
 
 // Mock disruptor service for now
 const mockDisruptor = {
@@ -53,7 +53,7 @@ const mockDisruptor = {
   })
 };
 
-router.get('/', (req: Request, res: Response) => {
+router.get('/', (_req: Request, res: Response) => {
   logger.info('Bureaucracy disruptor status requested');
   
   const stats = mockDisruptor.getDisruptionStats();
@@ -68,7 +68,7 @@ router.get('/', (req: Request, res: Response) => {
   });
 });
 
-router.get('/reports', (req: Request, res: Response) => {
+router.get('/reports', (_req: Request, res: Response) => {
   logger.info('Bureaucracy disruption reports requested');
   
   const reports = mockDisruptor.getReports();
@@ -80,7 +80,7 @@ router.get('/reports', (req: Request, res: Response) => {
   });
 });
 
-router.get('/stats', (req: Request, res: Response) => {
+router.get('/stats', (_req: Request, res: Response) => {
   logger.info('Bureaucracy disruption statistics requested');
   
   const stats = mockDisruptor.getDisruptionStats();

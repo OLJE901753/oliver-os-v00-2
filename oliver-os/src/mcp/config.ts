@@ -114,12 +114,12 @@ const mcpConfigSchema = z.object({
 type MCPConfigType = z.infer<typeof mcpConfigSchema>;
 
 export class MCPConfig {
-  private config: MCPConfigType;
-  private logger: Logger;
+  private _config: MCPConfigType;
+  private _logger: Logger;
 
   constructor() {
-    this.logger = new Logger('MCP-Config');
-    this.config = this.getDefaultConfig();
+    this._logger = new Logger('MCP-Config');
+    this._config = this.getDefaultConfig();
   }
 
   async load(): Promise<void> {
@@ -128,11 +128,11 @@ export class MCPConfig {
       await this.loadMCPConfigFile();
       
       // Validate configuration
-      this.config = mcpConfigSchema.parse(this.config);
+      this._config = mcpConfigSchema.parse(this._config);
       
-      this.logger.info('✅ MCP Configuration loaded successfully');
+      this._logger.info('✅ MCP Configuration loaded successfully');
     } catch (error) {
-      this.logger.error('❌ Failed to load MCP configuration', error);
+      this._logger.error('❌ Failed to load MCP configuration', error);
       throw error;
     }
   }
@@ -142,10 +142,10 @@ export class MCPConfig {
     
     if (await fs.pathExists(configPath)) {
       const configData = await fs.readJSON(configPath);
-      this.config = { ...this.config, ...configData };
-      this.logger.info('📄 Loaded MCP configuration file');
+      this._config = { ...this._config, ...configData };
+      this._logger.info('📄 Loaded MCP configuration file');
     } else {
-      this.logger.warn('⚠️ No MCP configuration file found, using defaults');
+      this._logger.warn('⚠️ No MCP configuration file found, using defaults');
     }
   }
 
@@ -282,19 +282,19 @@ export class MCPConfig {
   }
 
   get<K extends keyof MCPConfigType>(key: K): MCPConfigType[K] {
-    return this.config[key];
+    return this._config[key];
   }
 
   getAll(): MCPConfigType {
-    return { ...this.config };
+    return { ...this._config };
   }
 
   getEnabledTools(): string[] {
     const enabledTools: string[] = [];
     
-    Object.entries(this.config.tools).forEach(([_category, config]) => {
-      if (config.enabled) {
-        enabledTools.push(...config.tools);
+    Object.entries(this._config.tools).forEach(([_category, toolConfig]) => {
+      if (toolConfig.enabled) {
+        enabledTools.push(...toolConfig.tools);
       }
     });
     
@@ -304,11 +304,11 @@ export class MCPConfig {
   getEnabledResources(): Array<{ uri: string; description: string }> {
     const enabledResources: Array<{ uri: string; description: string }> = [];
     
-    Object.entries(this.config.resources).forEach(([_key, config]) => {
-      if (config.enabled) {
+    Object.entries(this._config.resources).forEach(([_key, resourceConfig]) => {
+      if (resourceConfig.enabled) {
         enabledResources.push({
-          uri: config.uri,
-          description: config.description
+          uri: resourceConfig.uri,
+          description: resourceConfig.description
         });
       }
     });
@@ -317,13 +317,13 @@ export class MCPConfig {
   }
 
   isTransportEnabled(transport: 'stdio' | 'websocket' | 'http'): boolean {
-    return this.config.server.transports[transport].enabled;
+    return this._config.server.transports[transport].enabled;
   }
 
   getTransportPort(transport: 'stdio' | 'websocket' | 'http'): number {
     if (transport === 'stdio') {
       return 0; // STDIO doesn't use a port
     }
-    return this.config.server.transports[transport].port;
+    return this._config.server.transports[transport].port;
   }
 }

@@ -16,7 +16,7 @@ const mockProcesses = [
   { id: 'proc-2', name: 'Log Manager', status: 'running', pid: 1235, startTime: new Date() }
 ];
 
-router.get('/', (req: Request, res: Response) => {
+router.get('/', (_req: Request, res: Response) => {
   logger.info('Processes list requested');
   
   res.json({

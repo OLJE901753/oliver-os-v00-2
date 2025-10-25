@@ -20,22 +20,22 @@ import type {
 
 export class CodebuffService {
   private client: CodebuffClient;
-  private logger: Logger;
-  private config: Config;
+  private _logger: Logger;
+  private _config: Config;
   private agents: Map<string, AgentStatus> = new Map();
   private workflows: Map<string, WorkflowDefinition> = new Map();
   private agentDefinitions: Map<string, OliverOSAgentDefinition> = new Map();
 
   constructor(config: Config) {
-    this.config = config;
-    this.logger = new Logger('CodebuffService');
+    this._config = config;
+    this._logger = new Logger('CodebuffService');
     
     const codebuffConfig: CodebuffClientConfig = {
-      apiKey: this.config.get('codebuff.apiKey') || process.env['CODEBUFF_API_KEY'] || '',
+      apiKey: this._config.get('codebuff.apiKey') || process.env['CODEBUFF_API_KEY'] || '',
       cwd: process.cwd(),
-      onError: (error) => this.logger.error('Codebuff client error:', error.message),
-      timeout: this.config.get('codebuff.timeout') as number || 300000,
-      retries: this.config.get('codebuff.retries') as number || 3
+      onError: (error) => this._logger.error('Codebuff client error:', error.message),
+      timeout: this._config.get('codebuff.timeout') as number || 300000,
+      retries: this._config.get('codebuff.retries') as number || 3
     };
 
     this.client = new CodebuffClient(codebuffConfig);
@@ -125,7 +125,7 @@ export class CodebuffService {
       });
     });
 
-    this.logger.info(`Initialized ${agents.length} Oliver-OS agent definitions`);
+    this._logger.info(`Initialized ${agents.length} Oliver-OS agent definitions`);
   }
 
   /**
@@ -137,7 +137,7 @@ export class CodebuffService {
     const startTime = Date.now();
 
     try {
-      this.logger.info(`🚀 Starting Codebuff task with agent: ${options.agent}`);
+      this._logger.info(`🚀 Starting Codebuff task with agent: ${options.agent}`);
       
       // Break down the task
       const taskBreakdown = await this.breakDownTask(options.prompt);
@@ -163,16 +163,16 @@ export class CodebuffService {
         prompt: options.prompt,
         agentDefinitions: options.agentDefinitions,
         customToolDefinitions: options.customToolDefinitions as any,
-        handleEvent: (event: any) => {
+        handleEvent: ((_event: any) => {
           const codebuffEvent: CodebuffEvent = {
             type: 'progress',
-            message: (event as any).message || 'Processing...',
-            data: (event as any).data,
+            message: (_event as any).message || 'Processing...',
+            data: (_event as any).data,
             timestamp: new Date().toISOString()
           };
           events.push(codebuffEvent);
           options.handleEvent?.(codebuffEvent);
-        }
+        })
       });
 
       // Document the results
@@ -204,7 +204,7 @@ export class CodebuffService {
       };
       events.push(errorEvent);
 
-      this.logger.error('❌ Codebuff task failed', error);
+      this._logger.error('❌ Codebuff task failed', error);
       
       return {
         success: false,
@@ -224,7 +224,7 @@ export class CodebuffService {
    */
   async spawnAgent(request: AgentSpawnRequest): Promise<AgentStatus> {
     try {
-      this.logger.info(`🤖 Spawning agent of type: ${request.agentType}`);
+      this._logger.info(`🤖 Spawning agent of type: ${request.agentType}`);
 
       // Break down agent requirements
       const requirements = await this.breakDownAgentRequirements(request);
@@ -256,7 +256,7 @@ export class CodebuffService {
       this.agents.set(agentId, agentStatus);
 
       // Document the spawned agent
-      this.logger.info(`✅ Agent ${agentId} spawned successfully`, {
+      this._logger.info(`✅ Agent ${agentId} spawned successfully`, {
         type: request.agentType,
         capabilities: request.capabilities
       });
@@ -264,7 +264,7 @@ export class CodebuffService {
       return agentStatus;
 
     } catch (error) {
-      this.logger.error('❌ Failed to spawn agent', error);
+      this._logger.error('❌ Failed to spawn agent', error);
       throw error;
     }
   }
@@ -289,7 +289,7 @@ export class CodebuffService {
    */
   async createWorkflow(definition: WorkflowDefinition): Promise<WorkflowDefinition> {
     this.workflows.set(definition.id, definition);
-    this.logger.info(`📋 Created workflow: ${definition.name} (${definition.id})`);
+    this._logger.info(`📋 Created workflow: ${definition.name} (${definition.id})`);
     return definition;
   }
 
@@ -302,7 +302,7 @@ export class CodebuffService {
       throw new Error(`Workflow ${workflowId} not found`);
     }
 
-    this.logger.info(`🔄 Executing workflow: ${workflow.name}`);
+    this._logger.info(`🔄 Executing workflow: ${workflow.name}`);
     workflow.status = 'running';
 
     const events: CodebuffEvent[] = [];
@@ -334,7 +334,7 @@ export class CodebuffService {
 
     } catch (error) {
       workflow.status = 'failed';
-      this.logger.error('❌ Workflow execution failed', error);
+      this._logger.error('❌ Workflow execution failed', error);
       throw error;
     }
   }
@@ -364,7 +364,7 @@ export class CodebuffService {
       agent: options.agent,
       timestamp: new Date().toISOString(),
       prompt: options.prompt,
-      result: result,
+      result,
       metadata: {
         agentDefinitions: options.agentDefinitions?.length || 0,
         customTools: options.customToolDefinitions?.length || 0
@@ -400,16 +400,16 @@ export class CodebuffService {
    * Cleanup and shutdown
    */
   async shutdown(): Promise<void> {
-    this.logger.info('🛑 Shutting down Codebuff service...');
+    this._logger.info('🛑 Shutting down Codebuff service...');
     
     // Terminate all active agents
     for (const [agentId, agent] of this.agents) {
       if (agent.status === 'active' || agent.status === 'busy') {
         agent.status = 'terminated';
-        this.logger.info(`Terminated agent: ${agentId}`);
+        this._logger.info(`Terminated agent: ${agentId}`);
       }
     }
     
-    this.logger.info('✅ Codebuff service shutdown complete');
+    this._logger.info('✅ Codebuff service shutdown complete');
   }
 }

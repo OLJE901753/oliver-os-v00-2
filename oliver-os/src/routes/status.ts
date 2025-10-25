@@ -10,14 +10,14 @@ import { Logger } from '../core/logger';
 const router = Router();
 const logger = new Logger('StatusAPI');
 
-router.get('/', (req: Request, res: Response) => {
+router.get('/', (_req: Request, res: Response) => {
   const status = {
     system: {
       status: 'operational',
       uptime: process.uptime(),
       timestamp: new Date().toISOString(),
-      version: process.env.VERSION || '0.0.2',
-      environment: process.env.NODE_ENV || 'development'
+      version: process.env['VERSION'] || '0.0.2',
+      environment: process.env['NODE_ENV'] || 'development'
     },
     performance: {
       memory: process.memoryUsage(),
@@ -58,8 +58,8 @@ router.get('/metrics', (req: Request, res: Response) => {
       nodeVersion: process.version
     },
     application: {
-      version: process.env.VERSION || '0.0.2',
-      environment: process.env.NODE_ENV || 'development',
+      version: process.env['VERSION'] || '0.0.2',
+      environment: process.env['NODE_ENV'] || 'development',
       pid: process.pid
     },
     performance: {

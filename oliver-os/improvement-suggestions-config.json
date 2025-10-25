@@ -1,0 +1,25 @@
+{
+  "enabled": true,
+  "categories": {
+    "readability": true,
+    "performance": true,
+    "security": true,
+    "maintainability": true,
+    "bestPractices": true,
+    "architecture": true
+  },
+  "thresholds": {
+    "minConfidence": 0.7,
+    "maxSuggestions": 10,
+    "severityFilter": ["low", "medium", "high", "critical"]
+  },
+  "learning": {
+    "useMemory": true,
+    "adaptToFeedback": true,
+    "trackSuccess": true
+  },
+  "notifications": {
+    "enabled": true,
+    "channels": ["console", "file"]
+  }
+}

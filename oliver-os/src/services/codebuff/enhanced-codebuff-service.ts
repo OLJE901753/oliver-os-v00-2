@@ -35,8 +35,8 @@ import type {
 
 export class EnhancedCodebuffService extends EventEmitter {
   private client: CodebuffClient;
-  private logger: Logger;
-  private config: Config;
+  private _logger: Logger;
+  private _config: Config;
   private orchestrationConfig: OrchestrationConfig;
   
   // Core orchestration state
@@ -46,21 +46,21 @@ export class EnhancedCodebuffService extends EventEmitter {
   private toolRegistry: ToolRegistry;
   private mcpServers: Map<string, MCPServerInfo> = new Map();
   private activeExecutions: Map<string, WorkflowExecution> = new Map();
-  private artifacts: Map<string, Artifact> = new Map();
+  // private _artifacts: Map<string, Artifact> = new Map(); // Unused - will be implemented in future iteration
   private mcpToolManager: MCPToolRegistryManager;
   
   // Supervision and monitoring
   private supervisionTimers: Map<string, NodeJS.Timeout> = new Map();
   private metricsTimer?: NodeJS.Timeout;
-  private isRunning: boolean = false;
+  // private _isRunning: boolean = false; // Unused for now
   
   // Event bus for internal communication
   private eventBus: EventBus;
 
   constructor(config: Config, orchestrationConfig?: Partial<OrchestrationConfig>) {
     super();
-    this.config = config;
-    this.logger = new Logger('EnhancedCodebuffService');
+    this._config = config;
+    this._logger = new Logger('EnhancedCodebuffService');
     
     // Initialize orchestration configuration with defaults
     this.orchestrationConfig = {
@@ -74,7 +74,7 @@ export class EnhancedCodebuffService extends EventEmitter {
       persistenceConfig: {
         enabled: true,
         provider: 'database',
-        databaseUrl: this.config.get('database.url') as string,
+        databaseUrl: this._config.get('database.url') as string,
         retentionDays: 30,
         compression: true
       },
@@ -97,11 +97,11 @@ export class EnhancedCodebuffService extends EventEmitter {
     
     // Initialize Codebuff client
     const codebuffConfig: CodebuffClientConfig = {
-      apiKey: this.config.get('codebuff.apiKey') || process.env['CODEBUFF_API_KEY'] || '',
+      apiKey: this._config.get('codebuff.apiKey') || process.env['CODEBUFF_API_KEY'] || '',
       cwd: process.cwd(),
-      onError: (error) => this.logger.error('Codebuff client error:', error.message),
-      timeout: this.config.get('codebuff.timeout') as number || 300000,
-      retries: this.config.get('codebuff.retries') as number || 3,
+      onError: (error) => this._logger.error('Codebuff client error:', error.message),
+      timeout: this._config.get('codebuff.timeout') as number || 300000,
+      retries: this._config.get('codebuff.retries') as number || 3,
       enableSupervision: this.orchestrationConfig.enableSupervision,
       enablePersistence: this.orchestrationConfig.enablePersistence,
       eventBus: this.eventBus
@@ -117,7 +117,7 @@ export class EnhancedCodebuffService extends EventEmitter {
    * Following BMAD: Break down capabilities, Map dependencies, Automate initialization, Document agents
    */
   async initialize(): Promise<void> {
-    this.logger.info('🚀 Initializing Enhanced Codebuff Orchestration Hub...');
+    this._logger.info('🚀 Initializing Enhanced Codebuff Orchestration Hub...');
     
     try {
       // Break down initialization into manageable components
@@ -138,12 +138,12 @@ export class EnhancedCodebuffService extends EventEmitter {
       }
       
       // Document the initialization
-      this.logger.info('✅ Enhanced Codebuff Orchestration Hub initialized successfully');
-      this.logger.info(`📊 Initialized ${this.agentDefinitions.size} agent definitions`);
-      this.logger.info(`🔧 Registered ${this.toolRegistry.tools.size} tools`);
-      this.logger.info(`📋 Loaded ${this.workflows.size} workflows`);
+      this._logger.info('✅ Enhanced Codebuff Orchestration Hub initialized successfully');
+      this._logger.info(`📊 Initialized ${this.agentDefinitions.size} agent definitions`);
+      this._logger.info(`🔧 Registered ${this.toolRegistry.tools.size} tools`);
+      this._logger.info(`📋 Loaded ${this.workflows.size} workflows`);
       
-      this.isRunning = true;
+      // this._isRunning = true; // Unused for now
       this.emit('initialized', {
         agents: this.agentDefinitions.size,
         tools: this.toolRegistry.tools.size,
@@ -151,7 +151,7 @@ export class EnhancedCodebuffService extends EventEmitter {
       });
       
     } catch (error) {
-      this.logger.error('❌ Failed to initialize orchestration hub', error);
+      this._logger.error('❌ Failed to initialize orchestration hub', error);
       throw error;
     }
   }
@@ -167,7 +167,7 @@ export class EnhancedCodebuffService extends EventEmitter {
     const startTime = Date.now();
 
     try {
-      this.logger.info(`🎯 Starting orchestrated task: ${options.prompt.substring(0, 100)}...`);
+      this._logger.info(`🎯 Starting orchestrated task: ${options.prompt.substring(0, 100)}...`);
       
       // Break down the task into orchestrated components
       const taskBreakdown = await this.breakDownOrchestratedTask(options);
@@ -226,7 +226,7 @@ export class EnhancedCodebuffService extends EventEmitter {
       };
       events.push(errorEvent);
 
-      this.logger.error('❌ Orchestrated task failed', error);
+      this._logger.error('❌ Orchestrated task failed', error);
       
       return {
         success: false,
@@ -247,7 +247,7 @@ export class EnhancedCodebuffService extends EventEmitter {
    */
   async spawnAgent(request: AgentSpawnRequest): Promise<AgentStatus> {
     try {
-      this.logger.info(`🤖 Spawning supervised agent of type: ${request.agentType}`);
+      this._logger.info(`🤖 Spawning supervised agent of type: ${request.agentType}`);
 
       // Break down agent requirements
       const requirements = await this.breakDownAgentRequirements(request);
@@ -304,7 +304,7 @@ export class EnhancedCodebuffService extends EventEmitter {
       }
 
       // Document the spawned agent
-      this.logger.info(`✅ Agent ${agentId} spawned successfully with supervision`, {
+      this._logger.info(`✅ Agent ${agentId} spawned successfully with supervision`, {
         type: request.agentType,
         capabilities: request.capabilities,
         supervision: supervisionConfig
@@ -315,7 +315,7 @@ export class EnhancedCodebuffService extends EventEmitter {
       return agentStatus;
 
     } catch (error) {
-      this.logger.error('❌ Failed to spawn supervised agent', error);
+      this._logger.error('❌ Failed to spawn supervised agent', error);
       throw error;
     }
   }
@@ -329,7 +329,7 @@ export class EnhancedCodebuffService extends EventEmitter {
       throw new Error(`Workflow ${workflowId} not found`);
     }
 
-    this.logger.info(`🔄 Executing orchestrated workflow: ${workflow.name}`);
+    this._logger.info(`🔄 Executing orchestrated workflow: ${workflow.name}`);
     
     const executionId = `workflow-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     const execution: WorkflowExecution = {
@@ -419,7 +419,7 @@ export class EnhancedCodebuffService extends EventEmitter {
       execution.duration = Date.now() - new Date(execution.startTime).getTime();
       workflow.status = 'failed';
       
-      this.logger.error('❌ Orchestrated workflow execution failed', error);
+      this._logger.error('❌ Orchestrated workflow execution failed', error);
       throw error;
     } finally {
       this.activeExecutions.delete(executionId);
@@ -453,9 +453,9 @@ export class EnhancedCodebuffService extends EventEmitter {
 
   private async executeOrchestratedTask(
     options: CodebuffRunOptions, 
-    plan: Record<string, unknown>, 
+    _plan: Record<string, unknown>, 
     events: CodebuffEvent[], 
-    artifacts: Artifact[]
+    _artifacts: Artifact[]
   ): Promise<any> {
     // Execute the task with full orchestration capabilities
     const result = await this.client.run({
@@ -463,17 +463,17 @@ export class EnhancedCodebuffService extends EventEmitter {
       prompt: options.prompt,
       agentDefinitions: options.agentDefinitions,
       customToolDefinitions: options.customToolDefinitions as any,
-      handleEvent: (event: any) => {
+      handleEvent: ((_event: any) => {
         const codebuffEvent: CodebuffEvent = {
           type: 'progress',
-          message: (event as any).message || 'Processing...',
-          data: (event as any).data,
+          message: (_event as any).message || 'Processing...',
+          data: (_event as any).data,
           timestamp: new Date().toISOString(),
           workflowId: options.workflowId
         };
         events.push(codebuffEvent);
         options.handleEvent?.(codebuffEvent);
-      }
+      })
     });
 
     return result;
@@ -489,7 +489,7 @@ export class EnhancedCodebuffService extends EventEmitter {
       agent: options.agent,
       timestamp: new Date().toISOString(),
       prompt: options.prompt,
-      result: result,
+      result,
       orchestration: {
         supervision: this.orchestrationConfig.enableSupervision,
         persistence: this.orchestrationConfig.enablePersistence,
@@ -524,11 +524,11 @@ export class EnhancedCodebuffService extends EventEmitter {
       mcpServers,
       registerTool: (tool: CustomToolDefinition) => {
         tools.set(tool.name, tool);
-        this.logger.info(`🔧 Registered tool: ${tool.name}`);
+        this._logger.info(`🔧 Registered tool: ${tool.name}`);
       },
       unregisterTool: (name: string) => {
         tools.delete(name);
-        this.logger.info(`🔧 Unregistered tool: ${name}`);
+        this._logger.info(`🔧 Unregistered tool: ${name}`);
       },
       getTool: (name: string) => tools.get(name),
       listTools: () => Array.from(tools.values()),
@@ -557,7 +557,7 @@ export class EnhancedCodebuffService extends EventEmitter {
     return {
       emit: (event: string, data: any) => {
         this.emit(event, data);
-        this.logger.debug(`📡 Event emitted: ${event}`, data);
+        this._logger.debug(`📡 Event emitted: ${event}`, data);
       },
       on: (event: string, handler: (data: any) => void) => {
         this.on(event, handler);
@@ -570,12 +570,12 @@ export class EnhancedCodebuffService extends EventEmitter {
 
   // Supervision and Monitoring
   private async startSupervision(): Promise<void> {
-    this.logger.info('👁️ Starting agent supervision...');
+    this._logger.info('👁️ Starting agent supervision...');
     // Implementation for supervision will be added in next iteration
   }
 
   private async startMetricsCollection(): Promise<void> {
-    this.logger.info('📊 Starting metrics collection...');
+    this._logger.info('📊 Starting metrics collection...');
     // Implementation for metrics will be added in next iteration
   }
 
@@ -627,7 +627,7 @@ export class EnhancedCodebuffService extends EventEmitter {
 
   // MCP Integration
   private async initializeMCPTools(): Promise<void> {
-    this.logger.info('🔧 Initializing MCP tools...');
+    this._logger.info('🔧 Initializing MCP tools...');
     
     // Get all MCP tools and register them in our tool registry
     const mcpTools = this.mcpToolManager.getAllTools();
@@ -648,39 +648,24 @@ export class EnhancedCodebuffService extends EventEmitter {
       });
     }
     
-    this.logger.info(`✅ Initialized ${mcpTools.length} MCP tools across ${Object.keys(serverHealth).length} servers`);
+    this._logger.info(`✅ Initialized ${mcpTools.length} MCP tools across ${Object.keys(serverHealth).length} servers`);
   }
 
-  private async executeMCPTool(serverName: string, toolName: string, args: Record<string, unknown>): Promise<unknown> {
-    this.logger.info(`🔧 Executing MCP tool: ${toolName} via ${serverName}`);
-    
-    try {
-      const result = await this.mcpToolManager.executeTool(toolName, args);
-      
-      // Emit tool execution event
-      this.emit('tool_called', {
-        toolName,
-        serverName,
-        args,
-        result,
-        timestamp: new Date().toISOString()
-      });
-      
-      return result;
-    } catch (error) {
-      this.logger.error(`❌ MCP tool execution failed: ${toolName}`, error);
-      throw error;
-    }
-  }
+  // Unused - will be implemented in future iteration
+  // private async executeMCPTool(_serverName: string, _toolName: string, _args: Record<string, unknown>): Promise<unknown> {
+  //   // Implementation will be added in future iteration
+  //   this._logger.info('🔧 MCP tool execution - to be implemented');
+  //   return {};
+  // }
 
   // Workflow Management
   private async initializeWorkflows(): Promise<void> {
-    this.logger.info('📋 Initializing workflows...');
+    this._logger.info('📋 Initializing workflows...');
     // Implementation for workflow initialization will be added in next iteration
   }
 
   private async mapAgentDependencies(): Promise<void> {
-    this.logger.info('🗺️ Mapping agent dependencies...');
+    this._logger.info('🗺️ Mapping agent dependencies...');
     // Implementation for dependency mapping will be added in next iteration
   }
 
@@ -737,12 +722,12 @@ export class EnhancedCodebuffService extends EventEmitter {
    * Cleanup and shutdown
    */
   async shutdown(): Promise<void> {
-    this.logger.info('🛑 Shutting down Enhanced Codebuff Orchestration Hub...');
+    this._logger.info('🛑 Shutting down Enhanced Codebuff Orchestration Hub...');
     
     // Stop supervision timers
     for (const [agentId, timer] of this.supervisionTimers) {
       clearInterval(timer);
-      this.logger.info(`Stopped supervision for agent: ${agentId}`);
+      this._logger.info(`Stopped supervision for agent: ${agentId}`);
     }
     
     // Stop metrics collection
@@ -754,11 +739,11 @@ export class EnhancedCodebuffService extends EventEmitter {
     for (const [agentId, agent] of this.agents) {
       if (agent.status === 'active' || agent.status === 'busy') {
         agent.status = 'terminated';
-        this.logger.info(`Terminated agent: ${agentId}`);
+        this._logger.info(`Terminated agent: ${agentId}`);
       }
     }
     
-    this.isRunning = false;
-    this.logger.info('✅ Enhanced Codebuff Orchestration Hub shutdown complete');
+    // this._isRunning = false; // Unused for now
+    this._logger.info('✅ Enhanced Codebuff Orchestration Hub shutdown complete');
   }
 }

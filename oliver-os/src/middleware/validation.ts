@@ -63,7 +63,7 @@ export const requestSchemas = {
 };
 
 export class ValidationMiddleware {
-  private securityManager: SecurityManager;
+  private securityManager!: SecurityManager;
 
   constructor(securityManager: SecurityManager) {
     this.securityManager = securityManager;
@@ -87,11 +87,11 @@ export class ValidationMiddleware {
         next();
       } catch (error) {
         if (error instanceof z.ZodError) {
-          logger.warn(`Validation failed for ${req.method} ${req.path}:`, error.errors);
+          logger.warn(`Validation failed for ${req.method} ${req.path}:`, error.issues);
           res.status(400).json({
             success: false,
             error: 'Validation failed',
-            details: error.errors.map(err => ({
+            details: error.issues.map((err: z.ZodIssue) => ({
               field: err.path.join('.'),
               message: err.message,
             })),
@@ -245,8 +245,8 @@ export class ValidationMiddleware {
       return;
     }
     
-    req.query.page = pageNum.toString();
-    req.query.limit = limitNum.toString();
+    req.query['page'] = pageNum.toString();
+    req.query['limit'] = limitNum.toString();
     
     next();
   };

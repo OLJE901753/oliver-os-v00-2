@@ -7,10 +7,10 @@ import { Logger } from '../../core/logger';
 import type { MCPTool, MCPToolResult } from '../types';
 
 export class ThoughtProcessorTools {
-  private logger: Logger;
+  private _logger: Logger;
 
   constructor() {
-    this.logger = new Logger('ThoughtProcessor-Tools');
+    this._logger = new Logger('ThoughtProcessor-Tools');
   }
 
   createTools(): MCPTool[] {
@@ -102,7 +102,7 @@ export class ThoughtProcessorTools {
   private async handleAnalyzeThoughtPatterns(args: Record<string, unknown>): Promise<MCPToolResult> {
     const { thoughts, analysisType, userId } = args;
     
-    this.logger.info(`🧠 Analyzing thought patterns: ${analysisType} for ${(thoughts as string[]).length} thoughts`);
+    this._logger.info(`🧠 Analyzing thought patterns: ${analysisType} for ${(thoughts as string[]).length} thoughts`);
     
     try {
       // This would integrate with your actual AI services
@@ -121,7 +121,7 @@ export class ThoughtProcessorTools {
         }]
       };
     } catch (error) {
-      this.logger.error('❌ Error analyzing thought patterns', error);
+      this._logger.error('❌ Error analyzing thought patterns', error);
       return {
         content: [{
           type: 'text',
@@ -139,7 +139,7 @@ export class ThoughtProcessorTools {
   private async handleEnhanceThought(args: Record<string, unknown>): Promise<MCPToolResult> {
     const { thought, enhancementType, context } = args;
     
-    this.logger.info(`✨ Enhancing thought with ${enhancementType} enhancement`);
+    this._logger.info(`✨ Enhancing thought with ${enhancementType} enhancement`);
     
     try {
       const enhancedThought = await this.performThoughtEnhancement(
@@ -161,7 +161,7 @@ export class ThoughtProcessorTools {
         }]
       };
     } catch (error) {
-      this.logger.error('❌ Error enhancing thought', error);
+      this._logger.error('❌ Error enhancing thought', error);
       return {
         content: [{
           type: 'text',
@@ -179,7 +179,7 @@ export class ThoughtProcessorTools {
   private async handleGenerateThoughtConnections(args: Record<string, unknown>): Promise<MCPToolResult> {
     const { thoughts, connectionType, maxConnections } = args;
     
-    this.logger.info(`🔗 Generating ${connectionType} connections between ${(thoughts as string[]).length} thoughts`);
+    this._logger.info(`🔗 Generating ${connectionType} connections between ${(thoughts as string[]).length} thoughts`);
     
     try {
       const connections = await this.generateConnections(
@@ -201,7 +201,7 @@ export class ThoughtProcessorTools {
         }]
       };
     } catch (error) {
-      this.logger.error('❌ Error generating thought connections', error);
+      this._logger.error('❌ Error generating thought connections', error);
       return {
         content: [{
           type: 'text',
@@ -219,7 +219,7 @@ export class ThoughtProcessorTools {
   private async handleStreamThoughtProcessing(args: Record<string, unknown>): Promise<MCPToolResult> {
     const { thought, streamId, userId, processingSteps } = args;
     
-    this.logger.info(`🌊 Starting thought processing stream: ${streamId}`);
+    this._logger.info(`🌊 Starting thought processing stream: ${streamId}`);
     
     try {
       // This would integrate with your WebSocket streaming service
@@ -245,7 +245,7 @@ export class ThoughtProcessorTools {
         }]
       };
     } catch (error) {
-      this.logger.error('❌ Error starting thought stream', error);
+      this._logger.error('❌ Error starting thought stream', error);
       return {
         content: [{
           type: 'text',
@@ -291,15 +291,15 @@ export class ThoughtProcessorTools {
     // This would call your connection generation service
     return [
       {
-        from: thoughts[0],
-        to: thoughts[1],
+        from: thoughts[0]!,
+        to: thoughts[1]!,
         connectionType,
         strength: 0.8,
         description: 'These thoughts share a common theme'
       },
       {
-        from: thoughts[1],
-        to: thoughts[2],
+        from: thoughts[1]!,
+        to: thoughts[2]!,
         connectionType,
         strength: 0.6,
         description: 'Sequential development of ideas'

@@ -8,17 +8,15 @@ import { Logger } from '../../core/logger';
 import type { MCPTool, MCPResource, MCPRequest, MCPResponse, OliverOSMCPServer } from '../types';
 
 export class DatabaseMCPServer extends EventEmitter implements OliverOSMCPServer {
-  private logger: Logger;
+  private _logger: Logger;
   public config: any;
   private isRunning: boolean = false;
   private supabaseUrl: string;
-  private supabaseKey: string;
 
-  constructor(supabaseUrl?: string, supabaseKey?: string) {
+  constructor(supabaseUrl?: string, _supabaseKey?: string) {
     super();
-    this.logger = new Logger('Database-MCP-Server');
-    this.supabaseUrl = supabaseUrl || process.env.SUPABASE_URL || '';
-    this.supabaseKey = supabaseKey || process.env.SUPABASE_ANON_KEY || '';
+    this._logger = new Logger('Database-MCP-Server');
+    this.supabaseUrl = supabaseUrl || process.env['SUPABASE_URL'] || '';
     this.config = this.createServerConfig();
   }
 
@@ -262,46 +260,46 @@ export class DatabaseMCPServer extends EventEmitter implements OliverOSMCPServer
 
   async start(): Promise<void> {
     if (this.isRunning) {
-      this.logger.warn('Database MCP Server is already running');
+      this._logger.warn('Database MCP Server is already running');
       return;
     }
 
     try {
-      this.logger.info(`🚀 Starting Database MCP Server on ${this.config.host}:${this.config.port}`);
-      this.logger.info(`🗄️ Supabase URL: ${this.supabaseUrl ? 'Configured' : 'Not configured'}`);
-      this.logger.info(`📋 Available tools: ${this.config.tools.length}`);
-      this.logger.info(`📚 Available resources: ${this.config.resources.length}`);
+      this._logger.info(`🚀 Starting Database MCP Server on ${this.config.host}:${this.config.port}`);
+      this._logger.info(`🗄️ Supabase URL: ${this.supabaseUrl ? 'Configured' : 'Not configured'}`);
+      this._logger.info(`📋 Available tools: ${this.config.tools.length}`);
+      this._logger.info(`📚 Available resources: ${this.config.resources.length}`);
       
       this.isRunning = true;
       this.emit('started');
       
-      this.logger.info('✅ Database MCP Server started successfully');
+      this._logger.info('✅ Database MCP Server started successfully');
     } catch (error) {
-      this.logger.error('❌ Failed to start Database MCP Server', error);
+      this._logger.error('❌ Failed to start Database MCP Server', error);
       throw error;
     }
   }
 
   async stop(): Promise<void> {
     if (!this.isRunning) {
-      this.logger.warn('Database MCP Server is not running');
+      this._logger.warn('Database MCP Server is not running');
       return;
     }
 
     try {
-      this.logger.info('🛑 Stopping Database MCP Server...');
+      this._logger.info('🛑 Stopping Database MCP Server...');
       this.isRunning = false;
       this.emit('stopped');
-      this.logger.info('✅ Database MCP Server stopped successfully');
+      this._logger.info('✅ Database MCP Server stopped successfully');
     } catch (error) {
-      this.logger.error('❌ Failed to stop Database MCP Server', error);
+      this._logger.error('❌ Failed to stop Database MCP Server', error);
       throw error;
     }
   }
 
   async handleRequest(request: MCPRequest): Promise<MCPResponse> {
     try {
-      this.logger.debug(`📨 Handling Database MCP request: ${request.method}`);
+      this._logger.debug(`📨 Handling Database MCP request: ${request.method}`);
 
       switch (request.method) {
         case 'tools/list':
@@ -318,13 +316,13 @@ export class DatabaseMCPServer extends EventEmitter implements OliverOSMCPServer
           return this.createErrorResponse(request.id, -32601, `Method not found: ${request.method}`);
       }
     } catch (error) {
-      this.logger.error('❌ Error handling Database MCP request', error);
+      this._logger.error('❌ Error handling Database MCP request', error);
       return this.createErrorResponse(request.id, -32603, 'Internal error', error);
     }
   }
 
   private async handleToolsList(request: MCPRequest): Promise<MCPResponse> {
-    const tools = this.config.tools.map(tool => ({
+    const tools = this.config.tools.map((tool: MCPTool) => ({
       name: tool.name,
       description: tool.description,
       inputSchema: tool.inputSchema
@@ -340,7 +338,7 @@ export class DatabaseMCPServer extends EventEmitter implements OliverOSMCPServer
   private async handleToolsCall(request: MCPRequest): Promise<MCPResponse> {
     const { name, arguments: args } = request.params as { name: string; arguments: Record<string, unknown> };
     
-    const tool = this.config.tools.find(t => t.name === name);
+    const tool = this.config.tools.find((t: MCPTool) => t.name === name);
     if (!tool) {
       return this.createErrorResponse(request.id, -32601, `Tool not found: ${name}`);
     }
@@ -353,13 +351,13 @@ export class DatabaseMCPServer extends EventEmitter implements OliverOSMCPServer
         result
       };
     } catch (error) {
-      this.logger.error(`❌ Error executing Database tool ${name}`, error);
+      this._logger.error(`❌ Error executing Database tool ${name}`, error);
       return this.createErrorResponse(request.id, -32603, `Tool execution failed: ${error}`);
     }
   }
 
   private async handleResourcesList(request: MCPRequest): Promise<MCPResponse> {
-    const resources = this.config.resources.map(resource => ({
+    const resources = this.config.resources.map((resource: any) => ({
       uri: resource.uri,
       name: resource.name,
       description: resource.description,
@@ -376,7 +374,7 @@ export class DatabaseMCPServer extends EventEmitter implements OliverOSMCPServer
   private async handleResourcesRead(request: MCPRequest): Promise<MCPResponse> {
     const { uri } = request.params as { uri: string };
     
-    const resource = this.config.resources.find(r => r.uri === uri);
+    const resource = this.config.resources.find((r: any) => r.uri === uri);
     if (!resource) {
       return this.createErrorResponse(request.id, -32601, `Resource not found: ${uri}`);
     }
@@ -389,7 +387,7 @@ export class DatabaseMCPServer extends EventEmitter implements OliverOSMCPServer
         result
       };
     } catch (error) {
-      this.logger.error(`❌ Error reading Database resource ${uri}`, error);
+      this._logger.error(`❌ Error reading Database resource ${uri}`, error);
       return this.createErrorResponse(request.id, -32603, `Resource read failed: ${error}`);
     }
   }
@@ -416,7 +414,7 @@ export class DatabaseMCPServer extends EventEmitter implements OliverOSMCPServer
   private async handleQuery(args: Record<string, unknown>): Promise<any> {
     const { query, table, operation, data, where, limit, offset } = args;
     
-    this.logger.info(`🔍 Executing database query: ${query}`);
+    this._logger.info(`🔍 Executing database query: ${query}`);
     
     // This would integrate with Supabase client
     return {
@@ -443,7 +441,7 @@ export class DatabaseMCPServer extends EventEmitter implements OliverOSMCPServer
   private async handleGetTables(args: Record<string, unknown>): Promise<any> {
     const { schema, include_views } = args;
     
-    this.logger.info(`📋 Getting tables from schema: ${schema}`);
+    this._logger.info(`📋 Getting tables from schema: ${schema}`);
     
     return {
       content: [{
@@ -482,7 +480,7 @@ export class DatabaseMCPServer extends EventEmitter implements OliverOSMCPServer
   private async handleGetTableSchema(args: Record<string, unknown>): Promise<any> {
     const { table, schema } = args;
     
-    this.logger.info(`📊 Getting schema for table: ${table}`);
+    this._logger.info(`📊 Getting schema for table: ${table}`);
     
     return {
       content: [{
@@ -531,7 +529,7 @@ export class DatabaseMCPServer extends EventEmitter implements OliverOSMCPServer
   private async handleInsertRecord(args: Record<string, unknown>): Promise<any> {
     const { table, data, returning } = args;
     
-    this.logger.info(`➕ Inserting record into table: ${table}`);
+    this._logger.info(`➕ Inserting record into table: ${table}`);
     
     return {
       content: [{
@@ -554,7 +552,7 @@ export class DatabaseMCPServer extends EventEmitter implements OliverOSMCPServer
   private async handleUpdateRecord(args: Record<string, unknown>): Promise<any> {
     const { table, data, where, returning } = args;
     
-    this.logger.info(`✏️ Updating records in table: ${table}`);
+    this._logger.info(`✏️ Updating records in table: ${table}`);
     
     return {
       content: [{
@@ -581,7 +579,7 @@ export class DatabaseMCPServer extends EventEmitter implements OliverOSMCPServer
   private async handleDeleteRecord(args: Record<string, unknown>): Promise<any> {
     const { table, where, returning } = args;
     
-    this.logger.info(`🗑️ Deleting records from table: ${table}`);
+    this._logger.info(`🗑️ Deleting records from table: ${table}`);
     
     return {
       content: [{
@@ -606,7 +604,7 @@ export class DatabaseMCPServer extends EventEmitter implements OliverOSMCPServer
   private async handleGetUserData(args: Record<string, unknown>): Promise<any> {
     const { user_id, table, limit, order_by, order_direction } = args;
     
-    this.logger.info(`👤 Getting user data for user: ${user_id} from table: ${table}`);
+    this._logger.info(`👤 Getting user data for user: ${user_id} from table: ${table}`);
     
     return {
       content: [{
@@ -634,7 +632,7 @@ export class DatabaseMCPServer extends EventEmitter implements OliverOSMCPServer
   private async handleCreateThought(args: Record<string, unknown>): Promise<any> {
     const { user_id, content, workspace_id, metadata, tags } = args;
     
-    this.logger.info(`💭 Creating thought for user: ${user_id}`);
+    this._logger.info(`💭 Creating thought for user: ${user_id}`);
     
     return {
       content: [{
@@ -659,7 +657,7 @@ export class DatabaseMCPServer extends EventEmitter implements OliverOSMCPServer
   private async handleGetThoughts(args: Record<string, unknown>): Promise<any> {
     const { user_id, workspace_id, limit, offset, tags, search } = args;
     
-    this.logger.info(`💭 Getting thoughts for user: ${user_id}`);
+    this._logger.info(`💭 Getting thoughts for user: ${user_id}`);
     
     return {
       content: [{
@@ -690,7 +688,7 @@ export class DatabaseMCPServer extends EventEmitter implements OliverOSMCPServer
   private async handleCreateWorkspace(args: Record<string, unknown>): Promise<any> {
     const { name, description, creator_id, settings, is_public } = args;
     
-    this.logger.info(`🏗️ Creating workspace: ${name}`);
+    this._logger.info(`🏗️ Creating workspace: ${name}`);
     
     return {
       content: [{
@@ -715,7 +713,7 @@ export class DatabaseMCPServer extends EventEmitter implements OliverOSMCPServer
   private async handleGetWorkspaces(args: Record<string, unknown>): Promise<any> {
     const { user_id, include_public, limit } = args;
     
-    this.logger.info(`🏗️ Getting workspaces for user: ${user_id}`);
+    this._logger.info(`🏗️ Getting workspaces for user: ${user_id}`);
     
     return {
       content: [{
@@ -744,7 +742,7 @@ export class DatabaseMCPServer extends EventEmitter implements OliverOSMCPServer
   private async handleJoinWorkspace(args: Record<string, unknown>): Promise<any> {
     const { user_id, workspace_id, role } = args;
     
-    this.logger.info(`👥 User ${user_id} joining workspace ${workspace_id} as ${role}`);
+    this._logger.info(`👥 User ${user_id} joining workspace ${workspace_id} as ${role}`);
     
     return {
       content: [{
@@ -765,7 +763,7 @@ export class DatabaseMCPServer extends EventEmitter implements OliverOSMCPServer
   private async handleGetAnalytics(args: Record<string, unknown>): Promise<any> {
     const { user_id, metric, period, start_date, end_date } = args;
     
-    this.logger.info(`📊 Getting analytics for user: ${user_id}, metric: ${metric}`);
+    this._logger.info(`📊 Getting analytics for user: ${user_id}, metric: ${metric}`);
     
     return {
       content: [{

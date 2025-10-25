@@ -1,0 +1,261 @@
+{
+  "enabled": true,
+  "autoCreateBranch": true,
+  "branchPrefix": "feature/",
+  "workflows": {
+    "feature": {
+      "id": "feature-workflow",
+      "name": "Feature Development Workflow",
+      "description": "Complete workflow for developing new features",
+      "steps": [
+        {
+          "id": "create-branch",
+          "name": "Create Feature Branch",
+          "description": "Create a new branch for the feature",
+          "command": "git checkout -b feature/{feature-name}",
+          "required": true,
+          "status": "pending"
+        },
+        {
+          "id": "quality-check",
+          "name": "Quality Check",
+          "description": "Run quality checks before development",
+          "command": "pnpm review:quality",
+          "required": true,
+          "status": "pending"
+        },
+        {
+          "id": "development",
+          "name": "Development",
+          "description": "Develop the feature",
+          "command": "echo \"Develop feature\"",
+          "required": true,
+          "status": "pending"
+        },
+        {
+          "id": "self-review",
+          "name": "Self Review",
+          "description": "Review your own changes",
+          "command": "pnpm review:self",
+          "required": true,
+          "status": "pending"
+        },
+        {
+          "id": "quality-gate",
+          "name": "Quality Gate",
+          "description": "Run quality gate checks",
+          "command": "pnpm review:check",
+          "required": true,
+          "status": "pending"
+        },
+        {
+          "id": "merge",
+          "name": "Merge to Main",
+          "description": "Merge feature branch to main",
+          "command": "git checkout main && git merge feature/{feature-name}",
+          "required": true,
+          "status": "pending"
+        },
+        {
+          "id": "cleanup",
+          "name": "Cleanup",
+          "description": "Clean up feature branch",
+          "command": "git branch -d feature/{feature-name}",
+          "required": false,
+          "status": "pending"
+        }
+      ],
+      "status": "pending"
+    },
+    "bugfix": {
+      "id": "bugfix-workflow",
+      "name": "Bug Fix Workflow",
+      "description": "Complete workflow for fixing bugs",
+      "steps": [
+        {
+          "id": "create-branch",
+          "name": "Create Bugfix Branch",
+          "description": "Create a new branch for the bug fix",
+          "command": "git checkout -b bugfix/{bug-name}",
+          "required": true,
+          "status": "pending"
+        },
+        {
+          "id": "identify-bug",
+          "name": "Identify Bug",
+          "description": "Identify and understand the bug",
+          "command": "echo \"Identify bug\"",
+          "required": true,
+          "status": "pending"
+        },
+        {
+          "id": "fix-bug",
+          "name": "Fix Bug",
+          "description": "Fix the identified bug",
+          "command": "echo \"Fix bug\"",
+          "required": true,
+          "status": "pending"
+        },
+        {
+          "id": "test-fix",
+          "name": "Test Fix",
+          "description": "Test the bug fix",
+          "command": "pnpm test",
+          "required": true,
+          "status": "pending"
+        },
+        {
+          "id": "self-review",
+          "name": "Self Review",
+          "description": "Review your bug fix",
+          "command": "pnpm review:self",
+          "required": true,
+          "status": "pending"
+        },
+        {
+          "id": "merge",
+          "name": "Merge to Main",
+          "description": "Merge bugfix branch to main",
+          "command": "git checkout main && git merge bugfix/{bug-name}",
+          "required": true,
+          "status": "pending"
+        },
+        {
+          "id": "cleanup",
+          "name": "Cleanup",
+          "description": "Clean up bugfix branch",
+          "command": "git branch -d bugfix/{bug-name}",
+          "required": false,
+          "status": "pending"
+        }
+      ],
+      "status": "pending"
+    },
+    "refactor": {
+      "id": "refactor-workflow",
+      "name": "Refactor Workflow",
+      "description": "Complete workflow for code refactoring",
+      "steps": [
+        {
+          "id": "create-branch",
+          "name": "Create Refactor Branch",
+          "description": "Create a new branch for refactoring",
+          "command": "git checkout -b refactor/{refactor-name}",
+          "required": true,
+          "status": "pending"
+        },
+        {
+          "id": "analyze-code",
+          "name": "Analyze Code",
+          "description": "Analyze code to be refactored",
+          "command": "pnpm review:suggest",
+          "required": true,
+          "status": "pending"
+        },
+        {
+          "id": "refactor",
+          "name": "Refactor Code",
+          "description": "Refactor the code",
+          "command": "echo \"Refactor code\"",
+          "required": true,
+          "status": "pending"
+        },
+        {
+          "id": "test-refactor",
+          "name": "Test Refactor",
+          "description": "Test the refactored code",
+          "command": "pnpm test",
+          "required": true,
+          "status": "pending"
+        },
+        {
+          "id": "self-review",
+          "name": "Self Review",
+          "description": "Review your refactoring",
+          "command": "pnpm review:self",
+          "required": true,
+          "status": "pending"
+        },
+        {
+          "id": "merge",
+          "name": "Merge to Main",
+          "description": "Merge refactor branch to main",
+          "command": "git checkout main && git merge refactor/{refactor-name}",
+          "required": true,
+          "status": "pending"
+        },
+        {
+          "id": "cleanup",
+          "name": "Cleanup",
+          "description": "Clean up refactor branch",
+          "command": "git branch -d refactor/{refactor-name}",
+          "required": false,
+          "status": "pending"
+        }
+      ],
+      "status": "pending"
+    },
+    "hotfix": {
+      "id": "hotfix-workflow",
+      "name": "Hotfix Workflow",
+      "description": "Complete workflow for urgent fixes",
+      "steps": [
+        {
+          "id": "create-branch",
+          "name": "Create Hotfix Branch",
+          "description": "Create a new branch for the hotfix",
+          "command": "git checkout -b hotfix/{hotfix-name}",
+          "required": true,
+          "status": "pending"
+        },
+        {
+          "id": "fix-issue",
+          "name": "Fix Issue",
+          "description": "Fix the urgent issue",
+          "command": "echo \"Fix urgent issue\"",
+          "required": true,
+          "status": "pending"
+        },
+        {
+          "id": "test-fix",
+          "name": "Test Fix",
+          "description": "Test the hotfix",
+          "command": "pnpm test",
+          "required": true,
+          "status": "pending"
+        },
+        {
+          "id": "merge",
+          "name": "Merge to Main",
+          "description": "Merge hotfix branch to main",
+          "command": "git checkout main && git merge hotfix/{hotfix-name}",
+          "required": true,
+          "status": "pending"
+        },
+        {
+          "id": "cleanup",
+          "name": "Cleanup",
+          "description": "Clean up hotfix branch",
+          "command": "git branch -d hotfix/{hotfix-name}",
+          "required": false,
+          "status": "pending"
+        }
+      ],
+      "status": "pending"
+    }
+  },
+  "qualityGates": {
+    "preCommit": true,
+    "preMerge": true,
+    "prePush": true
+  },
+  "automation": {
+    "autoCommit": false,
+    "autoPush": false,
+    "autoCleanup": true
+  },
+  "notifications": {
+    "enabled": true,
+    "channels": ["console", "file"]
+  }
+}

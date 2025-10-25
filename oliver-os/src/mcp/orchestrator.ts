@@ -24,13 +24,13 @@ export interface MCPServerInfo {
 }
 
 export class MCPOrchestrator extends EventEmitter {
-  private logger: Logger;
+  private _logger: Logger;
   private servers: Map<string, MCPServerInfo> = new Map();
   private isRunning: boolean = false;
 
   constructor() {
     super();
-    this.logger = new Logger('MCP-Orchestrator');
+    this._logger = new Logger('MCP-Orchestrator');
     this.initializeServers();
   }
 
@@ -91,16 +91,16 @@ export class MCPOrchestrator extends EventEmitter {
       status: 'stopped'
     });
 
-    this.logger.info(`🔧 Initialized ${this.servers.size} MCP servers`);
+    this._logger.info(`🔧 Initialized ${this.servers.size} MCP servers`);
   }
 
   async startAll(): Promise<void> {
     if (this.isRunning) {
-      this.logger.warn('MCP Orchestrator is already running');
+      this._logger.warn('MCP Orchestrator is already running');
       return;
     }
 
-    this.logger.info('🚀 Starting all MCP servers...');
+    this._logger.info('🚀 Starting all MCP servers...');
     this.isRunning = true;
 
     const startPromises = Array.from(this.servers.values()).map(serverInfo => 
@@ -113,17 +113,17 @@ export class MCPOrchestrator extends EventEmitter {
       const runningServers = Array.from(this.servers.values()).filter(s => s.status === 'running');
       const failedServers = Array.from(this.servers.values()).filter(s => s.status === 'error');
       
-      this.logger.info(`✅ Started ${runningServers.length} MCP servers successfully`);
+      this._logger.info(`✅ Started ${runningServers.length} MCP servers successfully`);
       if (failedServers.length > 0) {
-        this.logger.warn(`⚠️ ${failedServers.length} servers failed to start`);
+        this._logger.warn(`⚠️ ${failedServers.length} servers failed to start`);
         failedServers.forEach(server => {
-          this.logger.error(`❌ ${server.name}: ${server.lastError}`);
+          this._logger.error(`❌ ${server.name}: ${server.lastError}`);
         });
       }
       
       this.emit('allStarted', { running: runningServers.length, failed: failedServers.length });
     } catch (error) {
-      this.logger.error('❌ Failed to start MCP servers', error);
+      this._logger.error('❌ Failed to start MCP servers', error);
       this.emit('error', error);
       throw error;
     }
@@ -131,11 +131,11 @@ export class MCPOrchestrator extends EventEmitter {
 
   async stopAll(): Promise<void> {
     if (!this.isRunning) {
-      this.logger.warn('MCP Orchestrator is not running');
+      this._logger.warn('MCP Orchestrator is not running');
       return;
     }
 
-    this.logger.info('🛑 Stopping all MCP servers...');
+    this._logger.info('🛑 Stopping all MCP servers...');
 
     const stopPromises = Array.from(this.servers.values()).map(serverInfo => 
       this._stopServerInternal(serverInfo)
@@ -146,11 +146,11 @@ export class MCPOrchestrator extends EventEmitter {
       this.isRunning = false;
       
       const stoppedServers = Array.from(this.servers.values()).filter(s => s.status === 'stopped');
-      this.logger.info(`✅ Stopped ${stoppedServers.length} MCP servers`);
+      this._logger.info(`✅ Stopped ${stoppedServers.length} MCP servers`);
       
       this.emit('allStopped');
     } catch (error) {
-      this.logger.error('❌ Error stopping MCP servers', error);
+      this._logger.error('❌ Error stopping MCP servers', error);
       this.emit('error', error);
       throw error;
     }
@@ -160,7 +160,7 @@ export class MCPOrchestrator extends EventEmitter {
    * Graceful shutdown with proper cleanup
    */
   async shutdown(): Promise<void> {
-    this.logger.info('🔄 Shutting down MCP Orchestrator...');
+    this._logger.info('🔄 Shutting down MCP Orchestrator...');
     
     try {
       // Stop all servers
@@ -172,9 +172,9 @@ export class MCPOrchestrator extends EventEmitter {
       // Clear server map
       this.servers.clear();
       
-      this.logger.info('✅ MCP Orchestrator shutdown complete');
+      this._logger.info('✅ MCP Orchestrator shutdown complete');
     } catch (error) {
-      this.logger.error('❌ Error during shutdown', error);
+      this._logger.error('❌ Error during shutdown', error);
       throw error;
     }
   }
@@ -190,20 +190,20 @@ export class MCPOrchestrator extends EventEmitter {
 
   private async _startServerInternal(serverInfo: MCPServerInfo): Promise<void> {
     try {
-      this.logger.info(`🚀 Starting ${serverInfo.name} MCP server on port ${serverInfo.port}`);
+      this._logger.info(`🚀 Starting ${serverInfo.name} MCP server on port ${serverInfo.port}`);
       serverInfo.status = 'starting';
       
       await serverInfo.server.start();
       serverInfo.status = 'running';
       delete serverInfo.lastError;
       
-      this.logger.info(`✅ ${serverInfo.name} MCP server started successfully`);
+      this._logger.info(`✅ ${serverInfo.name} MCP server started successfully`);
       this.emit('serverStarted', serverInfo);
     } catch (error) {
       serverInfo.status = 'error';
       serverInfo.lastError = error instanceof Error ? error.message : 'Unknown error';
       
-      this.logger.error(`❌ Failed to start ${serverInfo.name} MCP server`, error);
+      this._logger.error(`❌ Failed to start ${serverInfo.name} MCP server`, error);
       this.emit('serverError', { server: serverInfo, error });
     }
   }
@@ -219,22 +219,22 @@ export class MCPOrchestrator extends EventEmitter {
 
   private async _stopServerInternal(serverInfo: MCPServerInfo): Promise<void> {
     try {
-      this.logger.info(`🛑 Stopping ${serverInfo.name} MCP server`);
+      this._logger.info(`🛑 Stopping ${serverInfo.name} MCP server`);
       
       await serverInfo.server.stop();
       serverInfo.status = 'stopped';
       delete serverInfo.lastError;
       
-      this.logger.info(`✅ ${serverInfo.name} MCP server stopped`);
+      this._logger.info(`✅ ${serverInfo.name} MCP server stopped`);
       this.emit('serverStopped', serverInfo);
     } catch (error) {
-      this.logger.error(`❌ Error stopping ${serverInfo.name} MCP server`, error);
+      this._logger.error(`❌ Error stopping ${serverInfo.name} MCP server`, error);
       this.emit('serverError', { server: serverInfo, error });
     }
   }
 
   async restartServer(serverName: string): Promise<void> {
-    this.logger.info(`🔄 Restarting ${serverName} MCP server`);
+    this._logger.info(`🔄 Restarting ${serverName} MCP server`);
     await this.stopServer(serverName);
     await this.startServer(serverName);
   }
@@ -378,13 +378,13 @@ export class MCPOrchestrator extends EventEmitter {
             );
             
             if (searchTools.length > 0) {
-              const searchTool = searchTools[0];
+              const searchTool = searchTools[0]!;
               const searchResult = await this.executeCommand(name, searchTool.name, { query });
               results[name] = searchResult;
             }
           }
         } catch (error) {
-          this.logger.warn(`Search failed for ${name}:`, { error: String(error) });
+          this._logger.warn(`Search failed for ${name}:`, { error: String(error) });
         }
       }
     }
@@ -424,7 +424,7 @@ export async function main() {
   const orchestrator = new MCPOrchestrator();
   
   try {
-    const command = process.argv[2] || 'start';
+    const command = process.argv[2]! || 'start';
     
     switch (command) {
       case 'start':
@@ -446,7 +446,7 @@ export async function main() {
         console.log(JSON.stringify(health, null, 2));
         break;
       case 'restart':
-        const serverName = process.argv[3];
+        const serverName = process.argv[3]!;
         if (serverName) {
           await orchestrator.restartServer(serverName);
           console.log(`🔄 ${serverName} server restarted`);
@@ -479,6 +479,6 @@ export async function main() {
 }
 
 // Run if this is the main module
-if (typeof process !== 'undefined' && import.meta.url === `file://${process.argv[1]}`) {
+if (typeof process !== 'undefined' && import.meta.url === `file://${process.argv[1]!}`) {
   main().catch(console.error);
 }

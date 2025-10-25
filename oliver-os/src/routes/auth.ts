@@ -56,7 +56,7 @@ export function createAuthRoutes(prisma: PrismaClient): Router {
         res.status(400).json({
           success: false,
           error: 'Validation failed',
-          details: error.errors
+          details: error.issues
         });
         return;
       }
@@ -92,7 +92,7 @@ export function createAuthRoutes(prisma: PrismaClient): Router {
         res.status(400).json({
           success: false,
           error: 'Validation failed',
-          details: error.errors
+          details: error.issues
         });
         return;
       }
@@ -128,7 +128,7 @@ export function createAuthRoutes(prisma: PrismaClient): Router {
         res.status(400).json({
           success: false,
           error: 'Validation failed',
-          details: error.errors
+          details: error.issues
         });
         return;
       }
@@ -246,7 +246,7 @@ export function createAuthRoutes(prisma: PrismaClient): Router {
    * POST /api/auth/cleanup-tokens
    * Clean up expired refresh tokens (admin endpoint)
    */
-  router.post('/cleanup-tokens', async (req: Request, res: Response): Promise<void> => {
+  router.post('/cleanup-tokens', async (_req: Request, res: Response): Promise<void> => {
     try {
       const count = await authService.cleanupExpiredTokens();
       

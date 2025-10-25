@@ -7,10 +7,10 @@ import { Logger } from '../../core/logger';
 import type { MCPTool, MCPToolResult } from '../types';
 
 export class BMADTools {
-  private logger: Logger;
+  private _logger: Logger;
 
   constructor() {
-    this.logger = new Logger('BMAD-Tools');
+    this._logger = new Logger('BMAD-Tools');
   }
 
   createTools(): MCPTool[] {
@@ -129,7 +129,7 @@ export class BMADTools {
   private async handleBreak(args: Record<string, unknown>): Promise<MCPToolResult> {
     const { task, context, maxDepth, includeDependencies } = args;
     
-    this.logger.info(`🔨 Breaking down task: ${task}`);
+    this._logger.info(`🔨 Breaking down task: ${task}`);
     
     try {
       const breakdown = await this.performBreakdown(
@@ -152,7 +152,7 @@ export class BMADTools {
         }]
       };
     } catch (error) {
-      this.logger.error('❌ Error breaking down task', error);
+      this._logger.error('❌ Error breaking down task', error);
       return this.createErrorResult('Failed to break down task', error);
     }
   }
@@ -160,7 +160,7 @@ export class BMADTools {
   private async handleMap(args: Record<string, unknown>): Promise<MCPToolResult> {
     const { target, mapType, includeExternal, format } = args;
     
-    this.logger.info(`🗺️ Mapping ${mapType} for: ${target}`);
+    this._logger.info(`🗺️ Mapping ${mapType} for: ${target}`);
     
     try {
       const mapping = await this.performMapping(
@@ -184,7 +184,7 @@ export class BMADTools {
         }]
       };
     } catch (error) {
-      this.logger.error('❌ Error mapping system', error);
+      this._logger.error('❌ Error mapping system', error);
       return this.createErrorResult('Failed to map system', error);
     }
   }
@@ -192,7 +192,7 @@ export class BMADTools {
   private async handleAutomate(args: Record<string, unknown>): Promise<MCPToolResult> {
     const { process, template, outputFormat, language, options } = args;
     
-    this.logger.info(`🤖 Automating process: ${process} with template: ${template}`);
+    this._logger.info(`🤖 Automating process: ${process} with template: ${template}`);
     
     try {
       const automation = await this.performAutomation(
@@ -217,7 +217,7 @@ export class BMADTools {
         }]
       };
     } catch (error) {
-      this.logger.error('❌ Error automating process', error);
+      this._logger.error('❌ Error automating process', error);
       return this.createErrorResult('Failed to automate process', error);
     }
   }
@@ -225,7 +225,7 @@ export class BMADTools {
   private async handleDocument(args: Record<string, unknown>): Promise<MCPToolResult> {
     const { target, docType, includeExamples, format, outputPath } = args;
     
-    this.logger.info(`📚 Generating ${docType} documentation for: ${target}`);
+    this._logger.info(`📚 Generating ${docType} documentation for: ${target}`);
     
     try {
       const documentation = await this.generateDocumentation(
@@ -251,7 +251,7 @@ export class BMADTools {
         }]
       };
     } catch (error) {
-      this.logger.error('❌ Error generating documentation', error);
+      this._logger.error('❌ Error generating documentation', error);
       return this.createErrorResult('Failed to generate documentation', error);
     }
   }
@@ -259,7 +259,7 @@ export class BMADTools {
   private async handleAnalyze(args: Record<string, unknown>): Promise<MCPToolResult> {
     const { target, analysisType, includeRecommendations, depth } = args;
     
-    this.logger.info(`🔍 Analyzing ${analysisType} for: ${target}`);
+    this._logger.info(`🔍 Analyzing ${analysisType} for: ${target}`);
     
     try {
       const analysis = await this.performAnalysis(
@@ -283,7 +283,7 @@ export class BMADTools {
         }]
       };
     } catch (error) {
-      this.logger.error('❌ Error analyzing system', error);
+      this._logger.error('❌ Error analyzing system', error);
       return this.createErrorResult('Failed to analyze system', error);
     }
   }
@@ -291,7 +291,7 @@ export class BMADTools {
   private async handleValidate(args: Record<string, unknown>): Promise<MCPToolResult> {
     const { target, principles, strictMode, generateReport } = args;
     
-    this.logger.info(`✅ Validating BMAD principles for: ${target}`);
+    this._logger.info(`✅ Validating BMAD principles for: ${target}`);
     
     try {
       const validation = await this.performValidation(
@@ -315,7 +315,7 @@ export class BMADTools {
         }]
       };
     } catch (error) {
-      this.logger.error('❌ Error validating system', error);
+      this._logger.error('❌ Error validating system', error);
       return this.createErrorResult('Failed to validate system', error);
     }
   }

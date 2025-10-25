@@ -1,0 +1,50 @@
+{
+  "qualityThresholds": {
+    "readability": {
+      "min": 0.7,
+      "target": 0.9
+    },
+    "maintainability": {
+      "min": 0.6,
+      "target": 0.8
+    },
+    "performance": {
+      "min": 0.7,
+      "target": 0.9
+    },
+    "security": {
+      "min": 0.8,
+      "target": 0.95
+    },
+    "testability": {
+      "min": 0.6,
+      "target": 0.8
+    },
+    "overall": {
+      "min": 0.7,
+      "target": 0.85
+    }
+  },
+  "reviewLevels": {
+    "basic": {
+      "enabled": true,
+      "checks": ["readability", "basic-security"]
+    },
+    "standard": {
+      "enabled": true,
+      "checks": ["readability", "performance", "security", "maintainability"]
+    },
+    "comprehensive": {
+      "enabled": true,
+      "checks": ["readability", "performance", "security", "maintainability", "architecture", "best-practices"]
+    }
+  },
+  "autoFix": {
+    "enabled": false,
+    "categories": ["formatting", "imports", "naming"]
+  },
+  "notifications": {
+    "enabled": true,
+    "channels": ["console", "file"]
+  }
+}

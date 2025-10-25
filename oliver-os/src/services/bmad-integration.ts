@@ -5,16 +5,16 @@
 
 import { Logger } from '../core/logger';
 import { Config } from '../core/config';
-import { EnhancedBMADCLI } from '../../bmad-global/src/cli';
-import { BMADWorkflowEngine } from '../../bmad-global/src/core/workflow-engine';
-import { IntelligentCodeAnalyzer } from '../../bmad-global/src/core/intelligent-analyzer';
+import { EnhancedBMADCLI } from '../../bmad-global/dist/cli';
+import { BMADWorkflowEngine } from '../../bmad-global/dist/core/workflow-engine';
+import { IntelligentCodeAnalyzer } from '../../bmad-global/dist/core/intelligent-analyzer';
 import type { 
   WorkflowContext, 
   ProjectAnalysis, 
   ExecutionResult,
   BMADConfig,
   ProjectType 
-} from '../../bmad-global/src/types/bmad';
+} from '../../bmad-global/dist/types/bmad';
 
 export interface OliverOSBMADIntegration {
   initialize(): Promise<void>;
@@ -26,18 +26,17 @@ export interface OliverOSBMADIntegration {
 }
 
 export class OliverOSBMADService implements OliverOSBMADIntegration {
-  private logger: Logger;
-  private config: Config;
+  private _logger: Logger;
+  private _config: Config;
   private bmadCLI: EnhancedBMADCLI;
   private workflowEngine: BMADWorkflowEngine;
   private codeAnalyzer: IntelligentCodeAnalyzer;
   private isInitialized: boolean = false;
 
-  constructor(config: Config) {
-    this.config = config;
-    this.logger = new Logger('OliverOS-BMAD');
+  constructor(_config: Config) {
+    this._logger = new Logger('OliverOS-BMAD');
     this.bmadCLI = new EnhancedBMADCLI();
-    this.workflowEngine = new BMADWorkflowEngine(this.configManager);
+    this.workflowEngine = new BMADWorkflowEngine(this._configManager);
     this.codeAnalyzer = new IntelligentCodeAnalyzer({
       complexityThresholds: {
         cyclomatic: 15, // Higher threshold for AI-brain interfaces
@@ -60,12 +59,12 @@ export class OliverOSBMADService implements OliverOSBMADIntegration {
    */
   async initialize(): Promise<void> {
     if (this.isInitialized) {
-      this.logger.info('BMAD integration already initialized');
+      this._logger.info('BMAD integration already initialized');
       return;
     }
 
     try {
-      this.logger.info('🚀 Initializing BMAD integration for Oliver-OS...');
+      this._logger.info('🚀 Initializing BMAD integration for Oliver-OS...');
 
       // Initialize BMAD with AI-brain interface configuration
       await this.bmadCLI.init('ai-brain-interface', {
@@ -81,10 +80,10 @@ export class OliverOSBMADService implements OliverOSBMADIntegration {
       await this.setupOliverOSWorkflows();
 
       this.isInitialized = true;
-      this.logger.info('✅ BMAD integration initialized successfully');
+      this._logger.info('✅ BMAD integration initialized successfully');
 
     } catch (error) {
-      this.logger.error('❌ Failed to initialize BMAD integration', error);
+      this._logger.error('❌ Failed to initialize BMAD integration', error);
       throw error;
     }
   }
@@ -98,19 +97,19 @@ export class OliverOSBMADService implements OliverOSBMADIntegration {
     }
 
     try {
-      this.logger.info('🔍 Analyzing Oliver-OS project...');
+      this._logger.info('🔍 Analyzing Oliver-OS project...');
 
       const analysis = await this.codeAnalyzer.analyzeProject(process.cwd());
 
       // Add Oliver-OS specific analysis
       const enhancedAnalysis = await this.enhanceAnalysisForOliverOS(analysis);
 
-      this.logger.info(`✅ Analysis completed. Quality score: ${enhancedAnalysis.quality.score}/100`);
+      this._logger.info(`✅ Analysis completed. Quality score: ${enhancedAnalysis.quality.score}/100`);
       
       return enhancedAnalysis;
 
     } catch (error) {
-      this.logger.error('❌ Project analysis failed', error);
+      this._logger.error('❌ Project analysis failed', error);
       throw error;
     }
   }
@@ -124,7 +123,7 @@ export class OliverOSBMADService implements OliverOSBMADIntegration {
     }
 
     try {
-      this.logger.info(`🔄 Executing BMAD workflow: ${workflowId}`);
+      this._logger.info(`🔄 Executing BMAD workflow: ${workflowId}`);
 
       const workflowContext: WorkflowContext = {
         projectType: 'ai-brain-interface',
@@ -145,15 +144,15 @@ export class OliverOSBMADService implements OliverOSBMADIntegration {
       const result = await this.workflowEngine.executeWorkflow(workflowId, workflowContext);
 
       if (result.success) {
-        this.logger.info(`✅ Workflow completed successfully in ${result.duration}ms`);
+        this._logger.info(`✅ Workflow completed successfully in ${result.duration}ms`);
       } else {
-        this.logger.error(`❌ Workflow failed: ${result.error}`);
+        this._logger.error(`❌ Workflow failed: ${result.error}`);
       }
 
       return result;
 
     } catch (error) {
-      this.logger.error('❌ Workflow execution failed', error);
+      this._logger.error('❌ Workflow execution failed', error);
       throw error;
     }
   }
@@ -167,7 +166,7 @@ export class OliverOSBMADService implements OliverOSBMADIntegration {
     }
 
     try {
-      this.logger.info(`📊 Generating ${format} report for Oliver-OS...`);
+      this._logger.info(`📊 Generating ${format} report for Oliver-OS...`);
 
       const analysis = await this.analyzeProject();
       const reportPath = outputPath || `./oliver-os-bmad-report.${format}`;
@@ -175,10 +174,10 @@ export class OliverOSBMADService implements OliverOSBMADIntegration {
       // Generate Oliver-OS specific report
       await this.generateOliverOSReport(analysis, format, reportPath);
 
-      this.logger.info(`✅ Report generated: ${reportPath}`);
+      this._logger.info(`✅ Report generated: ${reportPath}`);
 
     } catch (error) {
-      this.logger.error('❌ Report generation failed', error);
+      this._logger.error('❌ Report generation failed', error);
       throw error;
     }
   }
@@ -211,7 +210,7 @@ export class OliverOSBMADService implements OliverOSBMADIntegration {
       };
 
     } catch (error) {
-      this.logger.error('❌ Failed to get system status', error);
+      this._logger.error('❌ Failed to get system status', error);
       throw error;
     }
   }
@@ -221,17 +220,17 @@ export class OliverOSBMADService implements OliverOSBMADIntegration {
    */
   async updateConfiguration(updates: Partial<BMADConfig>): Promise<void> {
     try {
-      this.logger.info('⚙️ Updating BMAD configuration...');
+      this._logger.info('⚙️ Updating BMAD configuration...');
 
       // Apply Oliver-OS specific configuration updates
       const oliverOSUpdates = this.applyOliverOSDefaults(updates);
       
-      await this.configManager.updateConfig(oliverOSUpdates);
+      await this._configManager.updateConfig(oliverOSUpdates);
 
-      this.logger.info('✅ Configuration updated successfully');
+      this._logger.info('✅ Configuration updated successfully');
 
     } catch (error) {
-      this.logger.error('❌ Configuration update failed', error);
+      this._logger.error('❌ Configuration update failed', error);
       throw error;
     }
   }
@@ -246,7 +245,7 @@ export class OliverOSBMADService implements OliverOSBMADIntegration {
         id: 'thought-processing-analysis',
         phase: 'Break' as const,
         dependencies: [],
-        execute: async (context: WorkflowContext) => {
+        execute: async (_context: WorkflowContext) => {
           return {
             phase: 'Break' as const,
             success: true,
@@ -259,7 +258,7 @@ export class OliverOSBMADService implements OliverOSBMADIntegration {
         id: 'collaboration-mapping',
         phase: 'Map' as const,
         dependencies: ['thought-processing-analysis'],
-        execute: async (context: WorkflowContext) => {
+        execute: async (_context: WorkflowContext) => {
           return {
             phase: 'Map' as const,
             success: true,
@@ -272,7 +271,7 @@ export class OliverOSBMADService implements OliverOSBMADIntegration {
         id: 'ai-integration-automation',
         phase: 'Automate' as const,
         dependencies: ['collaboration-mapping'],
-        execute: async (context: WorkflowContext) => {
+        execute: async (_context: WorkflowContext) => {
           return {
             phase: 'Automate' as const,
             success: true,
@@ -285,7 +284,7 @@ export class OliverOSBMADService implements OliverOSBMADIntegration {
         id: 'oliver-os-documentation',
         phase: 'Document' as const,
         dependencies: ['ai-integration-automation'],
-        execute: async (context: WorkflowContext) => {
+        execute: async (_context: WorkflowContext) => {
           return {
             phase: 'Document' as const,
             success: true,

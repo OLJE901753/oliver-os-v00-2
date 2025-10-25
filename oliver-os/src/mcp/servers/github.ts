@@ -8,13 +8,13 @@ import { Logger } from '../../core/logger';
 import type { MCPTool, MCPResource, MCPRequest, MCPResponse, OliverOSMCPServer } from '../types';
 
 export class GitHubMCPServer extends EventEmitter implements OliverOSMCPServer {
-  private logger: Logger;
+  private _logger: Logger;
   public config: any;
   private isRunning: boolean = false;
 
   constructor() {
     super();
-    this.logger = new Logger('GitHub-MCP-Server');
+    this._logger = new Logger('GitHub-MCP-Server');
     this.config = this.createServerConfig();
   }
 
@@ -226,45 +226,45 @@ export class GitHubMCPServer extends EventEmitter implements OliverOSMCPServer {
 
   async start(): Promise<void> {
     if (this.isRunning) {
-      this.logger.warn('GitHub MCP Server is already running');
+      this._logger.warn('GitHub MCP Server is already running');
       return;
     }
 
     try {
-      this.logger.info(`🚀 Starting GitHub MCP Server on ${this.config.host}:${this.config.port}`);
-      this.logger.info(`📋 Available tools: ${this.config.tools.length}`);
-      this.logger.info(`📚 Available resources: ${this.config.resources.length}`);
+      this._logger.info(`🚀 Starting GitHub MCP Server on ${this.config.host}:${this.config.port}`);
+      this._logger.info(`📋 Available tools: ${this.config.tools.length}`);
+      this._logger.info(`📚 Available resources: ${this.config.resources.length}`);
       
       this.isRunning = true;
       this.emit('started');
       
-      this.logger.info('✅ GitHub MCP Server started successfully');
+      this._logger.info('✅ GitHub MCP Server started successfully');
     } catch (error) {
-      this.logger.error('❌ Failed to start GitHub MCP Server', error);
+      this._logger.error('❌ Failed to start GitHub MCP Server', error);
       throw error;
     }
   }
 
   async stop(): Promise<void> {
     if (!this.isRunning) {
-      this.logger.warn('GitHub MCP Server is not running');
+      this._logger.warn('GitHub MCP Server is not running');
       return;
     }
 
     try {
-      this.logger.info('🛑 Stopping GitHub MCP Server...');
+      this._logger.info('🛑 Stopping GitHub MCP Server...');
       this.isRunning = false;
       this.emit('stopped');
-      this.logger.info('✅ GitHub MCP Server stopped successfully');
+      this._logger.info('✅ GitHub MCP Server stopped successfully');
     } catch (error) {
-      this.logger.error('❌ Failed to stop GitHub MCP Server', error);
+      this._logger.error('❌ Failed to stop GitHub MCP Server', error);
       throw error;
     }
   }
 
   async handleRequest(request: MCPRequest): Promise<MCPResponse> {
     try {
-      this.logger.debug(`📨 Handling GitHub MCP request: ${request.method}`);
+      this._logger.debug(`📨 Handling GitHub MCP request: ${request.method}`);
 
       switch (request.method) {
         case 'tools/list':
@@ -281,13 +281,13 @@ export class GitHubMCPServer extends EventEmitter implements OliverOSMCPServer {
           return this.createErrorResponse(request.id, -32601, `Method not found: ${request.method}`);
       }
     } catch (error) {
-      this.logger.error('❌ Error handling GitHub MCP request', error);
+      this._logger.error('❌ Error handling GitHub MCP request', error);
       return this.createErrorResponse(request.id, -32603, 'Internal error', error);
     }
   }
 
   private async handleToolsList(request: MCPRequest): Promise<MCPResponse> {
-    const tools = this.config.tools.map(tool => ({
+    const tools = this.config.tools.map((tool: MCPTool) => ({
       name: tool.name,
       description: tool.description,
       inputSchema: tool.inputSchema
@@ -303,7 +303,7 @@ export class GitHubMCPServer extends EventEmitter implements OliverOSMCPServer {
   private async handleToolsCall(request: MCPRequest): Promise<MCPResponse> {
     const { name, arguments: args } = request.params as { name: string; arguments: Record<string, unknown> };
     
-    const tool = this.config.tools.find(t => t.name === name);
+    const tool = this.config.tools.find((t: MCPTool) => t.name === name);
     if (!tool) {
       return this.createErrorResponse(request.id, -32601, `Tool not found: ${name}`);
     }
@@ -316,13 +316,13 @@ export class GitHubMCPServer extends EventEmitter implements OliverOSMCPServer {
         result
       };
     } catch (error) {
-      this.logger.error(`❌ Error executing GitHub tool ${name}`, error);
+      this._logger.error(`❌ Error executing GitHub tool ${name}`, error);
       return this.createErrorResponse(request.id, -32603, `Tool execution failed: ${error}`);
     }
   }
 
   private async handleResourcesList(request: MCPRequest): Promise<MCPResponse> {
-    const resources = this.config.resources.map(resource => ({
+    const resources = this.config.resources.map((resource: any) => ({
       uri: resource.uri,
       name: resource.name,
       description: resource.description,
@@ -339,7 +339,7 @@ export class GitHubMCPServer extends EventEmitter implements OliverOSMCPServer {
   private async handleResourcesRead(request: MCPRequest): Promise<MCPResponse> {
     const { uri } = request.params as { uri: string };
     
-    const resource = this.config.resources.find(r => r.uri === uri);
+    const resource = this.config.resources.find((r: any) => r.uri === uri);
     if (!resource) {
       return this.createErrorResponse(request.id, -32601, `Resource not found: ${uri}`);
     }
@@ -352,7 +352,7 @@ export class GitHubMCPServer extends EventEmitter implements OliverOSMCPServer {
         result
       };
     } catch (error) {
-      this.logger.error(`❌ Error reading GitHub resource ${uri}`, error);
+      this._logger.error(`❌ Error reading GitHub resource ${uri}`, error);
       return this.createErrorResponse(request.id, -32603, `Resource read failed: ${error}`);
     }
   }
@@ -379,7 +379,7 @@ export class GitHubMCPServer extends EventEmitter implements OliverOSMCPServer {
   private async handleGetRepos(args: Record<string, unknown>): Promise<any> {
     const { owner, type, sort, per_page } = args;
     
-    this.logger.info(`📁 Getting repositories for ${owner}`);
+    this._logger.info(`📁 Getting repositories for ${owner}`);
     
     // This would integrate with GitHub API
     return {
@@ -417,7 +417,7 @@ export class GitHubMCPServer extends EventEmitter implements OliverOSMCPServer {
   private async handleGetIssues(args: Record<string, unknown>): Promise<any> {
     const { owner, repo, state, labels, assignee, creator, per_page } = args;
     
-    this.logger.info(`🐛 Getting issues for ${owner}/${repo}`);
+    this._logger.info(`🐛 Getting issues for ${owner}/${repo}`);
     
     return {
       content: [{
@@ -450,7 +450,7 @@ export class GitHubMCPServer extends EventEmitter implements OliverOSMCPServer {
   private async handleCreateIssue(args: Record<string, unknown>): Promise<any> {
     const { owner, repo, title, body, labels, assignees } = args;
     
-    this.logger.info(`➕ Creating issue: ${title} in ${owner}/${repo}`);
+    this._logger.info(`➕ Creating issue: ${title} in ${owner}/${repo}`);
     
     return {
       content: [{
@@ -477,7 +477,7 @@ export class GitHubMCPServer extends EventEmitter implements OliverOSMCPServer {
   private async handleGetPullRequests(args: Record<string, unknown>): Promise<any> {
     const { owner, repo, state, head, base, per_page } = args;
     
-    this.logger.info(`🔀 Getting pull requests for ${owner}/${repo}`);
+    this._logger.info(`🔀 Getting pull requests for ${owner}/${repo}`);
     
     return {
       content: [{
@@ -510,7 +510,7 @@ export class GitHubMCPServer extends EventEmitter implements OliverOSMCPServer {
   private async handleCreatePullRequest(args: Record<string, unknown>): Promise<any> {
     const { owner, repo, title, head, base, body, draft } = args;
     
-    this.logger.info(`🔀 Creating pull request: ${title} in ${owner}/${repo}`);
+    this._logger.info(`🔀 Creating pull request: ${title} in ${owner}/${repo}`);
     
     return {
       content: [{
@@ -538,7 +538,7 @@ export class GitHubMCPServer extends EventEmitter implements OliverOSMCPServer {
   private async handleGetCommits(args: Record<string, unknown>): Promise<any> {
     const { owner, repo, sha, path, author, since, until, per_page } = args;
     
-    this.logger.info(`📝 Getting commits for ${owner}/${repo}`);
+    this._logger.info(`📝 Getting commits for ${owner}/${repo}`);
     
     return {
       content: [{
@@ -565,8 +565,9 @@ export class GitHubMCPServer extends EventEmitter implements OliverOSMCPServer {
 
   private async handleGetFileContents(args: Record<string, unknown>): Promise<any> {
     const { owner, repo, path, ref } = args;
+    const pathStr = path as string;
     
-    this.logger.info(`📄 Getting file contents: ${path} from ${owner}/${repo}`);
+    this._logger.info(`📄 Getting file contents: ${pathStr} from ${owner}/${repo}`);
     
     return {
       content: [{
@@ -577,8 +578,8 @@ export class GitHubMCPServer extends EventEmitter implements OliverOSMCPServer {
           path,
           ref: ref || 'main',
           file: {
-            name: path.split('/').pop(),
-            path,
+            name: pathStr.split('/').pop(),
+            path: pathStr,
             sha: 'abc123def456',
             size: 1024,
             content: '// File content would be here',
@@ -594,7 +595,7 @@ export class GitHubMCPServer extends EventEmitter implements OliverOSMCPServer {
   private async handleSearchRepositories(args: Record<string, unknown>): Promise<any> {
     const { query, sort, order, per_page } = args;
     
-    this.logger.info(`🔍 Searching repositories: ${query}`);
+    this._logger.info(`🔍 Searching repositories: ${query}`);
     
     return {
       content: [{
@@ -628,7 +629,7 @@ export class GitHubMCPServer extends EventEmitter implements OliverOSMCPServer {
   private async handleGetUserInfo(args: Record<string, unknown>): Promise<any> {
     const { username } = args;
     
-    this.logger.info(`👤 Getting user info: ${username}`);
+    this._logger.info(`👤 Getting user info: ${username}`);
     
     return {
       content: [{
@@ -662,7 +663,7 @@ export class GitHubMCPServer extends EventEmitter implements OliverOSMCPServer {
   private async handleGetWorkflowRuns(args: Record<string, unknown>): Promise<any> {
     const { owner, repo, workflow_id, status, conclusion, per_page } = args;
     
-    this.logger.info(`⚙️ Getting workflow runs for ${owner}/${repo}`);
+    this._logger.info(`⚙️ Getting workflow runs for ${owner}/${repo}`);
     
     return {
       content: [{

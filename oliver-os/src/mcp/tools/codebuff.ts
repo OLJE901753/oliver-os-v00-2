@@ -15,12 +15,12 @@ import type {
 } from '../../services/codebuff/types';
 
 export class CodebuffMCPTools {
-  private codebuffService: CodebuffService;
-  private logger: Logger;
+  private _codebuffService: CodebuffService;
+  private _logger: Logger;
 
   constructor(codebuffService: CodebuffService) {
-    this.codebuffService = codebuffService;
-    this.logger = new Logger('CodebuffMCPTools');
+    this._codebuffService = codebuffService;
+    this._logger = new Logger('CodebuffMCPTools');
   }
 
   /**
@@ -185,7 +185,7 @@ export class CodebuffMCPTools {
     try {
       const { agent, prompt, timeout, retries } = args;
       
-      this.logger.info(`🚀 Running Codebuff task with agent: ${agent}`);
+      this._logger.info(`🚀 Running Codebuff task with agent: ${agent}`);
       
       const options: CodebuffRunOptions = {
         agent: agent as string,
@@ -193,11 +193,11 @@ export class CodebuffMCPTools {
         timeout: timeout as number || 300000,
         retries: retries as number || 3,
         handleEvent: (event) => {
-          this.logger.debug(`Codebuff event: ${event.type} - ${event.message}`);
+          this._logger.debug(`Codebuff event: ${event.type} - ${event.message}`);
         }
       };
 
-      const result = await this.codebuffService.runTask(options);
+      const result = await this._codebuffService.runTask(options);
       
       return {
         content: [{
@@ -213,7 +213,7 @@ export class CodebuffMCPTools {
       };
 
     } catch (error) {
-      this.logger.error('❌ Error running Codebuff task', error);
+      this._logger.error('❌ Error running Codebuff task', error);
       return {
         content: [{
           type: 'text',
@@ -230,7 +230,7 @@ export class CodebuffMCPTools {
     try {
       const { agentType, capabilities, config, priority } = args;
       
-      this.logger.info(`🤖 Spawning agent of type: ${agentType}`);
+      this._logger.info(`🤖 Spawning agent of type: ${agentType}`);
       
       const request: AgentSpawnRequest = {
         agentType: agentType as string,
@@ -239,20 +239,20 @@ export class CodebuffMCPTools {
         priority: priority as 'low' | 'normal' | 'high' | 'urgent' || 'normal'
       };
 
-      const agent = await this.codebuffService.spawnAgent(request);
+      const agent = await this._codebuffService.spawnAgent(request);
       
       return {
         content: [{
           type: 'text',
           text: JSON.stringify({
             success: true,
-            agent: agent
+            agent
           }, null, 2)
         }]
       };
 
     } catch (error) {
-      this.logger.error('❌ Error spawning agent', error);
+      this._logger.error('❌ Error spawning agent', error);
       return {
         content: [{
           type: 'text',
@@ -269,20 +269,20 @@ export class CodebuffMCPTools {
     try {
       const agentId = args['agentId'] as string;
       
-      const status = await this.codebuffService.getAgentStatus(agentId);
+      const status = await this._codebuffService.getAgentStatus(agentId);
       
       return {
         content: [{
           type: 'text',
           text: JSON.stringify({
             success: true,
-            status: status
+            status
           }, null, 2)
         }]
       };
 
     } catch (error) {
-      this.logger.error('❌ Error getting agent status', error);
+      this._logger.error('❌ Error getting agent status', error);
       return {
         content: [{
           type: 'text',
@@ -299,7 +299,7 @@ export class CodebuffMCPTools {
     try {
       const { id, name, description, steps } = args;
       
-      this.logger.info(`📋 Creating workflow: ${name}`);
+      this._logger.info(`📋 Creating workflow: ${name}`);
       
       const workflow: WorkflowDefinition = {
         id: id as string,
@@ -307,10 +307,14 @@ export class CodebuffMCPTools {
         description: description as string,
         steps: steps as any[],
         agents: [],
-        status: 'idle'
+        status: 'idle',
+        metadata: {},
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        executionHistory: []
       };
 
-      const createdWorkflow = await this.codebuffService.createWorkflow(workflow);
+      const createdWorkflow = await this._codebuffService.createWorkflow(workflow);
       
       return {
         content: [{
@@ -323,7 +327,7 @@ export class CodebuffMCPTools {
       };
 
     } catch (error) {
-      this.logger.error('❌ Error creating workflow', error);
+      this._logger.error('❌ Error creating workflow', error);
       return {
         content: [{
           type: 'text',
@@ -340,9 +344,9 @@ export class CodebuffMCPTools {
     try {
       const workflowId = args['workflowId'] as string;
       
-      this.logger.info(`🔄 Executing workflow: ${workflowId}`);
+      this._logger.info(`🔄 Executing workflow: ${workflowId}`);
       
-      const result = await this.codebuffService.executeWorkflow(workflowId);
+      const result = await this._codebuffService.executeWorkflow(workflowId);
       
       return {
         content: [{
@@ -358,7 +362,7 @@ export class CodebuffMCPTools {
       };
 
     } catch (error) {
-      this.logger.error('❌ Error executing workflow', error);
+      this._logger.error('❌ Error executing workflow', error);
       return {
         content: [{
           type: 'text',
@@ -371,22 +375,22 @@ export class CodebuffMCPTools {
     }
   }
 
-  private async handleGetAgentDefinitions(args: Record<string, unknown>): Promise<any> {
+  private async handleGetAgentDefinitions(_args: Record<string, unknown>): Promise<any> {
     try {
-      const definitions = this.codebuffService.getAgentDefinitions();
+      const definitions = this._codebuffService.getAgentDefinitions();
       
       return {
         content: [{
           type: 'text',
           text: JSON.stringify({
             success: true,
-            definitions: definitions
+            definitions
           }, null, 2)
         }]
       };
 
     } catch (error) {
-      this.logger.error('❌ Error getting agent definitions', error);
+      this._logger.error('❌ Error getting agent definitions', error);
       return {
         content: [{
           type: 'text',
@@ -399,22 +403,22 @@ export class CodebuffMCPTools {
     }
   }
 
-  private async handleGetWorkflows(args: Record<string, unknown>): Promise<any> {
+  private async handleGetWorkflows(_args: Record<string, unknown>): Promise<any> {
     try {
-      const workflows = this.codebuffService.getWorkflows();
+      const workflows = this._codebuffService.getWorkflows();
       
       return {
         content: [{
           type: 'text',
           text: JSON.stringify({
             success: true,
-            workflows: workflows
+            workflows
           }, null, 2)
         }]
       };
 
     } catch (error) {
-      this.logger.error('❌ Error getting workflows', error);
+      this._logger.error('❌ Error getting workflows', error);
       return {
         content: [{
           type: 'text',
@@ -431,10 +435,10 @@ export class CodebuffMCPTools {
     try {
       const agentId = args['agentId'] as string;
       
-      this.logger.info(`🛑 Terminating agent: ${agentId}`);
+      this._logger.info(`🛑 Terminating agent: ${agentId}`);
       
       // Update agent status to terminated
-      const status = await this.codebuffService.getAgentStatus(agentId);
+      const status = await this._codebuffService.getAgentStatus(agentId);
       if (typeof status === 'object' && 'id' in status) {
         (status as AgentStatus).status = 'terminated';
         (status as AgentStatus).lastActivity = new Date().toISOString();
@@ -451,7 +455,7 @@ export class CodebuffMCPTools {
       };
 
     } catch (error) {
-      this.logger.error('❌ Error terminating agent', error);
+      this._logger.error('❌ Error terminating agent', error);
       return {
         content: [{
           type: 'text',

@@ -101,8 +101,8 @@ export const userRateLimit = rateLimit({
     if (req.user?.id) {
       return req.user.id;
     }
-    // For IP-based rate limiting, use a consistent key
-    return req.ip || 'unknown';
+    // For IP-based rate limiting, use proper IPv6 handling
+    return req.ip || req.socket.remoteAddress || 'unknown';
   },
   message: {
     error: 'User Rate Limit Exceeded',

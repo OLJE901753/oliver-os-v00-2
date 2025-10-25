@@ -18,7 +18,7 @@ const mockServices = [
   { id: 'security-service', name: 'Security Service', status: 'running', startTime: new Date() }
 ];
 
-router.get('/', (req: Request, res: Response) => {
+router.get('/', (_req: Request, res: Response) => {
   logger.info('Services list requested');
   
   res.json({

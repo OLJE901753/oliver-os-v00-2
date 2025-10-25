@@ -8,15 +8,15 @@ import { Logger } from '../../core/logger';
 import type { MCPTool, MCPResource, MCPRequest, MCPResponse, OliverOSMCPServer } from '../types';
 
 export class WebSearchMCPServer extends EventEmitter implements OliverOSMCPServer {
-  private logger: Logger;
+  private _logger: Logger;
   public config: any;
   private isRunning: boolean = false;
   private apiKey: string;
 
   constructor(apiKey?: string) {
     super();
-    this.logger = new Logger('WebSearch-MCP-Server');
-    this.apiKey = apiKey || process.env.SEARCH_API_KEY || '';
+    this._logger = new Logger('WebSearch-MCP-Server');
+    this.apiKey = apiKey || process.env['SEARCH_API_KEY'] || '';
     this.config = this.createServerConfig();
   }
 
@@ -218,46 +218,46 @@ export class WebSearchMCPServer extends EventEmitter implements OliverOSMCPServe
 
   async start(): Promise<void> {
     if (this.isRunning) {
-      this.logger.warn('WebSearch MCP Server is already running');
+      this._logger.warn('WebSearch MCP Server is already running');
       return;
     }
 
     try {
-      this.logger.info(`🚀 Starting WebSearch MCP Server on ${this.config.host}:${this.config.port}`);
-      this.logger.info(`🔑 API Key: ${this.apiKey ? 'Configured' : 'Not configured'}`);
-      this.logger.info(`📋 Available tools: ${this.config.tools.length}`);
-      this.logger.info(`📚 Available resources: ${this.config.resources.length}`);
+      this._logger.info(`🚀 Starting WebSearch MCP Server on ${this.config.host}:${this.config.port}`);
+      this._logger.info(`🔑 API Key: ${this.apiKey ? 'Configured' : 'Not configured'}`);
+      this._logger.info(`📋 Available tools: ${this.config.tools.length}`);
+      this._logger.info(`📚 Available resources: ${this.config.resources.length}`);
       
       this.isRunning = true;
       this.emit('started');
       
-      this.logger.info('✅ WebSearch MCP Server started successfully');
+      this._logger.info('✅ WebSearch MCP Server started successfully');
     } catch (error) {
-      this.logger.error('❌ Failed to start WebSearch MCP Server', error);
+      this._logger.error('❌ Failed to start WebSearch MCP Server', error);
       throw error;
     }
   }
 
   async stop(): Promise<void> {
     if (!this.isRunning) {
-      this.logger.warn('WebSearch MCP Server is not running');
+      this._logger.warn('WebSearch MCP Server is not running');
       return;
     }
 
     try {
-      this.logger.info('🛑 Stopping WebSearch MCP Server...');
+      this._logger.info('🛑 Stopping WebSearch MCP Server...');
       this.isRunning = false;
       this.emit('stopped');
-      this.logger.info('✅ WebSearch MCP Server stopped successfully');
+      this._logger.info('✅ WebSearch MCP Server stopped successfully');
     } catch (error) {
-      this.logger.error('❌ Failed to stop WebSearch MCP Server', error);
+      this._logger.error('❌ Failed to stop WebSearch MCP Server', error);
       throw error;
     }
   }
 
   async handleRequest(request: MCPRequest): Promise<MCPResponse> {
     try {
-      this.logger.debug(`📨 Handling WebSearch MCP request: ${request.method}`);
+      this._logger.debug(`📨 Handling WebSearch MCP request: ${request.method}`);
 
       switch (request.method) {
         case 'tools/list':
@@ -274,7 +274,7 @@ export class WebSearchMCPServer extends EventEmitter implements OliverOSMCPServe
           return this.createErrorResponse(request.id, -32601, `Method not found: ${request.method}`);
       }
     } catch (error) {
-      this.logger.error('❌ Error handling WebSearch MCP request', error);
+      this._logger.error('❌ Error handling WebSearch MCP request', error);
       return this.createErrorResponse(request.id, -32603, 'Internal error', error);
     }
   }
@@ -309,7 +309,7 @@ export class WebSearchMCPServer extends EventEmitter implements OliverOSMCPServe
         result
       };
     } catch (error) {
-      this.logger.error(`❌ Error executing WebSearch tool ${name}`, error);
+      this._logger.error(`❌ Error executing WebSearch tool ${name}`, error);
       return this.createErrorResponse(request.id, -32603, `Tool execution failed: ${error}`);
     }
   }
@@ -345,7 +345,7 @@ export class WebSearchMCPServer extends EventEmitter implements OliverOSMCPServe
         result
       };
     } catch (error) {
-      this.logger.error(`❌ Error reading WebSearch resource ${uri}`, error);
+      this._logger.error(`❌ Error reading WebSearch resource ${uri}`, error);
       return this.createErrorResponse(request.id, -32603, `Resource read failed: ${error}`);
     }
   }
@@ -372,7 +372,7 @@ export class WebSearchMCPServer extends EventEmitter implements OliverOSMCPServe
   private async handleWebSearch(args: Record<string, unknown>): Promise<any> {
     const { query, num_results, language, region, safe_search, date_range } = args;
     
-    this.logger.info(`🔍 Web searching: ${query}`);
+    this._logger.info(`🔍 Web searching: ${query}`);
     
     return {
       content: [{
@@ -402,7 +402,7 @@ export class WebSearchMCPServer extends EventEmitter implements OliverOSMCPServe
   private async handleNewsSearch(args: Record<string, unknown>): Promise<any> {
     const { query, num_results, language, region, sort_by, date_range } = args;
     
-    this.logger.info(`📰 News searching: ${query}`);
+    this._logger.info(`📰 News searching: ${query}`);
     
     return {
       content: [{
@@ -434,7 +434,7 @@ export class WebSearchMCPServer extends EventEmitter implements OliverOSMCPServe
   private async handleAcademicSearch(args: Record<string, unknown>): Promise<any> {
     const { query, num_results, year_from, year_to, sort_by } = args;
     
-    this.logger.info(`🎓 Academic searching: ${query}`);
+    this._logger.info(`🎓 Academic searching: ${query}`);
     
     return {
       content: [{
@@ -464,9 +464,9 @@ export class WebSearchMCPServer extends EventEmitter implements OliverOSMCPServe
   }
 
   private async handleGetPageContent(args: Record<string, unknown>): Promise<any> {
-    const { url, include_images, include_links, max_length } = args;
+    const { url, include_images, include_links, max_length: _maxLength } = args;
     
-    this.logger.info(`📄 Extracting content from: ${url}`);
+    this._logger.info(`📄 Extracting content from: ${url}`);
     
     return {
       content: [{
@@ -500,7 +500,7 @@ export class WebSearchMCPServer extends EventEmitter implements OliverOSMCPServe
   private async handleImageSearch(args: Record<string, unknown>): Promise<any> {
     const { query, num_results, size, color, type } = args;
     
-    this.logger.info(`🖼️ Image searching: ${query}`);
+    this._logger.info(`🖼️ Image searching: ${query}`);
     
     return {
       content: [{
@@ -532,7 +532,7 @@ export class WebSearchMCPServer extends EventEmitter implements OliverOSMCPServe
   private async handleVideoSearch(args: Record<string, unknown>): Promise<any> {
     const { query, num_results, duration, quality, sort_by } = args;
     
-    this.logger.info(`🎥 Video searching: ${query}`);
+    this._logger.info(`🎥 Video searching: ${query}`);
     
     return {
       content: [{
@@ -564,7 +564,7 @@ export class WebSearchMCPServer extends EventEmitter implements OliverOSMCPServe
   private async handleGetTrendingTopics(args: Record<string, unknown>): Promise<any> {
     const { region, category, num_results } = args;
     
-    this.logger.info(`📈 Getting trending topics for region: ${region}`);
+    this._logger.info(`📈 Getting trending topics for region: ${region}`);
     
     return {
       content: [{
@@ -598,7 +598,7 @@ export class WebSearchMCPServer extends EventEmitter implements OliverOSMCPServe
   private async handleSummarizeUrl(args: Record<string, unknown>): Promise<any> {
     const { url, max_sentences, language } = args;
     
-    this.logger.info(`📝 Summarizing URL: ${url}`);
+    this._logger.info(`📝 Summarizing URL: ${url}`);
     
     return {
       content: [{
@@ -625,7 +625,7 @@ export class WebSearchMCPServer extends EventEmitter implements OliverOSMCPServe
   private async handleTranslateText(args: Record<string, unknown>): Promise<any> {
     const { text, from_language, to_language, format } = args;
     
-    this.logger.info(`🌐 Translating text to ${to_language}`);
+    this._logger.info(`🌐 Translating text to ${to_language}`);
     
     return {
       content: [{
@@ -647,7 +647,7 @@ export class WebSearchMCPServer extends EventEmitter implements OliverOSMCPServe
   private async handleGetWeather(args: Record<string, unknown>): Promise<any> {
     const { location, units, days } = args;
     
-    this.logger.info(`🌤️ Getting weather for: ${location}`);
+    this._logger.info(`🌤️ Getting weather for: ${location}`);
     
     return {
       content: [{

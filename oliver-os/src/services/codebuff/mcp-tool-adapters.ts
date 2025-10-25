@@ -15,12 +15,12 @@ export interface MCPToolAdapter {
 }
 
 export class FilesystemMCPAdapter implements MCPToolAdapter {
-  private logger: Logger;
+  private _logger: Logger;
   public serverName = 'filesystem';
   public tools: CustomToolDefinition[];
 
   constructor() {
-    this.logger = new Logger('FilesystemMCPAdapter');
+    this._logger = new Logger('FilesystemMCPAdapter');
     this.tools = this.initializeTools();
   }
 
@@ -128,7 +128,7 @@ export class FilesystemMCPAdapter implements MCPToolAdapter {
       await fs.access(process.cwd());
       return true;
     } catch (error) {
-      this.logger.error('Filesystem health check failed', error);
+      this._logger.error('Filesystem health check failed', error);
       return false;
     }
   }
@@ -194,7 +194,7 @@ export class FilesystemMCPAdapter implements MCPToolAdapter {
         // Simple glob-like search implementation
         const items = await fs.readdir(searchDir, { withFileTypes: true });
         const matches = items.filter(item => {
-          if (pattern.includes('*')) {
+          if (pattern && pattern.includes('*')) {
             const regex = new RegExp(pattern.replace(/\*/g, '.*'));
             return regex.test(item.name);
           }
@@ -214,12 +214,12 @@ export class FilesystemMCPAdapter implements MCPToolAdapter {
 }
 
 export class DatabaseMCPAdapter implements MCPToolAdapter {
-  private logger: Logger;
+  private _logger: Logger;
   public serverName = 'database';
   public tools: CustomToolDefinition[];
 
   constructor() {
-    this.logger = new Logger('DatabaseMCPAdapter');
+    this._logger = new Logger('DatabaseMCPAdapter');
     this.tools = this.initializeTools();
   }
 
@@ -309,7 +309,7 @@ export class DatabaseMCPAdapter implements MCPToolAdapter {
       await prisma.$disconnect();
       return true;
     } catch (error) {
-      this.logger.error('Database health check failed', error);
+      this._logger.error('Database health check failed', error);
       return false;
     }
   }
@@ -371,12 +371,12 @@ export class DatabaseMCPAdapter implements MCPToolAdapter {
 }
 
 export class WebSearchMCPAdapter implements MCPToolAdapter {
-  private logger: Logger;
+  private _logger: Logger;
   public serverName = 'websearch';
   public tools: CustomToolDefinition[];
 
   constructor() {
-    this.logger = new Logger('WebSearchMCPAdapter');
+    this._logger = new Logger('WebSearchMCPAdapter');
     this.tools = this.initializeTools();
   }
 
@@ -423,7 +423,7 @@ export class WebSearchMCPAdapter implements MCPToolAdapter {
       const response = await fetch('https://httpbin.org/status/200', { timeout: 5000 });
       return response.ok;
     } catch (error) {
-      this.logger.error('Web search health check failed', error);
+      this._logger.error('Web search health check failed', error);
       return false;
     }
   }
@@ -442,7 +442,7 @@ export class WebSearchMCPAdapter implements MCPToolAdapter {
         return {
           query,
           results: [],
-          message: 'Web search not fully implemented - would search for: ' + query,
+          message: `Web search not fully implemented - would search for: ${  query}`,
           limit,
           language
         };
@@ -476,12 +476,12 @@ export class WebSearchMCPAdapter implements MCPToolAdapter {
 }
 
 export class TerminalMCPAdapter implements MCPToolAdapter {
-  private logger: Logger;
+  private _logger: Logger;
   public serverName = 'terminal';
   public tools: CustomToolDefinition[];
 
   constructor() {
-    this.logger = new Logger('TerminalMCPAdapter');
+    this._logger = new Logger('TerminalMCPAdapter');
     this.tools = this.initializeTools();
   }
 
@@ -532,7 +532,7 @@ export class TerminalMCPAdapter implements MCPToolAdapter {
       await execAsync('echo "health check"', { timeout: 5000 });
       return true;
     } catch (error) {
-      this.logger.error('Terminal health check failed', error);
+      this._logger.error('Terminal health check failed', error);
       return false;
     }
   }
@@ -605,13 +605,13 @@ export class TerminalMCPAdapter implements MCPToolAdapter {
 }
 
 export class MemoryMCPAdapter implements MCPToolAdapter {
-  private logger: Logger;
+  private _logger: Logger;
   public serverName = 'memory';
   public tools: CustomToolDefinition[];
   private memoryStore: Map<string, any> = new Map();
 
   constructor() {
-    this.logger = new Logger('MemoryMCPAdapter');
+    this._logger = new Logger('MemoryMCPAdapter');
     this.tools = this.initializeTools();
   }
 
@@ -687,7 +687,7 @@ export class MemoryMCPAdapter implements MCPToolAdapter {
       this.memoryStore.delete('health_check');
       return result === 'ok';
     } catch (error) {
-      this.logger.error('Memory health check failed', error);
+      this._logger.error('Memory health check failed', error);
       return false;
     }
   }
@@ -746,7 +746,7 @@ export class MemoryMCPAdapter implements MCPToolAdapter {
         for (const [key, item] of this.memoryStore.entries()) {
           if (matches.length >= limit) break;
           
-          if (key.includes(pattern) || item.value.includes(pattern)) {
+          if (key && key.includes(pattern) || item.value.includes(pattern)) {
             matches.push({ key, value: item.value });
           }
         }
@@ -780,12 +780,12 @@ export class MemoryMCPAdapter implements MCPToolAdapter {
  * Manages all MCP tool adapters and provides unified access
  */
 export class MCPToolRegistryManager {
-  private logger: Logger;
+  private _logger: Logger;
   private adapters: Map<string, MCPToolAdapter> = new Map();
   private tools: Map<string, CustomToolDefinition> = new Map();
 
   constructor() {
-    this.logger = new Logger('MCPToolRegistryManager');
+    this._logger = new Logger('MCPToolRegistryManager');
     this.initializeAdapters();
   }
 
@@ -806,7 +806,7 @@ export class MCPToolRegistryManager {
         this.tools.set(tool.name, tool);
       }
       
-      this.logger.info(`🔧 Registered MCP adapter: ${adapter.serverName} with ${adapter.tools.length} tools`);
+      this._logger.info(`🔧 Registered MCP adapter: ${adapter.serverName} with ${adapter.tools.length} tools`);
     }
   }
 
@@ -817,7 +817,7 @@ export class MCPToolRegistryManager {
       try {
         health[serverName] = await adapter.healthCheck();
       } catch (error) {
-        this.logger.error(`Health check failed for ${serverName}`, error);
+        this._logger.error(`Health check failed for ${serverName}`, error);
         health[serverName] = false;
       }
     }
@@ -836,14 +836,14 @@ export class MCPToolRegistryManager {
       throw new Error(`MCP server ${tool.mcpServer} not found for tool ${toolName}`);
     }
 
-    this.logger.info(`🔧 Executing tool: ${toolName} via ${tool.mcpServer}`);
+    this._logger.info(`🔧 Executing tool: ${toolName} via ${tool.mcpServer}`);
     
     try {
       const result = await adapter.executeTool(toolName, args);
-      this.logger.info(`✅ Tool ${toolName} executed successfully`);
+      this._logger.info(`✅ Tool ${toolName} executed successfully`);
       return result;
     } catch (error) {
-      this.logger.error(`❌ Tool ${toolName} execution failed`, error);
+      this._logger.error(`❌ Tool ${toolName} execution failed`, error);
       throw error;
     }
   }

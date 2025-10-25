@@ -12,14 +12,14 @@ import type { MCPTool, MCPResource, MCPRequest, MCPResponse, OliverOSMCPServer }
 const execAsync = promisify(exec);
 
 export class TerminalMCPServer extends EventEmitter implements OliverOSMCPServer {
-  private logger: Logger;
+  private _logger: Logger;
   public config: any;
   private isRunning: boolean = false;
   private workingDirectory: string;
 
   constructor(workingDirectory?: string) {
     super();
-    this.logger = new Logger('Terminal-MCP-Server');
+    this._logger = new Logger('Terminal-MCP-Server');
     this.workingDirectory = workingDirectory || process.cwd();
     this.config = this.createServerConfig();
   }
@@ -216,46 +216,46 @@ export class TerminalMCPServer extends EventEmitter implements OliverOSMCPServer
 
   async start(): Promise<void> {
     if (this.isRunning) {
-      this.logger.warn('Terminal MCP Server is already running');
+      this._logger.warn('Terminal MCP Server is already running');
       return;
     }
 
     try {
-      this.logger.info(`🚀 Starting Terminal MCP Server on ${this.config.host}:${this.config.port}`);
-      this.logger.info(`📁 Working directory: ${this.workingDirectory}`);
-      this.logger.info(`📋 Available tools: ${this.config.tools.length}`);
-      this.logger.info(`📚 Available resources: ${this.config.resources.length}`);
+      this._logger.info(`🚀 Starting Terminal MCP Server on ${this.config.host}:${this.config.port}`);
+      this._logger.info(`📁 Working directory: ${this.workingDirectory}`);
+      this._logger.info(`📋 Available tools: ${this.config.tools.length}`);
+      this._logger.info(`📚 Available resources: ${this.config.resources.length}`);
       
       this.isRunning = true;
       this.emit('started');
       
-      this.logger.info('✅ Terminal MCP Server started successfully');
+      this._logger.info('✅ Terminal MCP Server started successfully');
     } catch (error) {
-      this.logger.error('❌ Failed to start Terminal MCP Server', error);
+      this._logger.error('❌ Failed to start Terminal MCP Server', error);
       throw error;
     }
   }
 
   async stop(): Promise<void> {
     if (!this.isRunning) {
-      this.logger.warn('Terminal MCP Server is not running');
+      this._logger.warn('Terminal MCP Server is not running');
       return;
     }
 
     try {
-      this.logger.info('🛑 Stopping Terminal MCP Server...');
+      this._logger.info('🛑 Stopping Terminal MCP Server...');
       this.isRunning = false;
       this.emit('stopped');
-      this.logger.info('✅ Terminal MCP Server stopped successfully');
+      this._logger.info('✅ Terminal MCP Server stopped successfully');
     } catch (error) {
-      this.logger.error('❌ Failed to stop Terminal MCP Server', error);
+      this._logger.error('❌ Failed to stop Terminal MCP Server', error);
       throw error;
     }
   }
 
   async handleRequest(request: MCPRequest): Promise<MCPResponse> {
     try {
-      this.logger.debug(`📨 Handling Terminal MCP request: ${request.method}`);
+      this._logger.debug(`📨 Handling Terminal MCP request: ${request.method}`);
 
       switch (request.method) {
         case 'tools/list':
@@ -272,13 +272,13 @@ export class TerminalMCPServer extends EventEmitter implements OliverOSMCPServer
           return this.createErrorResponse(request.id, -32601, `Method not found: ${request.method}`);
       }
     } catch (error) {
-      this.logger.error('❌ Error handling Terminal MCP request', error);
+      this._logger.error('❌ Error handling Terminal MCP request', error);
       return this.createErrorResponse(request.id, -32603, 'Internal error', error);
     }
   }
 
   private async handleToolsList(request: MCPRequest): Promise<MCPResponse> {
-    const tools = this.config.tools.map(tool => ({
+    const tools = this.config.tools.map((tool: MCPTool) => ({
       name: tool.name,
       description: tool.description,
       inputSchema: tool.inputSchema
@@ -294,7 +294,7 @@ export class TerminalMCPServer extends EventEmitter implements OliverOSMCPServer
   private async handleToolsCall(request: MCPRequest): Promise<MCPResponse> {
     const { name, arguments: args } = request.params as { name: string; arguments: Record<string, unknown> };
     
-    const tool = this.config.tools.find(t => t.name === name);
+    const tool = this.config.tools.find((t: MCPTool) => t.name === name);
     if (!tool) {
       return this.createErrorResponse(request.id, -32601, `Tool not found: ${name}`);
     }
@@ -307,13 +307,13 @@ export class TerminalMCPServer extends EventEmitter implements OliverOSMCPServer
         result
       };
     } catch (error) {
-      this.logger.error(`❌ Error executing Terminal tool ${name}`, error);
+      this._logger.error(`❌ Error executing Terminal tool ${name}`, error);
       return this.createErrorResponse(request.id, -32603, `Tool execution failed: ${error}`);
     }
   }
 
   private async handleResourcesList(request: MCPRequest): Promise<MCPResponse> {
-    const resources = this.config.resources.map(resource => ({
+    const resources = this.config.resources.map((resource: any) => ({
       uri: resource.uri,
       name: resource.name,
       description: resource.description,
@@ -330,7 +330,7 @@ export class TerminalMCPServer extends EventEmitter implements OliverOSMCPServer
   private async handleResourcesRead(request: MCPRequest): Promise<MCPResponse> {
     const { uri } = request.params as { uri: string };
     
-    const resource = this.config.resources.find(r => r.uri === uri);
+    const resource = this.config.resources.find((r: any) => r.uri === uri);
     if (!resource) {
       return this.createErrorResponse(request.id, -32601, `Resource not found: ${uri}`);
     }
@@ -343,7 +343,7 @@ export class TerminalMCPServer extends EventEmitter implements OliverOSMCPServer
         result
       };
     } catch (error) {
-      this.logger.error(`❌ Error reading Terminal resource ${uri}`, error);
+      this._logger.error(`❌ Error reading Terminal resource ${uri}`, error);
       return this.createErrorResponse(request.id, -32603, `Resource read failed: ${error}`);
     }
   }
@@ -368,16 +368,15 @@ export class TerminalMCPServer extends EventEmitter implements OliverOSMCPServer
 
   // Tool Handlers
   private async handleExecuteCommand(args: Record<string, unknown>): Promise<any> {
-    const { command, cwd, timeout, shell, env } = args;
+    const { command, cwd, timeout, env } = args;
     const workingDir = (cwd as string) || this.workingDirectory;
     
-    this.logger.info(`⚡ Executing command: ${command} in ${workingDir}`);
+    this._logger.info(`⚡ Executing command: ${command} in ${workingDir}`);
     
     try {
       const { stdout, stderr } = await execAsync(command as string, {
         cwd: workingDir,
         timeout: timeout as number || 30000,
-        shell: shell as boolean || true,
         env: { ...process.env, ...(env as Record<string, string>) }
       });
       
@@ -388,15 +387,15 @@ export class TerminalMCPServer extends EventEmitter implements OliverOSMCPServer
             command: command as string,
             cwd: workingDir,
             exit_code: 0,
-            stdout: stdout,
-            stderr: stderr,
+            stdout,
+            stderr,
             execution_time: '0.15s'
           }, null, 2)
         }]
       };
-    } catch (error: any) {
-      this.logger.error(`❌ Command execution failed: ${command}`, error);
-      return this.createErrorResult(`Command execution failed: ${error.message}`);
+    } catch (_error: any) {
+      this._logger.error(`❌ Command execution failed: ${command}`, _error);
+      return this.createErrorResult(`Command execution failed: ${_error instanceof Error ? _error.message : String(_error)}`);
     }
   }
 
@@ -404,7 +403,7 @@ export class TerminalMCPServer extends EventEmitter implements OliverOSMCPServer
     const { command, cwd, timeout, env } = args;
     const workingDir = (cwd as string) || this.workingDirectory;
     
-    this.logger.info(`🔄 Executing interactive command: ${command} in ${workingDir}`);
+    this._logger.info(`🔄 Executing interactive command: ${command} in ${workingDir}`);
     
     return new Promise((resolve) => {
       const child = spawn(command as string, {
@@ -432,8 +431,8 @@ export class TerminalMCPServer extends EventEmitter implements OliverOSMCPServer
               command: command as string,
               cwd: workingDir,
               exit_code: code,
-              stdout: stdout,
-              stderr: stderr,
+              stdout,
+              stderr,
               interactive: true
             }, null, 2)
           }]
@@ -453,11 +452,11 @@ export class TerminalMCPServer extends EventEmitter implements OliverOSMCPServer
   private async handleGetProcesses(args: Record<string, unknown>): Promise<any> {
     const { filter, user, include_system } = args;
     
-    this.logger.info(`📋 Getting processes with filter: ${filter || 'none'}`);
+    this._logger.info(`📋 Getting processes with filter: ${filter || 'none'}`);
     
     try {
       const command = process.platform === 'win32' ? 'tasklist' : 'ps aux';
-      const { stdout } = await execAsync(command);
+      await execAsync(command);
       
       return {
         content: [{
@@ -481,7 +480,7 @@ export class TerminalMCPServer extends EventEmitter implements OliverOSMCPServer
         }]
       };
     } catch (error) {
-      this.logger.error('❌ Error getting processes', error);
+      this._logger.error('❌ Error getting processes', error);
       return this.createErrorResult('Failed to get processes');
     }
   }
@@ -489,7 +488,7 @@ export class TerminalMCPServer extends EventEmitter implements OliverOSMCPServer
   private async handleKillProcess(args: Record<string, unknown>): Promise<any> {
     const { pid, signal, force } = args;
     
-    this.logger.info(`💀 Killing process ${pid} with signal ${signal}`);
+    this._logger.info(`💀 Killing process ${pid} with signal ${signal}`);
     
     try {
       const command = process.platform === 'win32' 
@@ -511,7 +510,7 @@ export class TerminalMCPServer extends EventEmitter implements OliverOSMCPServer
         }]
       };
     } catch (error) {
-      this.logger.error(`❌ Error killing process ${pid}`, error);
+      this._logger.error(`❌ Error killing process ${pid}`, error);
       return this.createErrorResult(`Failed to kill process ${pid}`);
     }
   }
@@ -519,7 +518,7 @@ export class TerminalMCPServer extends EventEmitter implements OliverOSMCPServer
   private async handleGetSystemInfo(args: Record<string, unknown>): Promise<any> {
     const { include_disk, include_memory, include_network } = args;
     
-    this.logger.info('ℹ️ Getting system information');
+    this._logger.info('ℹ️ Getting system information');
     
     return {
       content: [{
@@ -554,7 +553,7 @@ export class TerminalMCPServer extends EventEmitter implements OliverOSMCPServer
   private async handleInstallPackage(args: Record<string, unknown>): Promise<any> {
     const { package_name, manager, version, global, dev } = args;
     
-    this.logger.info(`📦 Installing package ${package_name} using ${manager}`);
+    this._logger.info(`📦 Installing package ${package_name} using ${manager}`);
     
     let command = '';
     switch (manager) {
@@ -587,22 +586,22 @@ export class TerminalMCPServer extends EventEmitter implements OliverOSMCPServer
             version: version as string,
             global: global || false,
             dev: dev || false,
-            stdout: stdout,
-            stderr: stderr,
+            stdout,
+            stderr,
             installed_at: new Date().toISOString()
           }, null, 2)
         }]
       };
-    } catch (error: any) {
-      this.logger.error(`❌ Package installation failed: ${package_name}`, error);
-      return this.createErrorResult(`Package installation failed: ${error.message}`);
+    } catch (_error: any) {
+      this._logger.error(`❌ Package installation failed: ${package_name}`, _error);
+      return this.createErrorResult(`Package installation failed: ${_error instanceof Error ? _error.message : String(_error)}`);
     }
   }
 
   private async handleGitOperation(args: Record<string, unknown>): Promise<any> {
     const { operation, args: gitArgs, message, remote, branch } = args;
     
-    this.logger.info(`🔧 Executing git ${operation}`);
+    this._logger.info(`🔧 Executing git ${operation}`);
     
     let command = `git ${operation}`;
     if (gitArgs && Array.isArray(gitArgs)) {
@@ -627,23 +626,23 @@ export class TerminalMCPServer extends EventEmitter implements OliverOSMCPServer
           text: JSON.stringify({
             success: true,
             operation: operation as string,
-            command: command,
-            stdout: stdout,
-            stderr: stderr,
+            command,
+            stdout,
+            stderr,
             executed_at: new Date().toISOString()
           }, null, 2)
         }]
       };
-    } catch (error: any) {
-      this.logger.error(`❌ Git operation failed: ${operation}`, error);
-      return this.createErrorResult(`Git operation failed: ${error.message}`);
+    } catch (_error: any) {
+      this._logger.error(`❌ Git operation failed: ${operation}`, _error);
+      return this.createErrorResult(`Git operation failed: ${_error instanceof Error ? _error.message : String(_error)}`);
     }
   }
 
   private async handleFileOperation(args: Record<string, unknown>): Promise<any> {
     const { operation, path, pattern, options } = args;
     
-    this.logger.info(`📁 Executing file operation: ${operation} on ${path}`);
+    this._logger.info(`📁 Executing file operation: ${operation} on ${path}`);
     
     let command = `${operation} ${path}`;
     if (pattern && (operation === 'grep' || operation === 'find')) {
@@ -664,23 +663,23 @@ export class TerminalMCPServer extends EventEmitter implements OliverOSMCPServer
             operation: operation as string,
             path: path as string,
             pattern: pattern as string,
-            command: command,
-            stdout: stdout,
-            stderr: stderr,
+            command,
+            stdout,
+            stderr,
             executed_at: new Date().toISOString()
           }, null, 2)
         }]
       };
-    } catch (error: any) {
-      this.logger.error(`❌ File operation failed: ${operation}`, error);
-      return this.createErrorResult(`File operation failed: ${error.message}`);
+    } catch (_error: any) {
+      this._logger.error(`❌ File operation failed: ${operation}`, _error);
+      return this.createErrorResult(`File operation failed: ${_error instanceof Error ? _error.message : String(_error)}`);
     }
   }
 
   private async handleNetworkOperation(args: Record<string, unknown>): Promise<any> {
     const { operation, target, options } = args;
     
-    this.logger.info(`🌐 Executing network operation: ${operation} on ${target}`);
+    this._logger.info(`🌐 Executing network operation: ${operation} on ${target}`);
     
     let command = `${operation} ${target}`;
     if (options && Array.isArray(options)) {
@@ -697,23 +696,23 @@ export class TerminalMCPServer extends EventEmitter implements OliverOSMCPServer
             success: true,
             operation: operation as string,
             target: target as string,
-            command: command,
-            stdout: stdout,
-            stderr: stderr,
+            command,
+            stdout,
+            stderr,
             executed_at: new Date().toISOString()
           }, null, 2)
         }]
       };
-    } catch (error: any) {
-      this.logger.error(`❌ Network operation failed: ${operation}`, error);
-      return this.createErrorResult(`Network operation failed: ${error.message}`);
+    } catch (_error: any) {
+      this._logger.error(`❌ Network operation failed: ${operation}`, _error);
+      return this.createErrorResult(`Network operation failed: ${_error instanceof Error ? _error.message : String(_error)}`);
     }
   }
 
   private async handleMonitorLogs(args: Record<string, unknown>): Promise<any> {
     const { log_file, lines, follow, filter } = args;
     
-    this.logger.info(`📊 Monitoring logs: ${log_file}`);
+    this._logger.info(`📊 Monitoring logs: ${log_file}`);
     
     let command = `tail -n ${lines || 100}`;
     if (follow) {
@@ -736,14 +735,14 @@ export class TerminalMCPServer extends EventEmitter implements OliverOSMCPServer
             follow: follow || true,
             filter: filter as string,
             logs: stdout,
-            stderr: stderr,
+            stderr,
             monitored_at: new Date().toISOString()
           }, null, 2)
         }]
       };
-    } catch (error: any) {
-      this.logger.error(`❌ Log monitoring failed: ${log_file}`, error);
-      return this.createErrorResult(`Log monitoring failed: ${error.message}`);
+    } catch (_error: any) {
+      this._logger.error(`❌ Log monitoring failed: ${log_file}`, _error);
+      return this.createErrorResult(`Log monitoring failed: ${_error instanceof Error ? _error.message : String(_error)}`);
     }
   }
 

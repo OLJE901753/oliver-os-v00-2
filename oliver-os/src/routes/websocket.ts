@@ -3,11 +3,11 @@
  * API endpoints for WebSocket management and status
  */
 
-import { Router } from 'express';
+import { Router, type Request, type Response } from 'express';
 import { Logger } from '../core/logger';
 
 const logger = new Logger('WebSocketRoutes');
-const router = Router();
+const router: Router = Router();
 
 // Store WebSocket manager reference (will be set by the server)
 let wsManager: any = null;
@@ -19,7 +19,7 @@ export function setWebSocketManager(manager: any): void {
 /**
  * Get WebSocket connection status
  */
-router.get('/status', (req, res) => {
+router.get('/status', (_req: Request, res: Response) => {
   try {
     if (!wsManager) {
       return res.status(503).json({
@@ -43,7 +43,7 @@ router.get('/status', (req, res) => {
 /**
  * Get connected clients
  */
-router.get('/clients', (req, res) => {
+router.get('/clients', (_req: Request, res: Response) => {
   try {
     if (!wsManager) {
       return res.status(503).json({
@@ -54,7 +54,7 @@ router.get('/clients', (req, res) => {
 
     const clients = wsManager.getConnectedClients();
     res.json({
-      clients: clients.map(client => ({
+      clients: clients.map((client: any) => ({
         id: client.id,
         user_id: client.user_id,
         last_seen: client.last_seen,
@@ -75,7 +75,7 @@ router.get('/clients', (req, res) => {
 /**
  * Get thought sessions
  */
-router.get('/sessions', (req, res) => {
+router.get('/sessions', (_req: Request, res: Response) => {
   try {
     if (!wsManager) {
       return res.status(503).json({
@@ -86,7 +86,7 @@ router.get('/sessions', (req, res) => {
 
     const sessions = wsManager.getThoughtSessions();
     res.json({
-      sessions: sessions.map(session => ({
+      sessions: sessions.map((session: any) => ({
         client_id: session.client_id,
         thought_count: session.thoughts.length,
         created_at: session.created_at,
@@ -107,7 +107,7 @@ router.get('/sessions', (req, res) => {
 /**
  * Send message to specific client
  */
-router.post('/send/:clientId', (req, res) => {
+router.post('/send/:clientId', (req: Request, res: Response) => {
   try {
     const { clientId } = req.params;
     const { event, data } = req.body;
@@ -155,7 +155,7 @@ router.post('/send/:clientId', (req, res) => {
 /**
  * Broadcast message to channel
  */
-router.post('/broadcast/channel', (req, res) => {
+router.post('/broadcast/channel', (req: Request, res: Response) => {
   try {
     const { channel, event, data } = req.body;
 

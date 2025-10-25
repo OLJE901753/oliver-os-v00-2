@@ -10,14 +10,14 @@ import { Logger } from '../../core/logger';
 import type { MCPTool, MCPResource, MCPRequest, MCPResponse, OliverOSMCPServer } from '../types';
 
 export class FilesystemMCPServer extends EventEmitter implements OliverOSMCPServer {
-  private logger: Logger;
+  private _logger: Logger;
   public config: any;
   private isRunning: boolean = false;
   private basePath: string;
 
   constructor(basePath: string = process.cwd()) {
     super();
-    this.logger = new Logger('Filesystem-MCP-Server');
+    this._logger = new Logger('Filesystem-MCP-Server');
     this.basePath = path.resolve(basePath);
     this.config = this.createServerConfig();
   }
@@ -218,46 +218,46 @@ export class FilesystemMCPServer extends EventEmitter implements OliverOSMCPServ
 
   async start(): Promise<void> {
     if (this.isRunning) {
-      this.logger.warn('Filesystem MCP Server is already running');
+      this._logger.warn('Filesystem MCP Server is already running');
       return;
     }
 
     try {
-      this.logger.info(`🚀 Starting Filesystem MCP Server on ${this.config.host}:${this.config.port}`);
-      this.logger.info(`📁 Base path: ${this.basePath}`);
-      this.logger.info(`📋 Available tools: ${this.config.tools.length}`);
-      this.logger.info(`📚 Available resources: ${this.config.resources.length}`);
+      this._logger.info(`🚀 Starting Filesystem MCP Server on ${this.config.host}:${this.config.port}`);
+      this._logger.info(`📁 Base path: ${this.basePath}`);
+      this._logger.info(`📋 Available tools: ${this.config.tools.length}`);
+      this._logger.info(`📚 Available resources: ${this.config.resources.length}`);
       
       this.isRunning = true;
       this.emit('started');
       
-      this.logger.info('✅ Filesystem MCP Server started successfully');
+      this._logger.info('✅ Filesystem MCP Server started successfully');
     } catch (error) {
-      this.logger.error('❌ Failed to start Filesystem MCP Server', error);
+      this._logger.error('❌ Failed to start Filesystem MCP Server', error);
       throw error;
     }
   }
 
   async stop(): Promise<void> {
     if (!this.isRunning) {
-      this.logger.warn('Filesystem MCP Server is not running');
+      this._logger.warn('Filesystem MCP Server is not running');
       return;
     }
 
     try {
-      this.logger.info('🛑 Stopping Filesystem MCP Server...');
+      this._logger.info('🛑 Stopping Filesystem MCP Server...');
       this.isRunning = false;
       this.emit('stopped');
-      this.logger.info('✅ Filesystem MCP Server stopped successfully');
+      this._logger.info('✅ Filesystem MCP Server stopped successfully');
     } catch (error) {
-      this.logger.error('❌ Failed to stop Filesystem MCP Server', error);
+      this._logger.error('❌ Failed to stop Filesystem MCP Server', error);
       throw error;
     }
   }
 
   async handleRequest(request: MCPRequest): Promise<MCPResponse> {
     try {
-      this.logger.debug(`📨 Handling Filesystem MCP request: ${request.method}`);
+      this._logger.debug(`📨 Handling Filesystem MCP request: ${request.method}`);
 
       switch (request.method) {
         case 'tools/list':
@@ -274,13 +274,13 @@ export class FilesystemMCPServer extends EventEmitter implements OliverOSMCPServ
           return this.createErrorResponse(request.id, -32601, `Method not found: ${request.method}`);
       }
     } catch (error) {
-      this.logger.error('❌ Error handling Filesystem MCP request', error);
+      this._logger.error('❌ Error handling Filesystem MCP request', error);
       return this.createErrorResponse(request.id, -32603, 'Internal error', error);
     }
   }
 
   private async handleToolsList(request: MCPRequest): Promise<MCPResponse> {
-    const tools = this.config.tools.map(tool => ({
+    const tools = this.config.tools.map((tool: MCPTool) => ({
       name: tool.name,
       description: tool.description,
       inputSchema: tool.inputSchema
@@ -296,7 +296,7 @@ export class FilesystemMCPServer extends EventEmitter implements OliverOSMCPServ
   private async handleToolsCall(request: MCPRequest): Promise<MCPResponse> {
     const { name, arguments: args } = request.params as { name: string; arguments: Record<string, unknown> };
     
-    const tool = this.config.tools.find(t => t.name === name);
+    const tool = this.config.tools.find((t: MCPTool) => t.name === name);
     if (!tool) {
       return this.createErrorResponse(request.id, -32601, `Tool not found: ${name}`);
     }
@@ -309,13 +309,13 @@ export class FilesystemMCPServer extends EventEmitter implements OliverOSMCPServ
         result
       };
     } catch (error) {
-      this.logger.error(`❌ Error executing Filesystem tool ${name}`, error);
+      this._logger.error(`❌ Error executing Filesystem tool ${name}`, error);
       return this.createErrorResponse(request.id, -32603, `Tool execution failed: ${error}`);
     }
   }
 
   private async handleResourcesList(request: MCPRequest): Promise<MCPResponse> {
-    const resources = this.config.resources.map(resource => ({
+    const resources = this.config.resources.map((resource: any) => ({
       uri: resource.uri,
       name: resource.name,
       description: resource.description,
@@ -332,7 +332,7 @@ export class FilesystemMCPServer extends EventEmitter implements OliverOSMCPServ
   private async handleResourcesRead(request: MCPRequest): Promise<MCPResponse> {
     const { uri } = request.params as { uri: string };
     
-    const resource = this.config.resources.find(r => r.uri === uri);
+    const resource = this.config.resources.find((r: any) => r.uri === uri);
     if (!resource) {
       return this.createErrorResponse(request.id, -32601, `Resource not found: ${uri}`);
     }
@@ -345,7 +345,7 @@ export class FilesystemMCPServer extends EventEmitter implements OliverOSMCPServ
         result
       };
     } catch (error) {
-      this.logger.error(`❌ Error reading Filesystem resource ${uri}`, error);
+      this._logger.error(`❌ Error reading Filesystem resource ${uri}`, error);
       return this.createErrorResponse(request.id, -32603, `Resource read failed: ${error}`);
     }
   }
@@ -373,10 +373,10 @@ export class FilesystemMCPServer extends EventEmitter implements OliverOSMCPServ
     const { path: filePath, encoding } = args;
     const fullPath = this.resolvePath(filePath as string);
     
-    this.logger.info(`📖 Reading file: ${fullPath}`);
+    this._logger.info(`📖 Reading file: ${fullPath}`);
     
     try {
-      const content = await fs.readFile(fullPath, encoding as string || 'utf8');
+      const content = await fs.readFile(fullPath, encoding as string || 'utf8' as any);
       const stats = await fs.stat(fullPath);
       
       return {
@@ -393,7 +393,7 @@ export class FilesystemMCPServer extends EventEmitter implements OliverOSMCPServ
         }]
       };
     } catch (error) {
-      this.logger.error(`❌ Error reading file ${fullPath}`, error);
+      this._logger.error(`❌ Error reading file ${fullPath}`, error);
       return this.createErrorResult(`Failed to read file: ${error}`);
     }
   }
@@ -402,14 +402,14 @@ export class FilesystemMCPServer extends EventEmitter implements OliverOSMCPServ
     const { path: filePath, content, encoding, create_dirs } = args;
     const fullPath = this.resolvePath(filePath as string);
     
-    this.logger.info(`✍️ Writing file: ${fullPath}`);
+    this._logger.info(`✍️ Writing file: ${fullPath}`);
     
     try {
       if (create_dirs) {
         await fs.ensureDir(path.dirname(fullPath));
       }
       
-      await fs.writeFile(fullPath, content as string, encoding as string || 'utf8');
+      await fs.writeFile(fullPath, content as string, { encoding: encoding as string || 'utf8' } as any);
       const stats = await fs.stat(fullPath);
       
       return {
@@ -425,7 +425,7 @@ export class FilesystemMCPServer extends EventEmitter implements OliverOSMCPServ
         }]
       };
     } catch (error) {
-      this.logger.error(`❌ Error writing file ${fullPath}`, error);
+      this._logger.error(`❌ Error writing file ${fullPath}`, error);
       return this.createErrorResult(`Failed to write file: ${error}`);
     }
   }
@@ -434,7 +434,7 @@ export class FilesystemMCPServer extends EventEmitter implements OliverOSMCPServ
     const { path: dirPath, recursive, include_hidden, filter } = args;
     const fullPath = this.resolvePath(dirPath as string);
     
-    this.logger.info(`📁 Listing directory: ${fullPath}`);
+    this._logger.info(`📁 Listing directory: ${fullPath}`);
     
     try {
       const items = await this.listDirectory(fullPath, {
@@ -455,7 +455,7 @@ export class FilesystemMCPServer extends EventEmitter implements OliverOSMCPServ
         }]
       };
     } catch (error) {
-      this.logger.error(`❌ Error listing directory ${fullPath}`, error);
+      this._logger.error(`❌ Error listing directory ${fullPath}`, error);
       return this.createErrorResult(`Failed to list directory: ${error}`);
     }
   }
@@ -464,7 +464,7 @@ export class FilesystemMCPServer extends EventEmitter implements OliverOSMCPServ
     const { path: dirPath, recursive } = args;
     const fullPath = this.resolvePath(dirPath as string);
     
-    this.logger.info(`📁 Creating directory: ${fullPath}`);
+    this._logger.info(`📁 Creating directory: ${fullPath}`);
     
     try {
       await fs.ensureDir(fullPath);
@@ -482,7 +482,7 @@ export class FilesystemMCPServer extends EventEmitter implements OliverOSMCPServ
         }]
       };
     } catch (error) {
-      this.logger.error(`❌ Error creating directory ${fullPath}`, error);
+      this._logger.error(`❌ Error creating directory ${fullPath}`, error);
       return this.createErrorResult(`Failed to create directory: ${error}`);
     }
   }
@@ -491,7 +491,7 @@ export class FilesystemMCPServer extends EventEmitter implements OliverOSMCPServ
     const { path: filePath, recursive } = args;
     const fullPath = this.resolvePath(filePath as string);
     
-    this.logger.info(`🗑️ Deleting: ${fullPath}`);
+    this._logger.info(`🗑️ Deleting: ${fullPath}`);
     
     try {
       const stats = await fs.stat(fullPath);
@@ -510,7 +510,7 @@ export class FilesystemMCPServer extends EventEmitter implements OliverOSMCPServ
         }]
       };
     } catch (error) {
-      this.logger.error(`❌ Error deleting ${fullPath}`, error);
+      this._logger.error(`❌ Error deleting ${fullPath}`, error);
       return this.createErrorResult(`Failed to delete: ${error}`);
     }
   }
@@ -520,7 +520,7 @@ export class FilesystemMCPServer extends EventEmitter implements OliverOSMCPServ
     const sourcePath = this.resolvePath(source as string);
     const destPath = this.resolvePath(destination as string);
     
-    this.logger.info(`📦 Moving: ${sourcePath} -> ${destPath}`);
+    this._logger.info(`📦 Moving: ${sourcePath} -> ${destPath}`);
     
     try {
       await fs.move(sourcePath, destPath);
@@ -537,7 +537,7 @@ export class FilesystemMCPServer extends EventEmitter implements OliverOSMCPServ
         }]
       };
     } catch (error) {
-      this.logger.error(`❌ Error moving ${sourcePath} to ${destPath}`, error);
+      this._logger.error(`❌ Error moving ${sourcePath} to ${destPath}`, error);
       return this.createErrorResult(`Failed to move file: ${error}`);
     }
   }
@@ -547,10 +547,10 @@ export class FilesystemMCPServer extends EventEmitter implements OliverOSMCPServ
     const sourcePath = this.resolvePath(source as string);
     const destPath = this.resolvePath(destination as string);
     
-    this.logger.info(`📋 Copying: ${sourcePath} -> ${destPath}`);
+    this._logger.info(`📋 Copying: ${sourcePath} -> ${destPath}`);
     
     try {
-      await fs.copy(sourcePath, destPath, { recursive: recursive as boolean || true });
+      await fs.copy(sourcePath, destPath, { recursive: recursive as boolean || true } as any);
       
       return {
         content: [{
@@ -565,7 +565,7 @@ export class FilesystemMCPServer extends EventEmitter implements OliverOSMCPServ
         }]
       };
     } catch (error) {
-      this.logger.error(`❌ Error copying ${sourcePath} to ${destPath}`, error);
+      this._logger.error(`❌ Error copying ${sourcePath} to ${destPath}`, error);
       return this.createErrorResult(`Failed to copy file: ${error}`);
     }
   }
@@ -574,7 +574,7 @@ export class FilesystemMCPServer extends EventEmitter implements OliverOSMCPServ
     const { path: filePath } = args;
     const fullPath = this.resolvePath(filePath as string);
     
-    this.logger.info(`ℹ️ Getting file info: ${fullPath}`);
+    this._logger.info(`ℹ️ Getting file info: ${fullPath}`);
     
     try {
       const stats = await fs.stat(fullPath);
@@ -598,7 +598,7 @@ export class FilesystemMCPServer extends EventEmitter implements OliverOSMCPServ
         }]
       };
     } catch (error) {
-      this.logger.error(`❌ Error getting file info ${fullPath}`, error);
+      this._logger.error(`❌ Error getting file info ${fullPath}`, error);
       return this.createErrorResult(`Failed to get file info: ${error}`);
     }
   }
@@ -607,7 +607,7 @@ export class FilesystemMCPServer extends EventEmitter implements OliverOSMCPServ
     const { pattern, directory, recursive, include_content } = args;
     const searchDir = this.resolvePath(directory as string || '.');
     
-    this.logger.info(`🔍 Searching files: ${pattern} in ${searchDir}`);
+    this._logger.info(`🔍 Searching files: ${pattern} in ${searchDir}`);
     
     try {
       const results = await this.searchFiles(searchDir, pattern as string, {
@@ -628,7 +628,7 @@ export class FilesystemMCPServer extends EventEmitter implements OliverOSMCPServ
         }]
       };
     } catch (error) {
-      this.logger.error(`❌ Error searching files ${pattern}`, error);
+      this._logger.error(`❌ Error searching files ${pattern}`, error);
       return this.createErrorResult(`Failed to search files: ${error}`);
     }
   }
@@ -637,7 +637,7 @@ export class FilesystemMCPServer extends EventEmitter implements OliverOSMCPServ
     const { path: filePath, recursive, events } = args;
     const fullPath = this.resolvePath(filePath as string);
     
-    this.logger.info(`👀 Watching: ${fullPath}`);
+    this._logger.info(`👀 Watching: ${fullPath}`);
     
     try {
       // This would set up file watching
@@ -657,7 +657,7 @@ export class FilesystemMCPServer extends EventEmitter implements OliverOSMCPServ
         }]
       };
     } catch (error) {
-      this.logger.error(`❌ Error watching ${fullPath}`, error);
+      this._logger.error(`❌ Error watching ${fullPath}`, error);
       return this.createErrorResult(`Failed to watch file: ${error}`);
     }
   }
@@ -666,7 +666,7 @@ export class FilesystemMCPServer extends EventEmitter implements OliverOSMCPServ
     const { path: projectPath, max_depth, include_files, include_dirs } = args;
     const fullPath = this.resolvePath(projectPath as string || '.');
     
-    this.logger.info(`🏗️ Getting project structure: ${fullPath}`);
+    this._logger.info(`🏗️ Getting project structure: ${fullPath}`);
     
     try {
       const structure = await this.getProjectStructure(fullPath, {
@@ -687,7 +687,7 @@ export class FilesystemMCPServer extends EventEmitter implements OliverOSMCPServ
         }]
       };
     } catch (error) {
-      this.logger.error(`❌ Error getting project structure ${fullPath}`, error);
+      this._logger.error(`❌ Error getting project structure ${fullPath}`, error);
       return this.createErrorResult(`Failed to get project structure: ${error}`);
     }
   }
@@ -812,7 +812,7 @@ export class FilesystemMCPServer extends EventEmitter implements OliverOSMCPServ
         }
       }
     } catch (error) {
-      this.logger.error(`Error listing directory ${dirPath}`, error);
+      this._logger.error(`Error listing directory ${dirPath}`, error);
     }
     
     return items;
@@ -831,20 +831,20 @@ export class FilesystemMCPServer extends EventEmitter implements OliverOSMCPServ
       });
       
       for (const item of items) {
-        if (item.type === 'file' && item.name.includes(pattern)) {
+        if (item['type'] === 'file' && (item['name'] as string).includes(pattern)) {
           const result: Record<string, unknown> = {
-            name: item.name,
-            path: item.path,
-            size: item.size,
-            modified: item.modified
+            name: item['name'],
+            path: item['path'],
+            size: item['size'],
+            modified: item['modified']
           };
           
           if (options.includeContent) {
             try {
-              const content = await fs.readFile(item.path as string, 'utf8');
-              result.content = content.substring(0, 1000); // Limit content preview
+              const content = await fs.readFile(item['path'] as string, 'utf8');
+              result['content'] = content.substring(0, 1000); // Limit content preview
             } catch {
-              result.content = 'Unable to read content';
+              result['content'] = 'Unable to read content';
             }
           }
           
@@ -852,7 +852,7 @@ export class FilesystemMCPServer extends EventEmitter implements OliverOSMCPServ
         }
       }
     } catch (error) {
-      this.logger.error(`Error searching files in ${dirPath}`, error);
+      this._logger.error(`Error searching files in ${dirPath}`, error);
     }
     
     return results;
@@ -888,10 +888,10 @@ export class FilesystemMCPServer extends EventEmitter implements OliverOSMCPServ
               includeFiles: options.includeFiles,
               includeDirs: options.includeDirs
             });
-            (structure.children as Array<Record<string, unknown>>).push(subStructure);
+            (structure['children'] as Array<Record<string, unknown>>).push(subStructure);
           }
         } else if (entry.isFile() && options.includeFiles) {
-          (structure.children as Array<Record<string, unknown>>).push({
+          (structure['children'] as Array<Record<string, unknown>>).push({
             name: entry.name,
             path: fullPath,
             type: 'file',
@@ -901,7 +901,7 @@ export class FilesystemMCPServer extends EventEmitter implements OliverOSMCPServ
         }
       }
     } catch (error) {
-      this.logger.error(`Error building project structure for ${dirPath}`, error);
+      this._logger.error(`Error building project structure for ${dirPath}`, error);
     }
     
     return structure;
