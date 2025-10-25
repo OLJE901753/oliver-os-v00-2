@@ -478,7 +478,7 @@ class QuickFixCommandGenerator {
       const output = await this.executeCommand(command.command);
 
       // Execute post actions
-      for (const postAction of command.postActions) {
+      for (const _postAction of command.postActions) {
         // console.log(`Post-action: ${postAction}`); // Removed console statement
       }
 
