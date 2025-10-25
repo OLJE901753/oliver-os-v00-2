@@ -27,6 +27,9 @@ COPY oliver-os/prisma ./prisma
 # Fix bmad-global path in package.json before installing
 RUN sed -i 's|file:../bmad-global|file:./bmad-global|' package.json
 
+# Fix tsconfig.json path to reference tsconfig.base.json at the same level
+RUN sed -i 's|"extends": "../tsconfig.base.json"|"extends": "./tsconfig.base.json"|' tsconfig.json
+
 # Install dependencies
 RUN pnpm install
 
