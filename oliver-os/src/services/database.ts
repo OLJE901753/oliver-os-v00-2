@@ -191,12 +191,28 @@ export class DatabaseService {
   }
 
   async addParticipantToSession(sessionId: string, userId: string) {
+    // Get current participants
+    const session = await this.prisma.collaborationSession.findUnique({
+      where: { id: sessionId }
+    });
+    
+    if (!session) {
+      throw new Error(`Session ${sessionId} not found`);
+    }
+    
+    // Parse current participants
+    const participants = JSON.parse(session.participants || '[]');
+    
+    // Add new participant if not already present
+    if (!participants.includes(userId)) {
+      participants.push(userId);
+    }
+    
+    // Update with new participants array
     return this.prisma.collaborationSession.update({
       where: { id: sessionId },
       data: {
-        participants: {
-          connect: { id: userId }
-        }
+        participants: JSON.stringify(participants)
       }
     });
   }
