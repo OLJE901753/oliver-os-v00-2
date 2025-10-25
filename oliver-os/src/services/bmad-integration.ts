@@ -167,7 +167,7 @@ class OliverOSBMADService implements OliverOSBMADIntegration {
         ...context
       };
 
-      const result = await this.workflowEngine.executeWorkflow(workflowId, workflowContext);
+      const result = await this.workflowEngine.executeWorkflow();
 
       if (result.success) {
         this._logger.info(`✅ Workflow completed successfully in ${result.duration}ms`);
@@ -249,7 +249,7 @@ class OliverOSBMADService implements OliverOSBMADIntegration {
       this._logger.info('⚙️ Updating BMAD configuration...');
 
       // Apply Oliver-OS specific configuration updates
-      const _oliverOSUpdates = this.applyOliverOSDefaults(updates);
+      // const _oliverOSUpdates = this.applyOliverOSDefaults(updates); // Unused for now
       
       // await this._configManager.updateConfig(oliverOSUpdates); // Unused for now
 
