@@ -261,7 +261,6 @@ jobs:
         continue-on-error: true
 
       - name: Run Snyk security scan
-        if: ${{ secrets.SNYK_TOKEN != '' }}
         uses: snyk/actions/node@master
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
@@ -321,7 +320,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: build-and-test
     if: github.ref == 'refs/heads/develop'
-    environment: staging
+    # environment: staging  # Uncomment when staging environment is configured in GitHub
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -344,7 +343,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: build-and-test
     if: github.ref == 'refs/heads/main'
-    environment: production
+    # environment: production  # Uncomment when production environment is configured in GitHub
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
