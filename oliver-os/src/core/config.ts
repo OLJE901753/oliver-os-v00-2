@@ -107,8 +107,6 @@ export class Config {
     };
   }
 
-  get<K extends keyof ConfigType>(key: K): ConfigType[K];
-  get<T = any>(key: string, defaultValue?: T): T;
   get(key: string, defaultValue?: any): any {
     const keys = key.split('.');
     let value: any = this.config;
@@ -118,8 +116,6 @@ export class Config {
     return value !== undefined ? value : defaultValue;
   }
 
-  set<K extends keyof ConfigType>(key: K, value: ConfigType[K]): void;
-  set(key: string, value: any): void;
   set(key: string, value: any): void {
     const keys = key.split('.');
     let target: any = this.config;

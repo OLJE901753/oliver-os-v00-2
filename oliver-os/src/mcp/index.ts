@@ -97,14 +97,16 @@ async function main() {
       case 'stdio':
         await manager.startWithStdio();
         break;
-      case 'websocket':
+      case 'websocket': {
         const wsPort = parseInt(process.argv[3]! || '3001');
         await manager.startWithWebSocket(wsPort);
         break;
-      case 'http':
+      }
+      case 'http': {
         const httpPort = parseInt(process.argv[3]! || '3002');
         await manager.startWithHTTP(httpPort);
         break;
+      }
       default:
         console.error('❌ Unknown transport type. Use: stdio, websocket, or http');
         process.exit(1);

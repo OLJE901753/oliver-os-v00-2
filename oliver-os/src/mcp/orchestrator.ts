@@ -407,16 +407,7 @@ export class MCPOrchestrator extends EventEmitter {
     return overview;
   }
 
-  // Event handlers
-  override on(event: 'serverStarted', listener: (server: MCPServerInfo) => void): this;
-  override on(event: 'serverStopped', listener: (server: MCPServerInfo) => void): this;
-  override on(event: 'serverError', listener: (data: { server: MCPServerInfo; error: any }) => void): this;
-  override on(event: 'allStarted', listener: (data: { running: number; failed: number }) => void): this;
-  override on(event: 'allStopped', listener: () => void): this;
-  override on(event: 'error', listener: (error: any) => void): this;
-  override on(event: string, listener: (...args: any[]) => void): this {
-    return super.on(event, listener);
-  }
+  // Event handlers - inherited from EventEmitter
 }
 
 // CLI interface for the orchestrator
@@ -435,17 +426,19 @@ export async function main() {
         await orchestrator.stopAll();
         console.log('🛑 All MCP servers stopped');
         break;
-      case 'status':
+      case 'status': {
         const status = orchestrator.getServerStatus();
         console.log('📊 MCP Server Status:');
         console.log(JSON.stringify(status, null, 2));
         break;
-      case 'health':
+      }
+      case 'health': {
         const health = await orchestrator.getServerHealth();
         console.log('🏥 MCP Server Health:');
         console.log(JSON.stringify(health, null, 2));
         break;
-      case 'restart':
+      }
+      case 'restart': {
         const serverName = process.argv[3]!;
         if (serverName) {
           await orchestrator.restartServer(serverName);
@@ -454,6 +447,7 @@ export async function main() {
           console.log('❌ Please specify server name to restart');
         }
         break;
+      }
       default:
         console.log('Available commands: start, stop, status, health, restart <server>');
     }

@@ -139,7 +139,7 @@ export class SecurityManager {
       errors.push('Password must contain at least one number');
     }
 
-    if (requireSpecialChars && !/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) {
+    if (requireSpecialChars && !/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(password)) {
       errors.push('Password must contain at least one special character');
     }
 
