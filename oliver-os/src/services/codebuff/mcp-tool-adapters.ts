@@ -326,14 +326,15 @@ export class DatabaseMCPAdapter implements MCPToolAdapter {
 
     try {
       switch (toolName) {
-        case 'query_database':
+        case 'query_database': {
           const query = args['query'] as string;
           const parameters = args['parameters'] as any[] || [];
           // Note: This is a simplified implementation
           // In production, you'd want proper SQL query execution
           return { message: 'Query execution not fully implemented', query, parameters };
+        }
 
-        case 'get_table_schema':
+        case 'get_table_schema': {
           const tableName = args['tableName'] as string;
           // Simplified schema retrieval
           return { 
@@ -341,6 +342,7 @@ export class DatabaseMCPAdapter implements MCPToolAdapter {
             columns: [], 
             message: 'Schema retrieval not fully implemented' 
           };
+        }
 
         case 'list_tables':
           // Simplified table listing
@@ -349,7 +351,7 @@ export class DatabaseMCPAdapter implements MCPToolAdapter {
             message: 'Table listing not fully implemented' 
           };
 
-        case 'create_table':
+        case 'create_table': {
           const createTableName = args['tableName'] as string;
           const columns = args['columns'] as any[];
           return { 
@@ -357,8 +359,9 @@ export class DatabaseMCPAdapter implements MCPToolAdapter {
             message: `Table ${createTableName} creation not fully implemented`,
             columns 
           };
+        }
 
-        case 'insert_data':
+        case 'insert_data': {
           const insertTableName = args['tableName'] as string;
           const data = args['data'] as Record<string, unknown>;
           return { 
@@ -366,6 +369,7 @@ export class DatabaseMCPAdapter implements MCPToolAdapter {
             message: `Data insertion into ${insertTableName} not fully implemented`,
             data 
           };
+        }
 
         default:
           throw new Error(`Unknown tool: ${toolName}`);
