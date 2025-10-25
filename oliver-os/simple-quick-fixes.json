@@ -1,0 +1,26 @@
+[
+  {
+    "command": "pnpm lint:fix",
+    "description": "Fix ESLint issues automatically",
+    "category": "lint",
+    "severity": "medium",
+    "autoFixable": true,
+    "confidence": 0.9
+  },
+  {
+    "command": "pnpm type-check",
+    "description": "Verify TypeScript compilation",
+    "category": "build",
+    "severity": "high",
+    "autoFixable": false,
+    "confidence": 0.8
+  },
+  {
+    "command": "pnpm ci:enhanced",
+    "description": "Run enhanced CI pipeline",
+    "category": "ci",
+    "severity": "medium",
+    "autoFixable": true,
+    "confidence": 0.7
+  }
+]

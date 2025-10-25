@@ -4,12 +4,8 @@
  * Following BMAD principles: Break, Map, Automate, Document
  */
 
-import { readFileSync, writeFileSync, existsSync } from 'fs';
-import { join, dirname } from 'path';
-import { fileURLToPath } from 'url';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+// Removed unused imports
+// Removed unused imports and variables
 
 interface TestFailurePattern {
   id: string;
@@ -354,7 +350,7 @@ class TestFailureAnalyzer {
     if (testData.testResults) {
       testData.testResults.forEach((test: any) => {
         if (test.failureMessages) {
-          output += test.failureMessages.join('\n') + '\n';
+          output += `${test.failureMessages.join('\n')  }\n`;
         }
         if (test.status === 'failed') {
           output += `Test failed: ${test.fullName}\n`;
@@ -363,7 +359,7 @@ class TestFailureAnalyzer {
     }
 
     if (testData.failureMessages) {
-      output += testData.failureMessages.join('\n') + '\n';
+      output += `${testData.failureMessages.join('\n')  }\n`;
     }
 
     return output;
@@ -390,7 +386,7 @@ class TestFailureAnalyzer {
     pattern: TestFailurePattern,
     matches: string[],
     testData: any,
-    testSuite: string
+    _testSuite: string
   ): FailureAnalysis {
     const files = this.extractFiles(testData);
     const lineNumbers = this.extractLineNumbers(testData);
@@ -450,7 +446,7 @@ class TestFailureAnalyzer {
     if (testData.testResults) {
       testData.testResults.forEach((test: any) => {
         if (test.failureMessages) {
-          context += test.failureMessages.join('\n') + '\n';
+          context += `${test.failureMessages.join('\n')  }\n`;
         }
       });
     }
@@ -605,4 +601,5 @@ class TestFailureAnalyzer {
   }
 }
 
-export { TestFailureAnalyzer, TestFailurePattern, FailureAnalysis, TestFailureAnalyzerConfig };
+export { TestFailureAnalyzer };
+export type { TestFailurePattern, FailureAnalysis, TestFailureAnalyzerConfig };

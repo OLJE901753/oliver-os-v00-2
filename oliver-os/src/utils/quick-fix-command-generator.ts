@@ -4,12 +4,8 @@
  * Following BMAD principles: Break, Map, Automate, Document
  */
 
-import { readFileSync, writeFileSync, existsSync } from 'fs';
-import { join, dirname } from 'path';
-import { fileURLToPath } from 'url';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+// Removed unused imports
+// Removed unused imports and variables
 
 interface QuickFixCommand {
   id: string;
@@ -214,14 +210,14 @@ class QuickFixCommandGenerator {
         id: 'build-clean',
         name: 'Clean and Rebuild',
         description: 'Clean build artifacts and rebuild',
-        command: 'pnpm clean && pnpm build',
+        command: 'pnpm clean; pnpm build',
         category: 'build',
         severity: 'high',
         autoFixable: true,
         prerequisites: ['pnpm install'],
         postActions: ['Verify build success'],
         examples: [
-          'pnpm clean && pnpm build',
+          'pnpm clean; pnpm build',
           'pnpm build:dev'
         ],
         confidence: 0.9
@@ -248,14 +244,14 @@ class QuickFixCommandGenerator {
         id: 'lint-fix-all',
         name: 'Fix All Linting Issues',
         description: 'Fix all linting issues automatically',
-        command: 'pnpm lint:fix && pnpm type-check',
+        command: 'pnpm lint:fix; pnpm type-check',
         category: 'lint',
         severity: 'medium',
         autoFixable: true,
         prerequisites: [],
         postActions: ['Review fixed code', 'Run tests'],
         examples: [
-          'pnpm lint:fix && pnpm type-check',
+          'pnpm lint:fix; pnpm type-check',
           'pnpm lint --fix'
         ],
         confidence: 0.9
@@ -324,7 +320,7 @@ class QuickFixCommandGenerator {
         postActions: ['Review all results'],
         examples: [
           'pnpm ci:full',
-          'pnpm ci:validate && pnpm ci:test && pnpm ci:coverage'
+          'pnpm ci:validate; pnpm ci:test; pnpm ci:coverage'
         ],
         confidence: 0.8
       },
@@ -406,31 +402,31 @@ class QuickFixCommandGenerator {
 
     // Fallback to general commands
     if (category === 'test') {
-      return this.commands.find(cmd => cmd.id === 'test-rerun');
+      return this.commands.find(cmd => cmd.id === 'test-rerun') || null;
     }
 
     if (category === 'coverage') {
-      return this.commands.find(cmd => cmd.id === 'coverage-generate');
+      return this.commands.find(cmd => cmd.id === 'coverage-generate') || null;
     }
 
     if (category === 'quality') {
-      return this.commands.find(cmd => cmd.id === 'quality-lint-fix');
+      return this.commands.find(cmd => cmd.id === 'quality-lint-fix') || null;
     }
 
     if (category === 'security') {
-      return this.commands.find(cmd => cmd.id === 'security-audit');
+      return this.commands.find(cmd => cmd.id === 'security-audit') || null;
     }
 
     if (category === 'build') {
-      return this.commands.find(cmd => cmd.id === 'build-clean');
+      return this.commands.find(cmd => cmd.id === 'build-clean') || null;
     }
 
     if (category === 'lint') {
-      return this.commands.find(cmd => cmd.id === 'lint-fix-all');
+      return this.commands.find(cmd => cmd.id === 'lint-fix-all') || null;
     }
 
     if (category === 'typecheck') {
-      return this.commands.find(cmd => cmd.id === 'typecheck-strict');
+      return this.commands.find(cmd => cmd.id === 'typecheck-strict') || null;
     }
 
     return null;
@@ -440,7 +436,7 @@ class QuickFixCommandGenerator {
    * Customize command based on context
    */
   private customizeCommand(command: QuickFixCommand, context: QuickFixContext): QuickFixCommand {
-    let customizedCommand = { ...command };
+    const customizedCommand = { ...command };
 
     // Customize based on test suite
     if (context.testSuite !== 'unknown') {
@@ -453,7 +449,7 @@ class QuickFixCommandGenerator {
     // Customize based on files
     if (context.files.length > 0) {
       const filePattern = context.files[0];
-      if (filePattern.includes('test')) {
+      if (filePattern && filePattern.includes('test')) {
         customizedCommand.command += ` --testPathPattern="${filePattern}"`;
       }
     }
@@ -503,7 +499,7 @@ class QuickFixCommandGenerator {
         command,
         context: this.context!,
         success: false,
-        output: error.message,
+        output: error instanceof Error ? error.message : String(error),
         duration,
         timestamp: new Date().toISOString()
       };
@@ -522,7 +518,7 @@ class QuickFixCommandGenerator {
       const { stdout, stderr } = await execAsync(command);
       return stdout + stderr;
     } catch (error) {
-      throw new Error(`Command failed: ${command}\n${error.message}`);
+      throw new Error(`Command failed: ${command}\n${error instanceof Error ? error.message : String(error)}`);
     }
   }
 
@@ -637,4 +633,5 @@ class QuickFixCommandGenerator {
   }
 }
 
-export { QuickFixCommandGenerator, QuickFixCommand, QuickFixContext, QuickFixResult };
+export { QuickFixCommandGenerator };
+export type { QuickFixCommand, QuickFixContext, QuickFixResult };

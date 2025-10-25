@@ -1,0 +1,46 @@
+{
+  "timestamp": "2025-10-25T19:43:17.460Z",
+  "testSuite": "cursor-ci-integration",
+  "summary": {
+    "totalTests": 5,
+    "passed": 4,
+    "failed": 1,
+    "duration": "2.5s"
+  },
+  "results": [
+    {
+      "test": "File Existence Check",
+      "status": "passed",
+      "duration": "0.1s"
+    },
+    {
+      "test": "TypeScript Compilation",
+      "status": "passed",
+      "duration": "1.2s"
+    },
+    {
+      "test": "ESLint Check",
+      "status": "warning",
+      "duration": "0.8s"
+    },
+    {
+      "test": "Test Failure Analyzer",
+      "status": "passed",
+      "duration": "0.2s"
+    },
+    {
+      "test": "Quick Fix Generator",
+      "status": "passed",
+      "duration": "0.2s"
+    }
+  ],
+  "failures": [
+    {
+      "type": "ESLint Issues",
+      "description": "Known ESLint issues in codebase",
+      "severity": "medium",
+      "quickFix": "pnpm lint:fix",
+      "autoFixable": true
+    }
+  ]
+}
