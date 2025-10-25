@@ -479,7 +479,7 @@ class QuickFixCommandGenerator {
 
       // Execute post actions
       for (const postAction of command.postActions) {
-        console.log(`Post-action: ${postAction}`);
+        // console.log(`Post-action: ${postAction}`); // Removed console statement
       }
 
       const duration = Date.now() - startTime;

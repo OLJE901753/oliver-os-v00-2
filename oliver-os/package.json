@@ -29,6 +29,8 @@
     "test:monitoring": "vitest --config vitest.config.smart-assistance.ts --run src/tests/smart-assistance/quality-monitoring.ts",
     "test:simple-ci": "node test-simple-ci.js",
     "test:ci-fast": "node test-simple-ci.js",
+    "trigger-workflow": "node trigger-workflow.js",
+    "monitor-workflow": "node monitor-workflow.js",
     "test:smart:ci": "vitest --config vitest.config.smart-assistance.ts --run --coverage --reporter=json --outputFile=test-results.json",
     "ci:validate": "pnpm lint && pnpm type-check && pnpm test:smart",
     "ci:test": "pnpm test:smart:all",

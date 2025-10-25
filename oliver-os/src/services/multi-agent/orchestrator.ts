@@ -468,7 +468,7 @@ export class CentralOrchestrator extends EventEmitter {
     this._logger.info('🛑 Shutting down Central Orchestrator');
     
     // Mark all agents as offline
-    for (const [_agentType, status] of this.agents) {
+    for (const [, status] of this.agents) {
       status.status = 'offline';
       status.lastActivity = new Date().toISOString();
     }

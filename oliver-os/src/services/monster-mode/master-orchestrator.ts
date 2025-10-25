@@ -1216,7 +1216,7 @@ export class MasterOrchestrator extends EventEmitter {
     
     try {
       // Stop all active tasks
-      for (const [_taskId, task] of this.activeTasks) {
+      for (const [, task] of this.activeTasks) {
         task.status = 'cancelled';
         task.endTime = new Date().toISOString();
       }
