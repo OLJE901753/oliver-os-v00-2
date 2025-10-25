@@ -8,7 +8,7 @@ on:
 
 env:
   NODE_VERSION: '18'
-  PNPM_VERSION: '8'
+  PNPM_VERSION: '9'
 
 jobs:
   # Comprehensive nightly testing
@@ -137,10 +137,9 @@ jobs:
         run: pnpm audit --audit-level moderate
 
       - name: Run Snyk security scan
-        if: ${{ secrets.SNYK_TOKEN != '' }}
         uses: snyk/actions/node@master
         env:
-          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN || '' }}
         with:
           args: --severity-threshold=high
         continue-on-error: true
