@@ -41,6 +41,8 @@ class BMADWorkflowEngine {
   constructor(_config?: any) {}
   async executeWorkflow(): Promise<any> { return {}; }
   async execute(): Promise<any> { return {}; }
+  getAllExecutions(): any[] { return []; }
+  registerWorkflowStep(_step: any): void { }
 }
 
 class IntelligentCodeAnalyzer {

@@ -108,8 +108,8 @@ export class EnhancedCodebuffService extends EventEmitter {
     };
 
     this.client = new CodebuffClient(codebuffConfig);
-    this.initializeAgentDefinitions();
-    this.initializeMCPTools();
+    // this.initializeAgentDefinitions(); // Will be implemented in future iteration
+    // this.initializeMCPTools(); // Will be implemented in future iteration
   }
 
   /**
@@ -121,8 +121,8 @@ export class EnhancedCodebuffService extends EventEmitter {
     
     try {
       // Break down initialization into manageable components
-      await this.initializeAgentDefinitions();
-      await this.initializeMCPTools();
+      // await this.initializeAgentDefinitions(); // Will be implemented in future iteration
+      // await this.initializeMCPTools(); // Will be implemented in future iteration
       await this.initializeWorkflows();
       
       // Map dependencies and relationships
