@@ -46,7 +46,7 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
-          context: ./oliver-os
+          context: .
           file: ./oliver-os/docker/Dockerfile
           push: true
           tags: ${{ steps.meta.outputs.tags }}
@@ -68,7 +68,7 @@ jobs:
 
       - name: Build test image
         run: |
-          docker build -f ./oliver-os/docker/Dockerfile -t smart-assistance-test ./oliver-os
+          docker build -f ./oliver-os/docker/Dockerfile -t smart-assistance-test .
 
       - name: Run container tests
         run: |

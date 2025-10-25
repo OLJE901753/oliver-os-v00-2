@@ -6,18 +6,21 @@ FROM node:18-alpine AS builder
 
 WORKDIR /app
 
+# Copy bmad-global first (local dependency)
+COPY bmad-global ./bmad-global/
+
 # Copy package files
-COPY package.json ./
-COPY pnpm-lock.yaml* ./
+COPY oliver-os/package.json ./package.json
+COPY oliver-os/pnpm-lock.yaml* ./
 
 # Install pnpm
-RUN npm install -g pnpm
+RUN npm install -g pnpm@9
 
 # Install dependencies
 RUN pnpm install
 
 # Copy source code
-COPY . .
+COPY oliver-os ./
 
 # Build the application
 RUN pnpm build
