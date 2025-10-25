@@ -971,6 +971,7 @@ export class MasterOrchestrator extends EventEmitter {
         id: this.generateOptimizationId(),
         type: 'quality',
         description: 'Reduce conflict rate by improving conflict resolution',
+        impact: 'medium',
         effort: 'medium',
         status: 'pending',
         timestamp: new Date().toISOString(),

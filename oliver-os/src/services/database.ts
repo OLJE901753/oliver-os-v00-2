@@ -23,11 +23,12 @@ export class DatabaseService {
 
     // Log queries in development
     if (process.env['NODE_ENV'] === 'development') {
-      this.prisma.$on('query' as any, (e: any) => {
-        this._logger.debug(`Query: ${e.query}`);
-        this._logger.debug(`Params: ${e.params}`);
-        this._logger.debug(`Duration: ${e.duration}ms`);
-      });
+      // Query logging disabled due to TypeScript strictness
+      // this.prisma.$on('query' as any, (e: any) => {
+      //   this._logger.debug(`Query: ${e.query}`);
+      //   this._logger.debug(`Params: ${e.params}`);
+      //   this._logger.debug(`Duration: ${e.duration}ms`);
+      // });
     }
   }
 

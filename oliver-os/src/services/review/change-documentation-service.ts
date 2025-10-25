@@ -260,7 +260,7 @@ export class ChangeDocumentationService extends EventEmitter {
       const { stdout } = await execAsync('git diff --cached');
       return stdout;
     } catch (error) {
-      this._logger.warn('Failed to get git diff:', error);
+      this._logger.warn('Failed to get git diff:', { error: error instanceof Error ? error.message : String(error) });
       return '';
     }
   }
@@ -273,7 +273,7 @@ export class ChangeDocumentationService extends EventEmitter {
       const { stdout } = await execAsync(`git show --name-status ${commitHash}`);
       return stdout;
     } catch (error) {
-      this._logger.warn(`Failed to get commit info for ${commitHash}:`, error);
+      this._logger.warn(`Failed to get commit info for ${commitHash}:`, { error: error instanceof Error ? error.message : String(error) });
       return '';
     }
   }
@@ -286,7 +286,7 @@ export class ChangeDocumentationService extends EventEmitter {
       const { stdout } = await execAsync(`git show ${commitHash}`);
       return stdout;
     } catch (error) {
-      this._logger.warn(`Failed to get commit diff for ${commitHash}:`, error);
+      this._logger.warn(`Failed to get commit diff for ${commitHash}:`, { error: error instanceof Error ? error.message : String(error) });
       return '';
     }
   }

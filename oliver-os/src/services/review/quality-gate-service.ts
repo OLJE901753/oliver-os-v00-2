@@ -551,7 +551,7 @@ export class QualityGateService extends EventEmitter {
       
       return testFiles;
     } catch (error) {
-      this._logger.warn('Failed to find test files:', error);
+      this._logger.warn('Failed to find test files:', { error: error instanceof Error ? error.message : String(error) });
       return [];
     }
   }
