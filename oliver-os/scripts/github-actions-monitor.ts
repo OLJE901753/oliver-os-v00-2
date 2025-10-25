@@ -480,6 +480,23 @@ error TS2322: Type 'string' is not assignable to type 'number'
       analysis.categories.build++;
     }
 
+    // Analyze ESLint "any" type errors
+    if (logs.includes('Unexpected any')) {
+      analysis.failures.push({
+        type: 'ESLint Any Type Error',
+        description: 'Found "Unexpected any" type errors - should specify different types',
+        severity: 'medium',
+        category: 'lint',
+        quickFix: 'pnpm lint:fix && pnpm type-check',
+        suggestions: [
+          'Replace "any" types with specific types',
+          'Use "unknown" for truly unknown types',
+          'Review files: websocket-manager.ts, server.ts, security.ts'
+        ]
+      });
+      analysis.categories.quality++;
+    }
+
     // Determine overall severity
     const highSeverityCount = analysis.failures.filter(f => f.severity === 'high').length;
     if (highSeverityCount > 0) {
