@@ -504,9 +504,11 @@ class CursorTestIntegration {
   private generateQuickFixes(failures: FailureAnalysis[]): string[] {
     const quickFixes = [];
 
-    failures.forEach(failure => {
-      quickFixes.push(failure.quickFix);
-    });
+    if (failures && Array.isArray(failures)) {
+      failures.forEach(failure => {
+        quickFixes.push(failure.quickFix);
+      });
+    }
 
     return [...new Set(quickFixes)]; // Remove duplicates
   }
@@ -574,22 +576,34 @@ class CursorTestIntegration {
     const artifacts = {};
 
     if (existsSync(artifactsDir)) {
-      const files = readdirSync(artifactsDir);
-      
-      files.forEach(file => {
-        const filePath = join(artifactsDir, file);
-        const stat = statSync(filePath);
+      try {
+        const files = readdirSync(artifactsDir);
         
-        if (stat.isDirectory()) {
-          artifacts[file] = this.collectArtifacts(filePath);
-        } else if (file.endsWith('.json')) {
+        files.forEach(file => {
+          const filePath = join(artifactsDir, file);
           try {
-            artifacts[file] = JSON.parse(readFileSync(filePath, 'utf8'));
+            const stat = statSync(filePath);
+            
+            if (stat.isDirectory()) {
+              // Skip node_modules and other system directories
+              if (!file.startsWith('.') && file !== 'node_modules') {
+                artifacts[file] = this.collectArtifacts(filePath);
+              }
+            } else if (file.endsWith('.json')) {
+              try {
+                artifacts[file] = JSON.parse(readFileSync(filePath, 'utf8'));
+              } catch (error) {
+                console.warn(`Failed to parse ${file}:`, error.message);
+              }
+            }
           } catch (error) {
-            console.warn(`Failed to parse ${file}:`, error.message);
+            // Skip files that can't be accessed (symlinks, permissions, etc.)
+            console.warn(`Skipping ${file}:`, error.message);
           }
-        }
-      });
+        });
+      } catch (error) {
+        console.warn(`Failed to read directory ${artifactsDir}:`, error.message);
+      }
     }
 
     return artifacts;
@@ -679,16 +693,18 @@ class CursorTestIntegration {
     };
 
     // Generate commands based on failures
-    report.failures.forEach(failure => {
-      quickFixes.commands.push({
-        command: failure.quickFix,
-        description: failure.description,
-        category: failure.category,
-        severity: failure.severity
-      });
+    if (report.failures && Array.isArray(report.failures)) {
+      report.failures.forEach(failure => {
+        quickFixes.commands.push({
+          command: failure.quickFix,
+          description: failure.description,
+          category: failure.category,
+          severity: failure.severity
+        });
 
-      quickFixes.categories[failure.category].push(failure.quickFix);
-    });
+        quickFixes.categories[failure.category].push(failure.quickFix);
+      });
+    }
 
     // Generate recommendations
     if (report.summary.coverage < 80) {
@@ -817,8 +833,6 @@ Examples:
 }
 
 // Run if called directly
-if (import.meta.url === `file://${process.argv[1]}`) {
-  main();
-}
+main().catch(console.error);
 
 export { CursorTestIntegration };

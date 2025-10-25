@@ -115,9 +115,9 @@ try {
     line: 1
   };
   
-  const analysis = analyzer.analyzeFailures([mockFailure]);
+  const analysis = analyzer.analyzeTestResults([mockFailure], 'simple-ci');
   console.log('   ✅ Test Failure Analyzer working');
-  console.log(`   📊 Detected: ${analysis.failures?.[0]?.type || 'Unknown'} (${analysis.failures?.[0]?.severity || 'Unknown'})`);
+  console.log(`   📊 Detected: ${analysis[0]?.type || 'Unknown'} (${analysis[0]?.severity || 'Unknown'})`);
 } catch (error) {
   console.log('   ❌ Test Failure Analyzer failed');
   console.log('   📝 Error:', error.message);

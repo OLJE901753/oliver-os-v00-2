@@ -56,6 +56,7 @@
     "ci:report:build-analysis": "tsx scripts/generate-ci-report.ts build-analysis",
     "ci:monitor-github": "tsx scripts/github-actions-monitor.ts",
     "ci:auto-fix": "tsx scripts/github-actions-monitor.ts && pnpm ci:quick-fix",
+    "trigger-workflow": "tsx scripts/trigger-workflow.ts",
     "monitor:dev": "powershell -ExecutionPolicy Bypass -File start-monitoring.ps1",
     "monitor:build": "cd monitoring-dashboard",
     "monitor:start": "powershell -ExecutionPolicy Bypass -File start-monitoring.ps1",
@@ -184,6 +185,7 @@
     "@prisma/client": "^5.8.1",
     "@socket.io/redis-adapter": "^8.3.0",
     "@tanstack/react-query": "^5.17.0",
+    "@types/node-fetch": "^2.6.13",
     "@types/socket.io": "^3.0.2",
     "bcryptjs": "^3.0.2",
     "bmad-global": "file:../bmad-global",
@@ -230,7 +232,7 @@
     "@types/ws": "^8.5.10",
     "@typescript-eslint/eslint-plugin": "^7.18.0",
     "@typescript-eslint/parser": "^7.18.0",
-    "@vitest/coverage-v8": "^4.0.3",
+    "@vitest/coverage-v8": "^1.6.1",
     "@vitest/ui": "^1.1.0",
     "autoprefixer": "^10.4.16",
     "concurrently": "^8.2.2",
@@ -247,7 +249,7 @@
     "tsx": "^4.20.6",
     "typescript": "^5.3.3",
     "vite": "^5.0.8",
-    "vitest": "^1.1.0"
+    "vitest": "^1.6.1"
   },
   "engines": {
     "node": ">=18.0.0",
