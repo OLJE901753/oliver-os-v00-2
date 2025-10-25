@@ -642,9 +642,7 @@ async function main() {
   await monitor.run();
 }
 
-// Run if called directly
-if (import.meta.url === `file://${process.argv[1]}`) {
-  main();
-}
+// Always run when executed directly
+main().catch(console.error);
 
 export { GitHubActionsMonitor };
