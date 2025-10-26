@@ -16,7 +16,7 @@
     "start": "node dist/index.js",
     "test": "vitest",
     "test:ui": "vitest --ui",
-    "test:smart": "vitest --config vitest.config.smart-assistance.ts",
+    "test:smart": "vitest --config vitest.config.smart-assistance.ts --reporter=verbose",
     "test:smart:coverage": "vitest --config vitest.config.smart-assistance.ts --coverage",
     "test:smart:ui": "vitest --config vitest.config.smart-assistance.ts --ui",
     "test:smart:benchmark": "vitest --config vitest.config.smart-assistance.ts --benchmark",

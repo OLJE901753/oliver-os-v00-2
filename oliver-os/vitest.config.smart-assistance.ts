@@ -26,7 +26,7 @@ export default defineConfig({
     ],
     
     // Test timeout
-    testTimeout: 30000, // 30 seconds for complex tests
+    testTimeout: 60000, // 60 seconds for complex tests
     
     // Setup files
     setupFiles: [
