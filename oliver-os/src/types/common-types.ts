@@ -3,12 +3,12 @@
  * Shared types to reduce 'any' usage across the codebase
  */
 
-import type { MemoryService } from '../services/memory/memory-service';
-import type { CursorMemory, CodePattern } from '../services/memory/memory-service';
+import type { CursorMemory } from '../services/memory/memory-service';
 
 // Memory service access with proper typing
 export interface MemoryServiceAccessor {
   memory?: CursorMemory;
+  // Access pattern for memory service when needed
 }
 
 // User preferences from memory

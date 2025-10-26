@@ -1168,7 +1168,6 @@ export class WorkflowOptimizationService extends EventEmitter {
    */
   getWorkflowOptimizationStats(): OptimizationStats {
     const optimizations = Array.from(this.optimizations.values());
-    const appliedOptimizations = optimizations.filter(opt => opt.status === 'applied');
     
     return {
       totalOptimizations: optimizations.length,

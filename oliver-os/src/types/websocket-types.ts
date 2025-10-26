@@ -4,6 +4,7 @@
  */
 
 import { Socket } from 'socket.io';
+import type { MonitoringService as MonitoringServiceClass } from '../services/monitoring-service';
 
 // Base message types
 export interface BaseWebSocketMessage {
@@ -64,26 +65,8 @@ export interface ThoughtSession {
   last_activity: Date;
 }
 
-// Monitoring service interface
-export interface MonitoringService {
-  logEvent(event: string, data: Record<string, unknown>): void;
-  getMetrics(): Record<string, unknown>;
-  isHealthy(): boolean;
-  on(event: 'dashboard:data', callback: (data: DashboardData) => void): void;
-  on(event: 'metrics:update', callback: (data: MetricsData) => void): void;
-  on(event: 'alerts:new', callback: (data: AlertData) => void): void;
-  on(event: 'alerts:update', callback: (data: AlertData) => void): void;
-  on(event: 'health:update', callback: (data: HealthStatus) => void): void;
-  on(event: 'performance:update', callback: (data: PerformanceData) => void): void;
-  on(event: 'tests:update', callback: (data: TestData) => void): void;
-  on(event: 'quality-gates:update', callback: (data: QualityGateData) => void): void;
-  getDashboardData(): DashboardData;
-  getAlerts(): AlertData[];
-  getSystemHealth(): HealthStatus;
-  getPerformance(): PerformanceData;
-  getTestResults(): TestData[];
-  getQualityGates(): QualityGateData[];
-}
+// Monitoring service type (use the actual class type)
+export type MonitoringService = MonitoringServiceClass;
 
 // AI Services response types
 export interface AIResponse {

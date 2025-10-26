@@ -29,11 +29,6 @@ interface FunctionAnalysis extends CodeAnalysisResult {
   length: number;
 }
 
-interface VulnerabilityAnalysis extends CodeAnalysisResult {
-  description?: string;
-  reasoning?: string;
-}
-
 const execAsync = promisify(exec);
 
 export interface CodeReviewResult {
