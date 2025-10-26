@@ -165,17 +165,23 @@ export class SelfReviewService extends EventEmitter {
       const fileContent = await fs.readFile(filePath, 'utf-8');
       const fileType = path.extname(filePath).slice(1);
       
-      // Get enhanced git context for better suggestions
-      const gitContext = await this.getEnhancedGitContext(filePath);
-      this._logger.info(`📊 Git context: ${gitContext.isNewFile ? 'New file' : gitContext.isModified ? 'Modified' : 'Clean'}`);
-      
       // Create review context if not provided
       const reviewContext = context || await this.createReviewContext(filePath, fileContent, fileType);
       
-      // Enhance context with git information
-      reviewContext.changes = gitContext.changes;
-      reviewContext.gitDiff = gitContext.diff;
-      reviewContext.recentChanges = gitContext.recentCommits;
+      // Get enhanced git context for better suggestions (only if not in Docker/production)
+      // Git operations may not be available in containerized environments
+      try {
+        const gitContext = await this.getEnhancedGitContext(filePath);
+        this._logger.info(`📊 Git context: ${gitContext.isNewFile ? 'New file' : gitContext.isModified ? 'Modified' : 'Clean'}`);
+        
+        // Enhance context with git information
+        reviewContext.changes = gitContext.changes;
+        reviewContext.gitDiff = gitContext.diff;
+        reviewContext.recentChanges = gitContext.recentCommits;
+      } catch (gitError) {
+        // Git not available in containerized environments - use empty context
+        this._logger.debug('Git context not available (containerized environment):', { error: gitError instanceof Error ? gitError.message : String(gitError) });
+      }
       
       // Perform review analysis
       const suggestions = await this.analyzeCode(fileContent, fileType, reviewContext);
