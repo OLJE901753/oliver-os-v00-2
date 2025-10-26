@@ -236,7 +236,7 @@ export class MasterOrchestrator extends EventEmitter {
       // Initialize Memory Service
       if (this.monsterModeConfig.agents.memory) {
         const memoryService = new MemoryService(this._config);
-        // await memoryService.initialize(); // Method not yet implemented
+        await memoryService.initialize();
         this.agents.set('memory', memoryService);
         this.agentStatuses.set('memory', this.createAgentStatus('memory', 'Memory Service', ['pattern-recognition', 'learning', 'context-awareness']));
       }

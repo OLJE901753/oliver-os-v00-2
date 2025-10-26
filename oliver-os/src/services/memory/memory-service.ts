@@ -93,25 +93,125 @@ export class MemoryService extends EventEmitter {
   private _logger: Logger;
   private memory!: CursorMemory;
   private memoryFilePath: string;
+  private isInitialized: boolean = false;
 
   constructor(_config: Config) {
     super();
     this._logger = new Logger('MemoryService');
     this.memoryFilePath = path.join(process.cwd(), 'cursor-memory.json');
-    this.initializeMemory();
+    this.isInitialized = false;
   }
 
   /**
-   * Initialize memory system
+   * Public initialize method for explicit initialization
    */
-  private async initializeMemory(): Promise<void> {
+  async initialize(): Promise<void> {
+    if (this.isInitialized) {
+      this._logger.info('Memory service already initialized');
+      return;
+    }
+    
+    this._logger.info('Initializing Memory Service...');
+    
     try {
       await this.loadMemory();
-      this._logger.info('🧠 Memory system initialized');
+      await this.loadPatterns();
+      await this.initializeCursorMemory();
+      
+      this.isInitialized = true;
+      this._logger.info('✅ Memory Service initialized');
       this.emit('memory:initialized', { memorySize: this.getMemorySize() });
     } catch (error) {
-      this._logger.error('Failed to initialize memory system:', error);
+      this._logger.error('Failed to initialize memory service:', error);
       this.createDefaultMemory();
+      this.isInitialized = true;
+    }
+  }
+
+  /**
+   * Load patterns from memory
+   */
+  private async loadPatterns(): Promise<void> {
+    try {
+      if (this.memory?.codePatterns?.frequentlyUsed) {
+        const patternCount = this.memory.codePatterns.frequentlyUsed.length;
+        this._logger.info(`Loaded ${patternCount} code patterns`);
+      }
+      if (this.memory?.architecture?.decisions) {
+        const decisionCount = this.memory.architecture.decisions.length;
+        this._logger.info(`Loaded ${decisionCount} architecture decisions`);
+      }
+    } catch (error) {
+      this._logger.warn('Failed to load patterns:', error);
+    }
+  }
+
+  /**
+   * Initialize cursor memory
+   */
+  private async initializeCursorMemory(): Promise<void> {
+    try {
+      // Ensure cursor-memory.json is properly structured
+      if (!this.memory) {
+        this.createDefaultMemory();
+      }
+      
+      // Ensure all required sections exist
+      if (!this.memory.codePatterns) {
+        this.memory.codePatterns = {
+          frequentlyUsed: [],
+          successfulPatterns: [],
+          userPreferences: {
+            preferredImports: [],
+            preferredNaming: {},
+            preferredPatterns: []
+          }
+        };
+      }
+      
+      if (!this.memory.architecture) {
+        this.memory.architecture = {
+          decisions: [],
+          patterns: [],
+          preferences: {}
+        };
+      }
+      
+      if (!this.memory.namingConventions) {
+        this.memory.namingConventions = {
+          variables: {},
+          functions: {},
+          components: {},
+          files: {},
+          constants: {}
+        };
+      }
+      
+      if (!this.memory.projectHistory) {
+        this.memory.projectHistory = {
+          sessions: [],
+          decisions: [],
+          evolution: []
+        };
+      }
+      
+      if (!this.memory.learning) {
+        this.memory.learning = {
+          successfulSuggestions: [],
+          rejectedSuggestions: [],
+          userFeedback: {}
+        };
+      }
+      
+      // Update last updated timestamp
+      this.memory.lastUpdated = new Date().toISOString();
+      
+      // Save the initialized memory
+      await this.saveMemory();
+      
+      this._logger.info('Cursor memory initialized and validated');
+    } catch (error) {
+      this._logger.warn('Failed to initialize cursor memory:', error);
     }
   }
 
