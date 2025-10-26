@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "lastUpdated": "2025-10-26T03:48:14.145Z",
+  "lastUpdated": "2025-10-26T17:16:20.188Z",
   "codePatterns": {
     "frequentlyUsed": [
       {
@@ -177,6 +177,14 @@
         "frequency": 1,
         "successRate": 0.86,
         "lastUsed": "2025-10-26T03:47:50.884Z",
+        "example": "Code review completed with overall score of 86.0%. 2 high priority issues found. "
+      },
+      {
+        "id": "review-pattern-1761498980186",
+        "pattern": "High-quality code review",
+        "frequency": 1,
+        "successRate": 0.86,
+        "lastUsed": "2025-10-26T17:16:20.186Z",
         "example": "Code review completed with overall score of 86.0%. 2 high priority issues found. "
       }
     ],
@@ -536,6 +544,14 @@
       "reason": "Good suggestion",
       "date": "2025-10-26T03:47:50.885Z",
       "timestamp": "2025-10-26T03:47:50.885Z"
+    },
+    {
+      "id": "feedback_1761498980187_sqstb4vjb",
+      "suggestionId": "test-suggestion-1",
+      "action": "accepted",
+      "reason": "Good suggestion",
+      "date": "2025-10-26T17:16:20.187Z",
+      "timestamp": "2025-10-26T17:16:20.187Z"
     }
   ],
   "preferences": {
