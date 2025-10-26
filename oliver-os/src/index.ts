@@ -29,10 +29,15 @@ async function initialize(): Promise<void> {
     await config.load();
     logger.info('✅ Configuration loaded');
     
-    // Initialize database
-    const prisma = new PrismaClient();
-    await prisma.$connect();
-    logger.info('✅ Database connected');
+    // Initialize database (skip if SKIP_DB_INIT is set)
+    let prisma: PrismaClient | null = null;
+    if (!process.env['SKIP_DB_INIT']) {
+      prisma = new PrismaClient();
+      await prisma.$connect();
+      logger.info('✅ Database connected');
+    } else {
+      logger.info('⚠️ Database initialization skipped (SKIP_DB_INIT=true)');
+    }
     
     // Initialize service manager
     const serviceManager = new ServiceManager(config);
@@ -54,7 +59,7 @@ async function initialize(): Promise<void> {
     logger.info('✅ Monitoring service initialized');
     
     // Create and start server with WebSocket support
-    const { httpServer, wsManager } = createHttpServerWithWebSocket(config, serviceManager, prisma);
+    const { httpServer, wsManager } = createHttpServerWithWebSocket(config, serviceManager, prisma as PrismaClient);
     
     // Connect monitoring service to WebSocket manager
     wsManager.setMonitoringService(monitoringService);
@@ -109,7 +114,11 @@ async function initialize(): Promise<void> {
       await serviceManager.shutdown();
       await processManager.shutdown();
       await wsManager.shutdown();
-      await prisma.$disconnect();
+      
+      if (prisma) {
+        await prisma.$disconnect();
+        logger.info('✅ Database disconnected');
+      }
       
       httpServer.close(() => {
         logger.info('✅ Oliver-OS shutdown complete');
