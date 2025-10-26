@@ -39,8 +39,8 @@ RUN pnpm build
 # Production stage
 FROM node:18-alpine AS production
 
-# Install dumb-init for proper signal handling
-RUN apk add --no-cache dumb-init
+# Install dumb-init and curl for health checks
+RUN apk add --no-cache dumb-init curl
 
 # Create app user
 RUN addgroup -g 1001 -S nodejs
@@ -54,15 +54,19 @@ COPY --from=builder --chown=oliver:nodejs /app/node_modules ./node_modules
 COPY --from=builder --chown=oliver:nodejs /app/package.json ./package.json
 COPY --from=builder --chown=oliver:nodejs /app/prisma ./prisma
 
+# Set environment variables
+ENV NODE_ENV=production
+ENV PORT=3000
+
 # Switch to non-root user
 USER oliver
 
 # Expose port
 EXPOSE 3000
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD node -e "require('http').get('http://localhost:3000/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })"
+# Health check using curl (more reliable)
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+  CMD curl -f http://localhost:3000/health || exit 1
 
 # Start the application
 ENTRYPOINT ["dumb-init", "--"]

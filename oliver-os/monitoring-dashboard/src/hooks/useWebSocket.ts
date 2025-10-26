@@ -17,8 +17,30 @@ export function useWebSocket() {
       setIsConnected(connected);
     };
 
-    const handleDashboardData = (data: DashboardData) => {
-      setDashboardData(data);
+    const handleDashboardData = (message: any) => {
+      // Handle different message formats
+      const dashboardData = message.data || message;
+      setDashboardData(dashboardData);
+      
+      // Extract and update individual state pieces if they exist
+      if (dashboardData.metrics) {
+        setMetrics(dashboardData.metrics);
+      }
+      if (dashboardData.alerts) {
+        setAlerts(dashboardData.alerts);
+      }
+      if (dashboardData.systemHealth) {
+        setSystemHealth(dashboardData.systemHealth);
+      }
+      if (dashboardData.performance) {
+        setPerformance(dashboardData.performance);
+      }
+      if (dashboardData.testResults) {
+        setTestResults(dashboardData.testResults);
+      }
+      if (dashboardData.qualityGates) {
+        setQualityGates(dashboardData.qualityGates);
+      }
     };
 
     const handleMetricsUpdate = (newMetrics: QualityMetric[]) => {

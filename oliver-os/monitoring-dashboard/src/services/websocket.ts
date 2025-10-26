@@ -49,9 +49,11 @@ class WebSocketService {
     });
 
     // Dashboard data events
-    this.socket.on('dashboard:data', (data: DashboardData) => {
-      console.log('📊 Received dashboard data:', data);
-      this.emitToListeners('dashboard:data', data);
+    this.socket.on('dashboard:data', (message: any) => {
+      console.log('📊 Received dashboard data:', message);
+      // Handle both direct DashboardData and wrapped format
+      const dashboardData = message.data || message;
+      this.emitToListeners('dashboard:data', dashboardData);
     });
 
     this.socket.on('metrics:update', (metrics: QualityMetric[]) => {

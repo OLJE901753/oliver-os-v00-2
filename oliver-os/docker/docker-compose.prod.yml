@@ -22,10 +22,14 @@ services:
       - JWT_REFRESH_SECRET=your-jwt-refresh-secret-change-in-production
       - AI_SERVICES_URL=http://ai-services:8000
     depends_on:
-      - postgres
-      - redis
-      - neo4j
-      - ai-services
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      neo4j:
+        condition: service_started
+      ai-services:
+        condition: service_healthy
     restart: unless-stopped
     networks:
       - oliver-os-network
@@ -43,9 +47,17 @@ services:
       - OPENAI_API_KEY=
       - ANTHROPIC_API_KEY=
     depends_on:
-      - postgres
-      - redis
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health", "||", "exit", "1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
     networks:
       - oliver-os-network
 
@@ -62,6 +74,12 @@ services:
     ports:
       - "5432:5432"
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
     networks:
       - oliver-os-network
 
@@ -74,6 +92,12 @@ services:
     ports:
       - "6379:6379"
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
     networks:
       - oliver-os-network
 

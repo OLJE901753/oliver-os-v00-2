@@ -1,7 +1,7 @@
 import React from 'react';
 import { Activity, AlertTriangle, CheckCircle, Clock, TrendingUp, TrendingDown, Minus, Shield } from 'lucide-react';
 import { QualityMetric, QualityAlert, SystemHealth } from '@types/index';
-import { formatNumber, formatPercentage, getStatusColor, getTrendIcon, getTrendColor } from '@utils/index';
+import { formatNumber, formatPercentage, getStatusColor, getTrendIcon, getTrendColor, formatRelativeTime } from '@utils/index';
 
 interface MetricsOverviewProps {
   metrics: QualityMetric[];
@@ -10,7 +10,11 @@ interface MetricsOverviewProps {
 }
 
 const MetricsOverview: React.FC<MetricsOverviewProps> = ({ metrics, systemHealth, alerts }) => {
-  const activeAlerts = alerts.filter(alert => !alert.resolved);
+  // Ensure metrics is always an array
+  const safeMetrics = Array.isArray(metrics) ? metrics : [];
+  const safeAlerts = Array.isArray(alerts) ? alerts : [];
+  
+  const activeAlerts = safeAlerts.filter(alert => !alert.resolved);
   const criticalAlerts = activeAlerts.filter(alert => alert.type === 'critical');
   const warningAlerts = activeAlerts.filter(alert => alert.type === 'warning');
 
@@ -25,38 +29,38 @@ const MetricsOverview: React.FC<MetricsOverviewProps> = ({ metrics, systemHealth
   const metricCards = [
     {
       title: 'Test Coverage',
-      value: metrics.find(m => m.name === 'test_coverage')?.value || 0,
+      value: safeMetrics.find(m => m.name === 'test_coverage')?.value || 0,
       unit: '%',
       threshold: 80,
-      status: metrics.find(m => m.name === 'test_coverage')?.status || 'healthy',
-      trend: metrics.find(m => m.name === 'test_coverage')?.trend || 'stable',
+      status: safeMetrics.find(m => m.name === 'test_coverage')?.status || 'healthy',
+      trend: safeMetrics.find(m => m.name === 'test_coverage')?.trend || 'stable',
       icon: CheckCircle,
     },
     {
       title: 'Performance Score',
-      value: metrics.find(m => m.name === 'performance')?.value || 0,
+      value: safeMetrics.find(m => m.name === 'performance')?.value || 0,
       unit: '',
       threshold: 0.8,
-      status: metrics.find(m => m.name === 'performance')?.status || 'healthy',
-      trend: metrics.find(m => m.name === 'performance')?.trend || 'stable',
+      status: safeMetrics.find(m => m.name === 'performance')?.status || 'healthy',
+      trend: safeMetrics.find(m => m.name === 'performance')?.trend || 'stable',
       icon: Activity,
     },
     {
       title: 'Code Quality',
-      value: metrics.find(m => m.name === 'code_quality')?.value || 0,
+      value: safeMetrics.find(m => m.name === 'code_quality')?.value || 0,
       unit: '',
       threshold: 0.8,
-      status: metrics.find(m => m.name === 'code_quality')?.status || 'healthy',
-      trend: metrics.find(m => m.name === 'code_quality')?.trend || 'stable',
+      status: safeMetrics.find(m => m.name === 'code_quality')?.status || 'healthy',
+      trend: safeMetrics.find(m => m.name === 'code_quality')?.trend || 'stable',
       icon: CheckCircle,
     },
     {
       title: 'Security Score',
-      value: metrics.find(m => m.name === 'security')?.value || 0,
+      value: safeMetrics.find(m => m.name === 'security')?.value || 0,
       unit: '',
       threshold: 0.9,
-      status: metrics.find(m => m.name === 'security')?.status || 'healthy',
-      trend: metrics.find(m => m.name === 'security')?.trend || 'stable',
+      status: safeMetrics.find(m => m.name === 'security')?.status || 'healthy',
+      trend: safeMetrics.find(m => m.name === 'security')?.trend || 'stable',
       icon: Shield,
     },
   ];
