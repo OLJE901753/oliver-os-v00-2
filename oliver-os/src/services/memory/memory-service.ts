@@ -142,7 +142,7 @@ export class MemoryService extends EventEmitter {
         this._logger.info(`Loaded ${decisionCount} architecture decisions`);
       }
     } catch (error) {
-      this._logger.warn('Failed to load patterns:', error);
+      this._logger.warn('Failed to load patterns:', { error: error instanceof Error ? error.message : String(error) });
     }
   }
 
@@ -211,7 +211,7 @@ export class MemoryService extends EventEmitter {
       
       this._logger.info('Cursor memory initialized and validated');
     } catch (error) {
-      this._logger.warn('Failed to initialize cursor memory:', error);
+      this._logger.warn('Failed to initialize cursor memory:', { error: error instanceof Error ? error.message : String(error) });
     }
   }
 
