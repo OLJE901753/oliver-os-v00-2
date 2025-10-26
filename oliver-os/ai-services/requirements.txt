@@ -10,6 +10,7 @@ python-multipart==0.0.20
 # AI Models and APIs
 openai==1.58.1
 anthropic==0.40.0
+ollama==0.3.1  # For local LLM inference
 
 # Database and Storage
 sqlalchemy==2.0.36
@@ -33,3 +34,4 @@ passlib[bcrypt]==1.7.4
 python-dateutil==2.9.0
 pytz==2024.2
 requests==2.32.3
+httpx==0.27.2  # For async HTTP client to TypeScript agents

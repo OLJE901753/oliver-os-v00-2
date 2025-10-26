@@ -47,6 +47,11 @@ class Settings(BaseSettings):
     max_tokens: int = Field(default=2000, env="MAX_TOKENS")
     temperature: float = Field(default=0.7, env="TEMPERATURE")
     
+    # LLM Provider settings
+    llm_provider: str = Field(default="ollama", env="LLM_PROVIDER")
+    ollama_base_url: str = Field(default="http://localhost:11434", env="OLLAMA_BASE_URL")
+    ollama_model: str = Field(default="llama3.1:8b", env="OLLAMA_MODEL")
+    
     # Application settings
     debug: bool = Field(default=False, env="DEBUG")
     log_level: str = Field(default="INFO", env="LOG_LEVEL")
@@ -61,9 +66,21 @@ class Settings(BaseSettings):
     rate_limit_requests: int = Field(default=100, env="RATE_LIMIT_REQUESTS")
     rate_limit_window: int = Field(default=3600, env="RATE_LIMIT_WINDOW")  # seconds
     
+    # Additional settings (to allow extra fields from environment)
+    database_url: Optional[str] = Field(default=None, env="DATABASE_URL")
+    ai_services_url: Optional[str] = Field(default=None, env="AI_SERVICES_URL")
+    jwt_secret: Optional[str] = Field(default=None, env="JWT_SECRET")
+    jwt_refresh_secret: Optional[str] = Field(default=None, env="JWT_REFRESH_SECRET")
+    jwt_access_expiry: Optional[str] = Field(default=None, env="JWT_ACCESS_EXPIRY")
+    jwt_refresh_expiry: Optional[str] = Field(default=None, env="JWT_REFRESH_EXPIRY")
+    cors_origin: Optional[str] = Field(default=None, env="CORS_ORIGIN")
+    port: Optional[int] = Field(default=None, env="PORT")
+    node_env: Optional[str] = Field(default=None, env="NODE_ENV")
+    
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"
+        extra = "allow"  # Allow extra fields from environment
         case_sensitive = False
 
 

@@ -7,8 +7,11 @@ import { Router } from 'express';
 import type { Request, Response } from 'express';
 import { ServiceManager } from '../services/service-manager';
 import type { SpawnRequest } from '../services/agent-manager';
+import { agentBridge } from '../integrations/agent-bridge';
+import { Logger } from '../core/logger';
 
 const router = Router();
+const logger = new Logger('AgentRoutes');
 
 export function createAgentRoutes(serviceManager: ServiceManager): Router {
   
@@ -227,6 +230,77 @@ export function createAgentRoutes(serviceManager: ServiceManager): Router {
       console.error('Error getting agent health status:', error);
       res.status(500).json({
         error: 'Failed to get agent health status',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
+  // NEW: Receive messages from Python agent
+  router.post('/messages', async (req: Request, res: Response): Promise<void> => {
+    try {
+      const message = req.body;
+      
+      logger.info(`📨 Received message from Python agent: ${message.sender}`);
+      
+      await agentBridge.sendToAgents(
+        message.sender,
+        message.type,
+        message.content,
+        message.recipient
+      );
+      
+      res.json({
+        success: true,
+        status: 'received'
+      });
+    } catch (error) {
+      logger.error('Error receiving message from Python agent:', error);
+      res.status(500).json({
+        error: 'Failed to process message',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
+  // NEW: Get Python agent context
+  router.get('/python-context', async (_req: Request, res: Response): Promise<void> => {
+    try {
+      const context = await agentBridge.getPythonAgentContext();
+      
+      res.json({
+        success: true,
+        data: context
+      });
+    } catch (error) {
+      logger.error('Error getting Python agent context:', error);
+      res.status(500).json({
+        error: 'Failed to get Python agent context',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
+  // NEW: Get latest request from Python agent
+  router.get('/cursor-request', async (_req: Request, res: Response): Promise<void> => {
+    try {
+      const request = await agentBridge.getLatestRequest();
+      
+      if (!request) {
+        res.status(404).json({
+          success: false,
+          error: 'No request available'
+        });
+        return;
+      }
+      
+      res.json({
+        success: true,
+        data: request
+      });
+    } catch (error) {
+      logger.error('Error getting cursor request:', error);
+      res.status(500).json({
+        error: 'Failed to get cursor request',
         details: error instanceof Error ? error.message : 'Unknown error'
       });
     }

@@ -568,6 +568,66 @@
   "ci": {
     "recentRuns": [
       {
+        "id": "18823948720",
+        "name": "Docker CI/CD Pipeline",
+        "conclusion": "success",
+        "status": "completed",
+        "created_at": "2025-10-26T21:25:48Z",
+        "html_url": "https://github.com/OLJE901753/oliver-os-v00-2/actions/runs/18823948720",
+        "head_branch": "develop",
+        "head_sha": "1839c29a3c203f45bd0e76627522ee6ff4f1837f"
+      },
+      {
+        "id": "18823948718",
+        "name": "Smart Assistance CI/CD Pipeline",
+        "conclusion": "success",
+        "status": "completed",
+        "created_at": "2025-10-26T21:25:48Z",
+        "html_url": "https://github.com/OLJE901753/oliver-os-v00-2/actions/runs/18823948718",
+        "head_branch": "develop",
+        "head_sha": "1839c29a3c203f45bd0e76627522ee6ff4f1837f"
+      },
+      {
+        "id": "18823948729",
+        "name": "Enhanced Smart Assistance CI/CD Pipeline",
+        "conclusion": "success",
+        "status": "completed",
+        "created_at": "2025-10-26T21:25:48Z",
+        "html_url": "https://github.com/OLJE901753/oliver-os-v00-2/actions/runs/18823948729",
+        "head_branch": "develop",
+        "head_sha": "1839c29a3c203f45bd0e76627522ee6ff4f1837f"
+      },
+      {
+        "id": "18823888002",
+        "name": "Smart Assistance CI/CD Pipeline",
+        "conclusion": "success",
+        "status": "completed",
+        "created_at": "2025-10-26T21:20:26Z",
+        "html_url": "https://github.com/OLJE901753/oliver-os-v00-2/actions/runs/18823888002",
+        "head_branch": "develop",
+        "head_sha": "1d7c38fe953cc182fb4e9157e518a37b721db35e"
+      },
+      {
+        "id": "18823887996",
+        "name": "Enhanced Smart Assistance CI/CD Pipeline",
+        "conclusion": "success",
+        "status": "completed",
+        "created_at": "2025-10-26T21:20:26Z",
+        "html_url": "https://github.com/OLJE901753/oliver-os-v00-2/actions/runs/18823887996",
+        "head_branch": "develop",
+        "head_sha": "1d7c38fe953cc182fb4e9157e518a37b721db35e"
+      },
+      {
+        "id": "18823888019",
+        "name": "Docker CI/CD Pipeline",
+        "conclusion": "failure",
+        "status": "completed",
+        "created_at": "2025-10-26T21:20:26Z",
+        "html_url": "https://github.com/OLJE901753/oliver-os-v00-2/actions/runs/18823888019",
+        "head_branch": "develop",
+        "head_sha": "1d7c38fe953cc182fb4e9157e518a37b721db35e"
+      },
+      {
         "id": "18823076009",
         "name": "Docker CI/CD Pipeline",
         "conclusion": "success",
@@ -706,69 +766,199 @@
         "html_url": "https://github.com/OLJE901753/oliver-os-v00-2/actions/runs/18822839229",
         "head_branch": "develop",
         "head_sha": "ad3f006b729e2ad8dc2f357f264ba5d91db21e7e"
-      },
-      {
-        "id": "18822839235",
-        "name": "Smart Assistance CI/CD Pipeline",
-        "conclusion": "success",
-        "status": "completed",
-        "created_at": "2025-10-26T19:43:02Z",
-        "html_url": "https://github.com/OLJE901753/oliver-os-v00-2/actions/runs/18822839235",
-        "head_branch": "develop",
-        "head_sha": "ad3f006b729e2ad8dc2f357f264ba5d91db21e7e"
-      },
-      {
-        "id": "18822808082",
-        "name": "Docker CI/CD Pipeline",
-        "conclusion": "failure",
-        "status": "completed",
-        "created_at": "2025-10-26T19:39:41Z",
-        "html_url": "https://github.com/OLJE901753/oliver-os-v00-2/actions/runs/18822808082",
-        "head_branch": "develop",
-        "head_sha": "e3f3a33e573cfc659beec752a7f5c27b0bae2fcb"
-      },
-      {
-        "id": "18822808076",
-        "name": "Enhanced Smart Assistance CI/CD Pipeline",
-        "conclusion": "success",
-        "status": "completed",
-        "created_at": "2025-10-26T19:39:41Z",
-        "html_url": "https://github.com/OLJE901753/oliver-os-v00-2/actions/runs/18822808076",
-        "head_branch": "develop",
-        "head_sha": "e3f3a33e573cfc659beec752a7f5c27b0bae2fcb"
-      },
-      {
-        "id": "18822808077",
-        "name": "Smart Assistance CI/CD Pipeline",
-        "conclusion": "success",
-        "status": "completed",
-        "created_at": "2025-10-26T19:39:41Z",
-        "html_url": "https://github.com/OLJE901753/oliver-os-v00-2/actions/runs/18822808077",
-        "head_branch": "develop",
-        "head_sha": "e3f3a33e573cfc659beec752a7f5c27b0bae2fcb"
-      },
-      {
-        "id": "18822681659",
-        "name": "Docker CI/CD Pipeline",
-        "conclusion": "failure",
-        "status": "completed",
-        "created_at": "2025-10-26T19:27:34Z",
-        "html_url": "https://github.com/OLJE901753/oliver-os-v00-2/actions/runs/18822681659",
-        "head_branch": "develop",
-        "head_sha": "e5fd931f6c7d2e308bd232d47ab9386a72520d1d"
-      },
-      {
-        "id": "18822681648",
-        "name": "Enhanced Smart Assistance CI/CD Pipeline",
-        "conclusion": "success",
-        "status": "completed",
-        "created_at": "2025-10-26T19:27:34Z",
-        "html_url": "https://github.com/OLJE901753/oliver-os-v00-2/actions/runs/18822681648",
-        "head_branch": "develop",
-        "head_sha": "e5fd931f6c7d2e308bd232d47ab9386a72520d1d"
       }
     ],
     "failurePatterns": [
+      {
+        "pattern": "Docker CI/CD Pipeline-unknown",
+        "workflow": "Docker CI/CD Pipeline",
+        "conclusion": "failure",
+        "branch": "develop",
+        "commit": "ad3f006b729e2ad8dc2f357f264ba5d91db21e7e",
+        "timestamp": "2025-10-26T19:43:02Z",
+        "jobs": [
+          "Build & Test Docker Image",
+          "Test Docker Container",
+          "Security Scan Docker Image",
+          "Deploy to Staging",
+          "Deploy to Production"
+        ],
+        "errorType": "unknown",
+        "errorMessage": "Unknown error",
+        "files": [],
+        "severity": "low"
+      },
+      {
+        "pattern": "Docker CI/CD Pipeline-unknown",
+        "workflow": "Docker CI/CD Pipeline",
+        "conclusion": "failure",
+        "branch": "develop",
+        "commit": "62355fa91807f056c93660e974cdbb66f00ecacf",
+        "timestamp": "2025-10-26T19:51:00Z",
+        "jobs": [
+          "Build & Test Docker Image",
+          "Security Scan Docker Image",
+          "Test Docker Container",
+          "Deploy to Production",
+          "Deploy to Staging"
+        ],
+        "errorType": "unknown",
+        "errorMessage": "Unknown error",
+        "files": [],
+        "severity": "low"
+      },
+      {
+        "pattern": "Docker CI/CD Pipeline-unknown",
+        "workflow": "Docker CI/CD Pipeline",
+        "conclusion": "failure",
+        "branch": "develop",
+        "commit": "80b1a0400fa74e496e30f7ce7b5bb12cb5332929",
+        "timestamp": "2025-10-26T19:51:13Z",
+        "jobs": [
+          "Build & Test Docker Image",
+          "Test Docker Container",
+          "Security Scan Docker Image",
+          "Deploy to Staging",
+          "Deploy to Production"
+        ],
+        "errorType": "unknown",
+        "errorMessage": "Unknown error",
+        "files": [],
+        "severity": "low"
+      },
+      {
+        "pattern": "Docker CI/CD Pipeline-unknown",
+        "workflow": "Docker CI/CD Pipeline",
+        "conclusion": "failure",
+        "branch": "develop",
+        "commit": "8523cb0737d3943fb3bfd30e5176eb4e1cf260be",
+        "timestamp": "2025-10-26T20:02:44Z",
+        "jobs": [
+          "Build & Test Docker Image",
+          "Security Scan Docker Image",
+          "Deploy to Staging",
+          "Test Docker Container",
+          "Deploy to Production"
+        ],
+        "errorType": "unknown",
+        "errorMessage": "Unknown error",
+        "files": [],
+        "severity": "low"
+      },
+      {
+        "pattern": "Docker CI/CD Pipeline-unknown",
+        "workflow": "Docker CI/CD Pipeline",
+        "conclusion": "failure",
+        "branch": "develop",
+        "commit": "1d7c38fe953cc182fb4e9157e518a37b721db35e",
+        "timestamp": "2025-10-26T21:20:26Z",
+        "jobs": [
+          "Build & Test Docker Image",
+          "Test Docker Container",
+          "Deploy to Staging",
+          "Security Scan Docker Image",
+          "Deploy to Production"
+        ],
+        "errorType": "unknown",
+        "errorMessage": "Unknown error",
+        "files": [],
+        "severity": "low"
+      },
+      {
+        "pattern": "Docker CI/CD Pipeline-unknown",
+        "workflow": "Docker CI/CD Pipeline",
+        "conclusion": "failure",
+        "branch": "develop",
+        "commit": "ad3f006b729e2ad8dc2f357f264ba5d91db21e7e",
+        "timestamp": "2025-10-26T19:43:02Z",
+        "jobs": [
+          "Build & Test Docker Image",
+          "Test Docker Container",
+          "Security Scan Docker Image",
+          "Deploy to Staging",
+          "Deploy to Production"
+        ],
+        "errorType": "unknown",
+        "errorMessage": "Unknown error",
+        "files": [],
+        "severity": "low"
+      },
+      {
+        "pattern": "Docker CI/CD Pipeline-unknown",
+        "workflow": "Docker CI/CD Pipeline",
+        "conclusion": "failure",
+        "branch": "develop",
+        "commit": "62355fa91807f056c93660e974cdbb66f00ecacf",
+        "timestamp": "2025-10-26T19:51:00Z",
+        "jobs": [
+          "Build & Test Docker Image",
+          "Security Scan Docker Image",
+          "Test Docker Container",
+          "Deploy to Production",
+          "Deploy to Staging"
+        ],
+        "errorType": "unknown",
+        "errorMessage": "Unknown error",
+        "files": [],
+        "severity": "low"
+      },
+      {
+        "pattern": "Docker CI/CD Pipeline-unknown",
+        "workflow": "Docker CI/CD Pipeline",
+        "conclusion": "failure",
+        "branch": "develop",
+        "commit": "80b1a0400fa74e496e30f7ce7b5bb12cb5332929",
+        "timestamp": "2025-10-26T19:51:13Z",
+        "jobs": [
+          "Build & Test Docker Image",
+          "Test Docker Container",
+          "Security Scan Docker Image",
+          "Deploy to Staging",
+          "Deploy to Production"
+        ],
+        "errorType": "unknown",
+        "errorMessage": "Unknown error",
+        "files": [],
+        "severity": "low"
+      },
+      {
+        "pattern": "Docker CI/CD Pipeline-unknown",
+        "workflow": "Docker CI/CD Pipeline",
+        "conclusion": "failure",
+        "branch": "develop",
+        "commit": "8523cb0737d3943fb3bfd30e5176eb4e1cf260be",
+        "timestamp": "2025-10-26T20:02:44Z",
+        "jobs": [
+          "Build & Test Docker Image",
+          "Security Scan Docker Image",
+          "Deploy to Staging",
+          "Test Docker Container",
+          "Deploy to Production"
+        ],
+        "errorType": "unknown",
+        "errorMessage": "Unknown error",
+        "files": [],
+        "severity": "low"
+      },
+      {
+        "pattern": "Docker CI/CD Pipeline-unknown",
+        "workflow": "Docker CI/CD Pipeline",
+        "conclusion": "failure",
+        "branch": "develop",
+        "commit": "1d7c38fe953cc182fb4e9157e518a37b721db35e",
+        "timestamp": "2025-10-26T21:20:26Z",
+        "jobs": [
+          "Build & Test Docker Image",
+          "Test Docker Container",
+          "Deploy to Staging",
+          "Security Scan Docker Image",
+          "Deploy to Production"
+        ],
+        "errorType": "unknown",
+        "errorMessage": "Unknown error",
+        "files": [],
+        "severity": "low"
+      },
       {
         "pattern": "Docker CI/CD Pipeline-unknown",
         "workflow": "Docker CI/CD Pipeline",
@@ -1588,236 +1778,6 @@
         "errorMessage": "Unknown error",
         "files": [],
         "severity": "low"
-      },
-      {
-        "pattern": "Enhanced Smart Assistance CI/CD Pipeline-unknown",
-        "workflow": "Enhanced Smart Assistance CI/CD Pipeline",
-        "conclusion": "failure",
-        "branch": "develop",
-        "commit": "e167d0ef304473612af20175dbec1272757e0c20",
-        "timestamp": "2025-10-26T17:24:54Z",
-        "jobs": [
-          "Enhanced Lint & Type Check",
-          "Enhanced Smart Assistance Tests (integration)",
-          "Enhanced Smart Assistance Tests (performance)",
-          "Enhanced Smart Assistance Tests (algorithms)",
-          "Enhanced Smart Assistance Tests (quality)",
-          "Enhanced Smart Assistance Tests (monitoring)",
-          "Enhanced Smart Assistance Tests (edge-cases)",
-          "Enhanced Coverage Tests",
-          "Enhanced Quality Gates",
-          "Enhanced Security Scan",
-          "Enhanced Build & Test",
-          "Cursor Integration Report",
-          "Enhanced Deploy to Staging",
-          "Enhanced Notifications",
-          "Enhanced Deploy to Production"
-        ],
-        "errorType": "unknown",
-        "errorMessage": "Unknown error",
-        "files": [],
-        "severity": "low"
-      },
-      {
-        "pattern": "Smart Assistance CI/CD Pipeline-unknown",
-        "workflow": "Smart Assistance CI/CD Pipeline",
-        "conclusion": "failure",
-        "branch": "develop",
-        "commit": "e167d0ef304473612af20175dbec1272757e0c20",
-        "timestamp": "2025-10-26T17:24:54Z",
-        "jobs": [
-          "Enhanced Lint & Type Check",
-          "Enhanced Smart Assistance Tests (edge-cases)",
-          "Enhanced Smart Assistance Tests (quality)",
-          "Enhanced Smart Assistance Tests (performance)",
-          "Enhanced Smart Assistance Tests (monitoring)",
-          "Enhanced Smart Assistance Tests (integration)",
-          "Enhanced Smart Assistance Tests (algorithms)",
-          "Enhanced Coverage Tests",
-          "Enhanced Quality Gates",
-          "Enhanced Security Scan",
-          "Enhanced Build & Test",
-          "Cursor Integration Report",
-          "Enhanced Notifications",
-          "Enhanced Deploy to Staging",
-          "Enhanced Deploy to Production"
-        ],
-        "errorType": "unknown",
-        "errorMessage": "Unknown error",
-        "files": [],
-        "severity": "low"
-      },
-      {
-        "pattern": "Docker CI/CD Pipeline-unknown",
-        "workflow": "Docker CI/CD Pipeline",
-        "conclusion": "failure",
-        "branch": "develop",
-        "commit": "755a777a870302a01c86ee759871b9f32e6db8fc",
-        "timestamp": "2025-10-26T17:00:16Z",
-        "jobs": [
-          "Build & Test Docker Image",
-          "Security Scan Docker Image",
-          "Test Docker Container",
-          "Deploy to Staging",
-          "Deploy to Production"
-        ],
-        "errorType": "unknown",
-        "errorMessage": "Unknown error",
-        "files": [],
-        "severity": "low"
-      },
-      {
-        "pattern": "Docker CI/CD Pipeline-unknown",
-        "workflow": "Docker CI/CD Pipeline",
-        "conclusion": "failure",
-        "branch": "develop",
-        "commit": "90f129055d0e65540b4ecca508dc114dc6a4b453",
-        "timestamp": "2025-10-26T17:06:23Z",
-        "jobs": [
-          "Build & Test Docker Image",
-          "Test Docker Container",
-          "Security Scan Docker Image",
-          "Deploy to Staging",
-          "Deploy to Production"
-        ],
-        "errorType": "unknown",
-        "errorMessage": "Unknown error",
-        "files": [],
-        "severity": "low"
-      },
-      {
-        "pattern": "Docker CI/CD Pipeline-unknown",
-        "workflow": "Docker CI/CD Pipeline",
-        "conclusion": "failure",
-        "branch": "develop",
-        "commit": "59207e52871cc6df21af50c1a65a40087294dd58",
-        "timestamp": "2025-10-26T17:17:33Z",
-        "jobs": [
-          "Build & Test Docker Image",
-          "Test Docker Container",
-          "Security Scan Docker Image",
-          "Deploy to Staging",
-          "Deploy to Production"
-        ],
-        "errorType": "unknown",
-        "errorMessage": "Unknown error",
-        "files": [],
-        "severity": "low"
-      },
-      {
-        "pattern": "Docker CI/CD Pipeline-unknown",
-        "workflow": "Docker CI/CD Pipeline",
-        "conclusion": "failure",
-        "branch": "develop",
-        "commit": "333df89760650409e5fcdd14ac56325f7d167b32",
-        "timestamp": "2025-10-26T17:21:27Z",
-        "jobs": [
-          "Build & Test Docker Image",
-          "Test Docker Container",
-          "Security Scan Docker Image",
-          "Deploy to Staging",
-          "Deploy to Production"
-        ],
-        "errorType": "unknown",
-        "errorMessage": "Unknown error",
-        "files": [],
-        "severity": "low"
-      },
-      {
-        "pattern": "Enhanced Smart Assistance CI/CD Pipeline-unknown",
-        "workflow": "Enhanced Smart Assistance CI/CD Pipeline",
-        "conclusion": "failure",
-        "branch": "develop",
-        "commit": "e167d0ef304473612af20175dbec1272757e0c20",
-        "timestamp": "2025-10-26T17:24:54Z",
-        "jobs": [
-          "Enhanced Lint & Type Check",
-          "Enhanced Smart Assistance Tests (integration)",
-          "Enhanced Smart Assistance Tests (performance)",
-          "Enhanced Smart Assistance Tests (algorithms)",
-          "Enhanced Smart Assistance Tests (quality)",
-          "Enhanced Smart Assistance Tests (monitoring)",
-          "Enhanced Smart Assistance Tests (edge-cases)",
-          "Enhanced Coverage Tests",
-          "Enhanced Quality Gates",
-          "Enhanced Security Scan",
-          "Enhanced Build & Test",
-          "Cursor Integration Report",
-          "Enhanced Deploy to Staging",
-          "Enhanced Notifications",
-          "Enhanced Deploy to Production"
-        ],
-        "errorType": "unknown",
-        "errorMessage": "Unknown error",
-        "files": [],
-        "severity": "low"
-      },
-      {
-        "pattern": "Smart Assistance CI/CD Pipeline-unknown",
-        "workflow": "Smart Assistance CI/CD Pipeline",
-        "conclusion": "failure",
-        "branch": "develop",
-        "commit": "e167d0ef304473612af20175dbec1272757e0c20",
-        "timestamp": "2025-10-26T17:24:54Z",
-        "jobs": [
-          "Enhanced Lint & Type Check",
-          "Enhanced Smart Assistance Tests (edge-cases)",
-          "Enhanced Smart Assistance Tests (quality)",
-          "Enhanced Smart Assistance Tests (performance)",
-          "Enhanced Smart Assistance Tests (monitoring)",
-          "Enhanced Smart Assistance Tests (integration)",
-          "Enhanced Smart Assistance Tests (algorithms)",
-          "Enhanced Coverage Tests",
-          "Enhanced Quality Gates",
-          "Enhanced Security Scan",
-          "Enhanced Build & Test",
-          "Cursor Integration Report",
-          "Enhanced Notifications",
-          "Enhanced Deploy to Staging",
-          "Enhanced Deploy to Production"
-        ],
-        "errorType": "unknown",
-        "errorMessage": "Unknown error",
-        "files": [],
-        "severity": "low"
-      },
-      {
-        "pattern": "Docker CI/CD Pipeline-unknown",
-        "workflow": "Docker CI/CD Pipeline",
-        "conclusion": "failure",
-        "branch": "develop",
-        "commit": "51ea0566f43d285ad7b5675dce49d4253280d405",
-        "timestamp": "2025-10-26T16:08:38Z",
-        "jobs": [
-          "Build & Test Docker Image",
-          "Test Docker Container",
-          "Security Scan Docker Image",
-          "Deploy to Staging",
-          "Deploy to Production"
-        ],
-        "errorType": "unknown",
-        "errorMessage": "Unknown error",
-        "files": [],
-        "severity": "low"
-      },
-      {
-        "pattern": "Docker CI/CD Pipeline-unknown",
-        "workflow": "Docker CI/CD Pipeline",
-        "conclusion": "failure",
-        "branch": "develop",
-        "commit": "755a777a870302a01c86ee759871b9f32e6db8fc",
-        "timestamp": "2025-10-26T17:00:16Z",
-        "jobs": [
-          "Build & Test Docker Image",
-          "Security Scan Docker Image",
-          "Test Docker Container",
-          "Deploy to Staging",
-          "Deploy to Production"
-        ],
-        "errorType": "unknown",
-        "errorMessage": "Unknown error",
-        "files": [],
-        "severity": "low"
       }
     ],
     "successPatterns": [],
@@ -1845,8 +1805,8 @@
         "averageTimeToFix": 0
       },
       "Docker CI/CD Pipeline-unknown": {
-        "count": 43,
-        "lastOccurrence": "2025-10-26T19:27:34Z",
+        "count": 53,
+        "lastOccurrence": "2025-10-26T19:43:02Z",
         "branches": [
           "develop"
         ],
@@ -1861,11 +1821,12 @@
           "ad3f006b729e2ad8dc2f357f264ba5d91db21e7e",
           "80b1a0400fa74e496e30f7ce7b5bb12cb5332929",
           "62355fa91807f056c93660e974cdbb66f00ecacf",
-          "8523cb0737d3943fb3bfd30e5176eb4e1cf260be"
+          "8523cb0737d3943fb3bfd30e5176eb4e1cf260be",
+          "1d7c38fe953cc182fb4e9157e518a37b721db35e"
         ],
         "averageTimeToFix": 0
       }
     },
-    "lastSync": "2025-10-26T20:25:08.071Z"
+    "lastSync": "2025-10-26T22:39:53.996Z"
   }
 }

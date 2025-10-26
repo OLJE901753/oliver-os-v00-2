@@ -1,0 +1,44 @@
+{
+  "version": "1.0.0",
+  "lastUpdated": "2025-01-27T00:00:00.000Z",
+  "deepPatterns": {
+    "thinkingStyle": [],
+    "decisionPatterns": [],
+    "preferenceMatrix": {},
+    "codingPhilosophy": {
+      "principles": [
+        "Follow BMAD methodology",
+        "TypeScript-first approach",
+        "Microservices architecture",
+        "Event-driven communication"
+      ],
+      "qualityStandards": {
+        "maxFileLines": 300,
+        "preferFunctional": true,
+        "strictTyping": true,
+        "errorHandling": "immediate"
+      }
+    }
+  },
+  "sessionData": {
+    "currentSession": {
+      "startTime": null,
+      "activeContext": null,
+      "recentTasks": []
+    },
+    "recentSessions": []
+  },
+  "agentContext": {
+    "activeAgents": [],
+    "agentHistory": [],
+    "collaborationPatterns": [],
+    "successfulWorkflows": []
+  },
+  "userCognitive": {
+    "learningStyle": "hands-on",
+    "problemSolvingApproach": "iterative",
+    "communicationStyle": "direct",
+    "preferredAbstractionLevel": "moderate"
+  }
+}
+

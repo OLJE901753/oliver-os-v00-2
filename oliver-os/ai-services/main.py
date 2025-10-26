@@ -18,6 +18,9 @@ from services.knowledge_manager import KnowledgeManager
 from services.voice_processor import VoiceProcessor
 from services.visualization_generator import VisualizationGenerator
 from services.agent_orchestrator import AgentOrchestrator, SpawnRequest
+from memory.memory_manager import AgentMemoryManager
+from memory.memory_combiner import MemoryCombiner
+from services.llm_provider import LLMProviderFactory
 from models.thought import Thought, ThoughtCreate, ThoughtUpdate
 from models.collaboration import CollaborationEvent
 from config.settings import Settings
@@ -52,6 +55,27 @@ knowledge_manager = KnowledgeManager(settings)
 voice_processor = VoiceProcessor(settings)
 visualization_generator = VisualizationGenerator(settings)
 agent_orchestrator = AgentOrchestrator()
+
+# Initialize memory system
+memory_manager = AgentMemoryManager()
+memory_combiner = MemoryCombiner()
+
+# Initialize LLM provider if configured
+llm_provider = None
+try:
+    if settings.llm_provider == "ollama":
+        from services.llm_provider import LLMProviderFactory
+        llm_provider = LLMProviderFactory.create(
+            settings.llm_provider,
+            {
+                'ollama_base_url': settings.ollama_base_url,
+                'ollama_model': settings.ollama_model
+            }
+        )
+        memory_combiner.llm_provider = llm_provider
+        logger.info(f"✅ LLM provider initialized: {settings.llm_provider}")
+except Exception as e:
+    logger.warning(f"⚠️ LLM provider not available: {e}")
 
 # WebSocket connection manager
 class ConnectionManager:
@@ -255,6 +279,48 @@ async def get_spawned_agent(agent_id: str):
         raise
     except Exception as e:
         logger.error(f"Error getting spawned agent: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+# Memory Management Endpoints
+@app.get("/api/memory/agent")
+async def get_agent_memory():
+    """Get agent memory data"""
+    try:
+        memory_manager.load()
+        return memory_manager.memory
+    except Exception as e:
+        logger.error(f"Error getting agent memory: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/memory/combined")
+async def get_combined_memory():
+    """Get combined Cursor + Agent memory"""
+    try:
+        combined = memory_combiner.combine_memories()
+        return combined
+    except Exception as e:
+        logger.error(f"Error getting combined memory: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/memory/context")
+async def get_context_for_task(request: Dict[str, Any]):
+    """Get combined context optimized for a specific task"""
+    try:
+        task = request.get('task', '')
+        context = await memory_combiner.get_combined_context_for_task(task)
+        return {"context": context}
+    except Exception as e:
+        logger.error(f"Error getting context: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/memory/summary")
+async def get_memory_summary():
+    """Get a summary of current memory"""
+    try:
+        summary = memory_combiner.get_memory_summary()
+        return {"summary": summary}
+    except Exception as e:
+        logger.error(f"Error getting memory summary: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 # WebSocket endpoint for real-time communication
