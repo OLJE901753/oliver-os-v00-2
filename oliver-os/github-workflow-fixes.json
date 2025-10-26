@@ -1,5 +1,5 @@
 {
-  "timestamp": "2025-10-25T23:33:56.811Z",
+  "timestamp": "2025-10-26T01:00:23.995Z",
   "fixes": [
     "pnpm ci:clear-cache",
     "pnpm ci:generate-report",
@@ -69,6 +69,12 @@
       "warningCount": 3
     },
     {
+      "name": "Enhanced Smart Assistance Tests (quality)",
+      "conclusion": "success",
+      "errorCount": 3,
+      "warningCount": 3
+    },
+    {
       "name": "Enhanced Smart Assistance Tests (algorithms)",
       "conclusion": "success",
       "errorCount": 3,
@@ -81,21 +87,15 @@
       "warningCount": 3
     },
     {
-      "name": "Enhanced Smart Assistance Tests (quality)",
+      "name": "Enhanced Smart Assistance Tests (performance)",
       "conclusion": "success",
-      "errorCount": 3,
+      "errorCount": 40,
       "warningCount": 3
     },
     {
       "name": "Enhanced Smart Assistance Tests (edge-cases)",
       "conclusion": "success",
       "errorCount": 3,
-      "warningCount": 3
-    },
-    {
-      "name": "Enhanced Smart Assistance Tests (performance)",
-      "conclusion": "success",
-      "errorCount": 40,
       "warningCount": 3
     }
   ]

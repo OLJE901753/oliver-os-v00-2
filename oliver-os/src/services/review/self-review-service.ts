@@ -14,6 +14,25 @@ import path from 'path';
 import { simpleGit } from 'simple-git';
 import { exec } from 'child_process';
 import { promisify } from 'util';
+import type { UserPreferences, MemoryServiceAccessor } from '../../types/common-types';
+import type { ArchitectureDecision } from '../memory/memory-service';
+
+// Code analysis result interfaces
+interface CodeAnalysisResult {
+  line?: number;
+  code: string;
+  [key: string]: unknown;
+}
+
+interface FunctionAnalysis extends CodeAnalysisResult {
+  name: string;
+  length: number;
+}
+
+interface VulnerabilityAnalysis extends CodeAnalysisResult {
+  description?: string;
+  reasoning?: string;
+}
 
 const execAsync = promisify(exec);
 
@@ -47,7 +66,7 @@ export interface ReviewContext {
   gitDiff: string;
   projectStructure: string[];
   recentChanges: string[];
-  userPreferences: any;
+  userPreferences: UserPreferences;
   codingPatterns: string[];
   architectureDecisions: string[];
 }
@@ -65,14 +84,14 @@ export class SelfReviewService extends EventEmitter {
   private _logger: Logger;
   private _memoryService: MemoryService;
   private reviewCache: Map<string, CodeReviewResult>;
-  private qualityThresholds: any;
+  private qualityThresholds: Record<string, { min: number; target: number }>;
 
   constructor(_config: Config, memoryService: MemoryService, _learningService: LearningService) {
     super();
     this._memoryService = memoryService;
     this._logger = new Logger('SelfReviewService');
     this.reviewCache = new Map();
-    this.loadQualityThresholds();
+    this.qualityThresholds = this.getDefaultQualityThresholds();
   }
 
   /**
@@ -111,7 +130,7 @@ export class SelfReviewService extends EventEmitter {
   /**
    * Get default quality thresholds
    */
-  private getDefaultQualityThresholds(): any {
+  private getDefaultQualityThresholds(): Record<string, { min: number; target: number }> {
     return {
       readability: { min: 0.7, target: 0.9 },
       maintainability: { min: 0.6, target: 0.8 },
@@ -189,7 +208,7 @@ export class SelfReviewService extends EventEmitter {
    * Create review context
    */
   private async createReviewContext(filePath: string, _fileContent: string, fileType: string): Promise<ReviewContext> {
-    const memory = this._memoryService as any;
+    const memory = this._memoryService as unknown as MemoryServiceAccessor;
     
     try {
       // Get git diff (hybrid approach)
@@ -216,9 +235,9 @@ export class SelfReviewService extends EventEmitter {
         gitDiff,
         projectStructure: ['src', 'services', 'components'],
         recentChanges,
-        userPreferences: memory.memory?.codePatterns?.userPreferences || {},
+        userPreferences: (memory.memory?.codePatterns?.userPreferences as UserPreferences) || { preferredImports: [], preferredNaming: {}, preferredPatterns: [] },
         codingPatterns: [], // TODO: Get from memory
-        architectureDecisions: memory.memory?.architecture?.decisions?.map((d: any) => d.id) || []
+        architectureDecisions: memory.memory?.architecture?.decisions?.map((d: ArchitectureDecision) => d.id) || []
       };
     } catch (error) {
       this._logger.warn(`Failed to get git context for ${filePath}:`, { error: error instanceof Error ? error.message : String(error) });
@@ -230,9 +249,9 @@ export class SelfReviewService extends EventEmitter {
         gitDiff: '',
         projectStructure: ['src', 'services', 'components'],
         recentChanges: [],
-        userPreferences: memory.memory?.codePatterns?.userPreferences || {},
+        userPreferences: (memory.memory?.codePatterns?.userPreferences as UserPreferences) || { preferredImports: [], preferredNaming: {}, preferredPatterns: [] },
         codingPatterns: [],
-        architectureDecisions: memory.memory?.architecture?.decisions?.map((d: any) => d.id) || []
+        architectureDecisions: memory.memory?.architecture?.decisions?.map((d: ArchitectureDecision) => d.id) || []
       };
     }
   }
@@ -666,10 +685,10 @@ export class SelfReviewService extends EventEmitter {
   /**
    * Helper methods for code analysis
    */
-  private findLongFunctions(fileContent: string): any[] {
+  private findLongFunctions(fileContent: string): FunctionAnalysis[] {
     // Simplified implementation - in real implementation, use proper AST parsing
     const lines = fileContent.split('\n');
-    const functions: any[] = [];
+    const functions: FunctionAnalysis[] = [];
     
     // This is a simplified example - real implementation would use AST parsing
     for (let i = 0; i < lines.length; i++) {
@@ -694,10 +713,10 @@ export class SelfReviewService extends EventEmitter {
     return functions;
   }
 
-  private findComplexExpressions(fileContent: string): any[] {
+  private findComplexExpressions(fileContent: string): CodeAnalysisResult[] {
     // Simplified implementation
     const lines = fileContent.split('\n');
-    const expressions: any[] = [];
+    const expressions: CodeAnalysisResult[] = [];
     
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i];
@@ -712,10 +731,10 @@ export class SelfReviewService extends EventEmitter {
     return expressions;
   }
 
-  private findInefficientLoops(fileContent: string): any[] {
+  private findInefficientLoops(fileContent: string): CodeAnalysisResult[] {
     // Simplified implementation
     const lines = fileContent.split('\n');
-    const loops: any[] = [];
+    const loops: CodeAnalysisResult[] = [];
     
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i];
@@ -730,10 +749,10 @@ export class SelfReviewService extends EventEmitter {
     return loops;
   }
 
-  private findMemoryLeaks(fileContent: string, _fileType: string): any[] {
+  private findMemoryLeaks(fileContent: string, _fileType: string): CodeAnalysisResult[] {
     // Simplified implementation
     const lines = fileContent.split('\n');
-    const leaks: any[] = [];
+    const leaks: CodeAnalysisResult[] = [];
     
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i];
@@ -748,10 +767,10 @@ export class SelfReviewService extends EventEmitter {
     return leaks;
   }
 
-  private findSQLInjection(fileContent: string): any[] {
+  private findSQLInjection(fileContent: string): CodeAnalysisResult[] {
     // Simplified implementation
     const lines = fileContent.split('\n');
-    const vulnerabilities: any[] = [];
+    const vulnerabilities: CodeAnalysisResult[] = [];
     
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i];
@@ -766,10 +785,10 @@ export class SelfReviewService extends EventEmitter {
     return vulnerabilities;
   }
 
-  private findXSSVulnerabilities(fileContent: string): any[] {
+  private findXSSVulnerabilities(fileContent: string): CodeAnalysisResult[] {
     // Simplified implementation
     const lines = fileContent.split('\n');
-    const vulnerabilities: any[] = [];
+    const vulnerabilities: CodeAnalysisResult[] = [];
     
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i];

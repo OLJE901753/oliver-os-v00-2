@@ -29,16 +29,33 @@ export interface ImprovementSuggestion {
   references: string[];
 }
 
+export interface UserPreferences {
+  theme?: string;
+  indentation?: number;
+  lineLength?: number;
+  codingStyle?: 'strict' | 'moderate' | 'relaxed';
+  preferredPatterns?: string[];
+  [key: string]: unknown;
+}
+
+export interface QualityMetrics {
+  complexity: number;
+  maintainability: number;
+  performance: number;
+  testCoverage?: number;
+  [key: string]: unknown;
+}
+
 export interface SuggestionContext {
   filePath: string;
   fileType: string;
   fileContent: string;
   projectStructure: string[];
   recentChanges: string[];
-  userPreferences: any;
+  userPreferences: UserPreferences;
   codingPatterns: string[];
   architectureDecisions: string[];
-  qualityMetrics: any;
+  qualityMetrics: QualityMetrics;
 }
 
 export interface SuggestionConfig {
@@ -61,6 +78,63 @@ export interface SuggestionConfig {
     adaptToFeedback: boolean;
     trackSuccess: boolean;
   };
+}
+
+// Analysis result interfaces
+export interface FunctionAnalysis {
+  name: string;
+  length: number;
+  code: string;
+}
+
+export interface CodeAnalysis {
+  line: number;
+  code: string;
+}
+
+export interface ComplexExpression extends CodeAnalysis {
+  line: number;
+  code: string;
+}
+
+export interface MagicNumber extends CodeAnalysis {
+  value: string;
+}
+
+export interface OptimizationSuggestion extends CodeAnalysis {}
+
+export interface SecurityVulnerability extends CodeAnalysis {}
+
+export interface Secret extends CodeAnalysis {}
+
+export interface DocumentationIssue extends CodeAnalysis {
+  type: string;
+}
+
+export interface HardcodedValue extends CodeAnalysis {
+  value: string;
+}
+
+export interface ImportIssue extends CodeAnalysis {
+  name: string;
+}
+
+export interface DuplicateCode extends CodeAnalysis {
+  lines: number[];
+}
+
+export interface ArchitectureViolation {
+  description: string;
+  code: string;
+  reasoning: string;
+}
+
+export interface Stats {
+  totalSuggestions: number;
+  byType: Record<string, number>;
+  bySeverity: Record<string, number>;
+  averageConfidence: number;
+  lastSuggestions: ImprovementSuggestion[];
 }
 
 export class ImprovementSuggestionsService extends EventEmitter {
@@ -242,6 +316,7 @@ export class ImprovementSuggestionsService extends EventEmitter {
    * Create suggestion context
    */
   private async createSuggestionContext(filePath: string, fileContent: string, fileType: string): Promise<SuggestionContext> {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const memory = this._memoryService as any;
     
     return {
@@ -252,7 +327,7 @@ export class ImprovementSuggestionsService extends EventEmitter {
       recentChanges: [],
       userPreferences: memory.memory?.codePatterns?.userPreferences || {},
       codingPatterns: [],
-      architectureDecisions: memory.memory?.architecture?.decisions?.map((d: any) => d.id) || [],
+      architectureDecisions: memory.memory?.architecture?.decisions?.map((d: { id: string }) => d.id) || [],
       qualityMetrics: {
         complexity: this.analyzeComplexity(fileContent),
         maintainability: this.analyzeMaintainability(fileContent),
@@ -731,10 +806,10 @@ export class ImprovementSuggestionsService extends EventEmitter {
   /**
    * Helper methods for code analysis
    */
-  private findLongFunctions(fileContent: string): any[] {
+  private findLongFunctions(fileContent: string): FunctionAnalysis[] {
     // Simplified implementation
     const lines = fileContent.split('\n');
-    const functions: any[] = [];
+    const functions: FunctionAnalysis[] = [];
     
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i];
@@ -757,9 +832,9 @@ export class ImprovementSuggestionsService extends EventEmitter {
     return functions;
   }
 
-  private findComplexExpressions(fileContent: string): any[] {
+  private findComplexExpressions(fileContent: string): ComplexExpression[] {
     const lines = fileContent.split('\n');
-    const expressions: any[] = [];
+    const expressions: ComplexExpression[] = [];
     
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i];
@@ -774,9 +849,9 @@ export class ImprovementSuggestionsService extends EventEmitter {
     return expressions;
   }
 
-  private findMagicNumbers(fileContent: string): any[] {
+  private findMagicNumbers(fileContent: string): MagicNumber[] {
     const lines = fileContent.split('\n');
-    const magicNumbers: any[] = [];
+    const magicNumbers: MagicNumber[] = [];
     
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i];
@@ -800,9 +875,9 @@ export class ImprovementSuggestionsService extends EventEmitter {
     return magicNumbers;
   }
 
-  private findInefficientLoops(fileContent: string): any[] {
+  private findInefficientLoops(fileContent: string): OptimizationSuggestion[] {
     const lines = fileContent.split('\n');
-    const loops: any[] = [];
+    const loops: OptimizationSuggestion[] = [];
     
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i];
@@ -817,9 +892,9 @@ export class ImprovementSuggestionsService extends EventEmitter {
     return loops;
   }
 
-  private findMemoryLeaks(fileContent: string, _fileType: string): any[] {
+  private findMemoryLeaks(fileContent: string, _fileType: string): OptimizationSuggestion[] {
     const lines = fileContent.split('\n');
-    const leaks: any[] = [];
+    const leaks: OptimizationSuggestion[] = [];
     
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i];
@@ -834,9 +909,9 @@ export class ImprovementSuggestionsService extends EventEmitter {
     return leaks;
   }
 
-  private findUnnecessaryRenders(fileContent: string): any[] {
+  private findUnnecessaryRenders(fileContent: string): OptimizationSuggestion[] {
     const lines = fileContent.split('\n');
-    const renders: any[] = [];
+    const renders: OptimizationSuggestion[] = [];
     
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i];
@@ -853,9 +928,9 @@ export class ImprovementSuggestionsService extends EventEmitter {
     return renders;
   }
 
-  private findSQLInjection(fileContent: string): any[] {
+  private findSQLInjection(fileContent: string): SecurityVulnerability[] {
     const lines = fileContent.split('\n');
-    const vulnerabilities: any[] = [];
+    const vulnerabilities: SecurityVulnerability[] = [];
     
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i];
@@ -870,9 +945,9 @@ export class ImprovementSuggestionsService extends EventEmitter {
     return vulnerabilities;
   }
 
-  private findXSSVulnerabilities(fileContent: string): any[] {
+  private findXSSVulnerabilities(fileContent: string): SecurityVulnerability[] {
     const lines = fileContent.split('\n');
-    const vulnerabilities: any[] = [];
+    const vulnerabilities: SecurityVulnerability[] = [];
     
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i];
@@ -887,9 +962,9 @@ export class ImprovementSuggestionsService extends EventEmitter {
     return vulnerabilities;
   }
 
-  private findHardcodedSecrets(fileContent: string): any[] {
+  private findHardcodedSecrets(fileContent: string): Secret[] {
     const lines = fileContent.split('\n');
-    const secrets: any[] = [];
+    const secrets: Secret[] = [];
     
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i];
@@ -904,14 +979,14 @@ export class ImprovementSuggestionsService extends EventEmitter {
     return secrets;
   }
 
-  private findDuplicateCode(_fileContent: string): any[] {
+  private findDuplicateCode(_fileContent: string): DuplicateCode[] {
     // Simplified implementation
     return [];
   }
 
-  private findMissingErrorHandling(fileContent: string): any[] {
+  private findMissingErrorHandling(fileContent: string): OptimizationSuggestion[] {
     const lines = fileContent.split('\n');
-    const errors: any[] = [];
+    const errors: OptimizationSuggestion[] = [];
     
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i];
@@ -926,9 +1001,9 @@ export class ImprovementSuggestionsService extends EventEmitter {
     return errors;
   }
 
-  private findMissingDocumentation(fileContent: string): any[] {
+  private findMissingDocumentation(fileContent: string): DocumentationIssue[] {
     const lines = fileContent.split('\n');
-    const missing: any[] = [];
+    const missing: DocumentationIssue[] = [];
     
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i];
@@ -944,9 +1019,9 @@ export class ImprovementSuggestionsService extends EventEmitter {
     return missing;
   }
 
-  private findHardcodedValues(fileContent: string): any[] {
+  private findHardcodedValues(fileContent: string): HardcodedValue[] {
     const lines = fileContent.split('\n');
-    const values: any[] = [];
+    const values: HardcodedValue[] = [];
     
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i];
@@ -962,9 +1037,9 @@ export class ImprovementSuggestionsService extends EventEmitter {
     return values;
   }
 
-  private findUnusedImports(fileContent: string): any[] {
+  private findUnusedImports(fileContent: string): ImportIssue[] {
     const lines = fileContent.split('\n');
-    const imports: any[] = [];
+    const imports: ImportIssue[] = [];
     
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i];
@@ -988,9 +1063,9 @@ export class ImprovementSuggestionsService extends EventEmitter {
     return imports;
   }
 
-  private findInconsistentNaming(fileContent: string): any[] {
+  private findInconsistentNaming(fileContent: string): CodeAnalysis[] {
     const lines = fileContent.split('\n');
-    const naming: any[] = [];
+    const naming: CodeAnalysis[] = [];
     
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i];
@@ -1005,8 +1080,8 @@ export class ImprovementSuggestionsService extends EventEmitter {
     return naming;
   }
 
-  private findArchitecturalViolations(fileContent: string, context: SuggestionContext): any[] {
-    const violations: any[] = [];
+  private findArchitecturalViolations(fileContent: string, context: SuggestionContext): ArchitectureViolation[] {
+    const violations: ArchitectureViolation[] = [];
     
     if (fileContent && fileContent.includes('import') && fileContent.includes('database') && context.fileType === 'tsx') {
       violations.push({
@@ -1019,9 +1094,9 @@ export class ImprovementSuggestionsService extends EventEmitter {
     return violations;
   }
 
-  private findTightCoupling(fileContent: string): any[] {
+  private findTightCoupling(fileContent: string): CodeAnalysis[] {
     const lines = fileContent.split('\n');
-    const coupling: any[] = [];
+    const coupling: CodeAnalysis[] = [];
     
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i];
@@ -1039,68 +1114,68 @@ export class ImprovementSuggestionsService extends EventEmitter {
   /**
    * Suggestion generation methods
    */
-  private suggestFunctionRefactoring(_func: any): string {
+  private suggestFunctionRefactoring(_func: FunctionAnalysis): string {
     return `// Consider breaking this function into smaller functions:
 // 1. Extract validation logic
 // 2. Extract business logic
 // 3. Extract data transformation logic`;
   }
 
-  private suggestExpressionSimplification(_expr: any): string {
+  private suggestExpressionSimplification(_expr: ComplexExpression): string {
     return `// Consider extracting complex expression to a separate variable or function
 const result = complexExpression();
 return result;`;
   }
 
-  private suggestMagicNumberFix(magic: any): string {
+  private suggestMagicNumberFix(magic: MagicNumber): string {
     return `// Replace magic number with named constant
 const MAX_RETRIES = ${magic.value};
 // ... use MAX_RETRIES instead of ${magic.value}`;
   }
 
-  private suggestLoopOptimization(_loop: any): string {
+  private suggestLoopOptimization(_loop: OptimizationSuggestion): string {
     return `// Consider using more efficient iteration methods:
 // - Use for...of for arrays
 // - Use Map/Set for lookups
 // - Use reduce() for aggregations`;
   }
 
-  private suggestMemoryLeakFix(_leak: any): string {
+  private suggestMemoryLeakFix(_leak: OptimizationSuggestion): string {
     return `// Add cleanup:
 // removeEventListener('event', handler);
 // or use AbortController for modern APIs`;
   }
 
-  private suggestRenderOptimization(_render: any): string {
+  private suggestRenderOptimization(_render: OptimizationSuggestion): string {
     return `// Consider using React.memo or useMemo to prevent unnecessary re-renders
 const MemoizedComponent = React.memo(Component);`;
   }
 
-  private suggestSQLInjectionFix(_vuln: any): string {
+  private suggestSQLInjectionFix(_vuln: SecurityVulnerability): string {
     return `// Use parameterized queries:
 // const query = 'SELECT * FROM users WHERE id = ?';
 // const result = await db.query(query, [userId]);`;
   }
 
-  private suggestXSSFix(_vuln: any): string {
+  private suggestXSSFix(_vuln: SecurityVulnerability): string {
     return `// Sanitize input or use textContent instead:
 // element.textContent = userInput;
 // or use a sanitization library`;
   }
 
-  private suggestSecretFix(_secret: any): string {
+  private suggestSecretFix(_secret: Secret): string {
     return `// Use environment variables:
 // const secret = process.env.SECRET_KEY;
 // or use a secret management service`;
   }
 
-  private suggestDuplicateCodeFix(_duplicate: any): string {
+  private suggestDuplicateCodeFix(_duplicate: DuplicateCode): string {
     return `// Extract to common function:
 // function commonFunction() { ... }
 // Use commonFunction() in both places`;
   }
 
-  private suggestErrorHandlingFix(_error: any): string {
+  private suggestErrorHandlingFix(_error: OptimizationSuggestion): string {
     return `// Add proper error handling:
 // try {
 //   const result = await operation();
@@ -1110,7 +1185,7 @@ const MemoizedComponent = React.memo(Component);`;
 // }`;
   }
 
-  private suggestDocumentationFix(doc: any): string {
+  private suggestDocumentationFix(doc: DocumentationIssue): string {
     return `// Add documentation:
 // /**
 //  * ${doc.type} description
@@ -1119,30 +1194,30 @@ const MemoizedComponent = React.memo(Component);`;
 //  */`;
   }
 
-  private suggestHardcodedValueFix(_value: any): string {
+  private suggestHardcodedValueFix(_value: HardcodedValue): string {
     return `// Move to configuration:
 // const config = getConfig();
 // const url = config.api.baseUrl;`;
   }
 
-  private suggestUnusedImportFix(_import_: any): string {
+  private suggestUnusedImportFix(_import_: ImportIssue): string {
     return `// Remove unused import:
 // import { usedImport } from 'module';`;
   }
 
-  private suggestNamingFix(_naming: any): string {
+  private suggestNamingFix(_naming: CodeAnalysis): string {
     return `// Use consistent naming convention:
 // const camelCaseVariable = value;`;
   }
 
-  private suggestArchitecturalFix(_violation: any): string {
+  private suggestArchitecturalFix(_violation: ArchitectureViolation): string {
     return `// Follow architectural patterns:
 // - Use service layer for business logic
 // - Use repository pattern for data access
 // - Keep components focused on presentation`;
   }
 
-  private suggestCouplingFix(_coupling: any): string {
+  private suggestCouplingFix(_coupling: CodeAnalysis): string {
     return `// Reduce coupling:
 // - Use dependency injection
 // - Implement interfaces
@@ -1192,7 +1267,7 @@ const MemoizedComponent = React.memo(Component);`;
   /**
    * Get improvement suggestions statistics
    */
-  getImprovementSuggestionsStats(): any {
+  getImprovementSuggestionsStats(): Stats {
     const suggestions = Array.from(this.suggestionHistory.values()).flat();
     
     return {
@@ -1200,12 +1275,14 @@ const MemoizedComponent = React.memo(Component);`;
       byType: suggestions.reduce((acc, suggestion) => {
         acc[suggestion.type] = (acc[suggestion.type] || 0) + 1;
         return acc;
-      }, {} as any),
+      }, {} as Record<string, number>),
       bySeverity: suggestions.reduce((acc, suggestion) => {
         acc[suggestion.severity] = (acc[suggestion.severity] || 0) + 1;
         return acc;
-      }, {} as any),
-      averageConfidence: suggestions.reduce((sum, suggestion) => sum + suggestion.confidence, 0) / suggestions.length,
+      }, {} as Record<string, number>),
+      averageConfidence: suggestions.length > 0 
+        ? suggestions.reduce((sum, suggestion) => sum + suggestion.confidence, 0) / suggestions.length 
+        : 0,
       lastSuggestions: suggestions.slice(-10)
     };
   }

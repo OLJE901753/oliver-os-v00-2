@@ -26,8 +26,8 @@ export interface WorkflowOptimization {
 }
 
 export interface OptimizationMetrics {
-  before: any;
-  after: any;
+  before: unknown;
+  after: unknown;
   improvement: number;
   confidence: number;
   risk: 'low' | 'medium' | 'high';
@@ -37,9 +37,9 @@ export interface OptimizationAction {
   id: string;
   type: 'reconfigure' | 'reschedule' | 'reallocate' | 'optimize' | 'scale' | 'monitor';
   target: string;
-  parameters: any;
+  parameters: Record<string, unknown>;
   status: 'pending' | 'executing' | 'completed' | 'failed';
-  result?: any;
+  result?: Record<string, unknown>;
   error?: string;
 }
 
@@ -74,11 +74,103 @@ export interface OptimizationConfig {
 export interface OptimizationPattern {
   id: string;
   type: string;
-  pattern: any;
+  pattern: unknown;
   frequency: number;
   successRate: number;
   improvement: number;
   lastSeen: string;
+}
+
+// Analysis context and task types
+export interface TaskContext {
+  id: string;
+  type: string;
+  status: 'pending' | 'active' | 'completed' | 'failed';
+  actualDuration?: number;
+  qualityScore?: number;
+  recoveryTime?: number;
+  adapted?: boolean;
+}
+
+export interface AgentStatus {
+  id: string;
+  status: 'idle' | 'busy' | 'offline';
+  load?: number;
+}
+
+export interface WorkflowContext {
+  completedTasks?: Map<string, TaskContext>;
+  activeTasks?: Map<string, TaskContext>;
+  taskQueue?: TaskContext[];
+  agentStatuses?: Map<string, AgentStatus>;
+}
+
+export interface PerformanceMetrics {
+  throughput: number;
+  latency: number;
+  efficiency: number;
+  score: number;
+}
+
+export interface EfficiencyMetrics {
+  resourceUtilization: number;
+  taskCompletion: number;
+  wasteReduction: number;
+  score: number;
+}
+
+export interface QualityMetrics {
+  qualityScore: number;
+  errorRate: number;
+  satisfaction: number;
+  score: number;
+}
+
+export interface ResourceMetrics {
+  resourceUtilization: number;
+  costReduction: number;
+  loadBalance: number;
+  score: number;
+}
+
+export interface ScalabilityMetrics {
+  scalability: number;
+  flexibility: number;
+  adaptability: number;
+  score: number;
+}
+
+export interface ReliabilityMetrics {
+  reliability: number;
+  faultTolerance: number;
+  recovery: number;
+  score: number;
+}
+
+export interface WorkflowAnalysis {
+  performance: PerformanceMetrics;
+  efficiency: EfficiencyMetrics;
+  quality: QualityMetrics;
+  resource: ResourceMetrics;
+  scalability: ScalabilityMetrics;
+  reliability: ReliabilityMetrics;
+}
+
+export interface OptimizationStats {
+  totalOptimizations: number;
+  byType: Record<string, number>;
+  byStatus: Record<string, number>;
+  averageImprovement: number;
+  lastOptimizations: WorkflowOptimization[];
+}
+
+export interface OptimizationStrategy {
+  id: string;
+  name: string;
+  description: string;
+  algorithm: string;
+  parameters: Record<string, number>;
+  successRate: number;
 }
 
 export class WorkflowOptimizationService extends EventEmitter {
@@ -88,7 +180,7 @@ export class WorkflowOptimizationService extends EventEmitter {
   private optimizations: Map<string, WorkflowOptimization>;
   private optimizationHistory: Map<string, WorkflowOptimization[]>;
   private optimizationPatterns: Map<string, OptimizationPattern>;
-  private optimizationStrategies: Map<string, any>;
+  private optimizationStrategies: Map<string, OptimizationStrategy>;
 
   constructor(_config: Config) {
     super();
@@ -294,11 +386,11 @@ export class WorkflowOptimizationService extends EventEmitter {
   /**
    * Analyze workflow performance
    */
-  async analyzeWorkflowPerformance(context: any): Promise<any> {
+  async analyzeWorkflowPerformance(context: WorkflowContext): Promise<WorkflowAnalysis> {
     this._logger.info('📊 Analyzing workflow performance...');
     
     try {
-      const analysis = {
+      const analysis: WorkflowAnalysis = {
         performance: this.analyzePerformance(context),
         efficiency: this.analyzeEfficiency(context),
         quality: this.analyzeQuality(context),
@@ -320,7 +412,7 @@ export class WorkflowOptimizationService extends EventEmitter {
   /**
    * Analyze performance
    */
-  private analyzePerformance(context: any): any {
+  private analyzePerformance(context: WorkflowContext): PerformanceMetrics {
     const metrics = {
       throughput: 0,
       latency: 0,
@@ -334,7 +426,7 @@ export class WorkflowOptimizationService extends EventEmitter {
     metrics.throughput = completedTasks / (timeWindow / 1000);
 
     // Calculate latency
-    const taskDurations = Array.from(context.completedTasks?.values() || []).map((task: any) => task.actualDuration || 0);
+    const taskDurations = Array.from(context.completedTasks?.values() || []).map((task: TaskContext) => task.actualDuration || 0);
     metrics.latency = taskDurations.reduce((sum: number, duration: number) => sum + duration, 0) / taskDurations.length;
 
     // Calculate efficiency
@@ -351,7 +443,7 @@ export class WorkflowOptimizationService extends EventEmitter {
   /**
    * Analyze efficiency
    */
-  private analyzeEfficiency(context: any): any {
+  private analyzeEfficiency(context: WorkflowContext): EfficiencyMetrics {
     const metrics = {
       resourceUtilization: 0,
       taskCompletion: 0,
@@ -360,8 +452,8 @@ export class WorkflowOptimizationService extends EventEmitter {
     };
 
     // Calculate resource utilization
-    const agents = context.agentStatuses || new Map();
-    const busyAgents = Array.from(agents.values()).filter((agent: any) => agent.status === 'busy').length;
+    const agents = context.agentStatuses || new Map<string, AgentStatus>();
+    const busyAgents = Array.from(agents.values()).filter((agent: AgentStatus) => agent.status === 'busy').length;
     metrics.resourceUtilization = busyAgents / agents.size;
 
     // Calculate task completion
@@ -370,7 +462,7 @@ export class WorkflowOptimizationService extends EventEmitter {
     metrics.taskCompletion = completedTasks / totalTasks;
 
     // Calculate waste reduction
-    const failedTasks = Array.from(context.completedTasks?.values() || []).filter((task: any) => task.status === 'failed').length;
+    const failedTasks = Array.from(context.completedTasks?.values() || []).filter((task: TaskContext) => task.status === 'failed').length;
     metrics.wasteReduction = 1 - (failedTasks / completedTasks);
 
     // Calculate overall score
@@ -382,7 +474,7 @@ export class WorkflowOptimizationService extends EventEmitter {
   /**
    * Analyze quality
    */
-  private analyzeQuality(context: any): any {
+  private analyzeQuality(context: WorkflowContext): QualityMetrics {
     const metrics = {
       qualityScore: 0,
       errorRate: 0,
@@ -391,16 +483,16 @@ export class WorkflowOptimizationService extends EventEmitter {
     };
 
     // Calculate quality score
-    const completedTasks = Array.from(context.completedTasks?.values() || []);
-    const qualityScores = completedTasks.map((task: any) => task.qualityScore || 0.8);
+    const completedTasks = Array.from(context.completedTasks?.values() || []) as TaskContext[];
+    const qualityScores = completedTasks.map((task: TaskContext) => task.qualityScore || 0.8);
     metrics.qualityScore = qualityScores.reduce((sum: number, score: number) => sum + score, 0) / qualityScores.length;
 
     // Calculate error rate
-    const failedTasks = completedTasks.filter((task: any) => task.status === 'failed').length;
+    const failedTasks = completedTasks.filter((task: TaskContext) => task.status === 'failed').length;
     metrics.errorRate = failedTasks / completedTasks.length;
 
     // Calculate satisfaction
-    const successfulTasks = completedTasks.filter((task: any) => task.status === 'completed').length;
+    const successfulTasks = completedTasks.filter((task: TaskContext) => task.status === 'completed').length;
     metrics.satisfaction = successfulTasks / completedTasks.length;
 
     // Calculate overall score
@@ -412,7 +504,7 @@ export class WorkflowOptimizationService extends EventEmitter {
   /**
    * Analyze resource
    */
-  private analyzeResource(context: any): any {
+  private analyzeResource(context: WorkflowContext): ResourceMetrics {
     const metrics = {
       resourceUtilization: 0,
       costReduction: 0,
@@ -421,8 +513,8 @@ export class WorkflowOptimizationService extends EventEmitter {
     };
 
     // Calculate resource utilization
-    const agents = context.agentStatuses || new Map();
-    const busyAgents = Array.from(agents.values()).filter((agent: any) => agent.status === 'busy').length;
+    const agents = context.agentStatuses || new Map<string, AgentStatus>();
+    const busyAgents = Array.from(agents.values()).filter((agent: AgentStatus) => agent.status === 'busy').length;
     metrics.resourceUtilization = busyAgents / agents.size;
 
     // Calculate cost reduction
@@ -431,7 +523,7 @@ export class WorkflowOptimizationService extends EventEmitter {
     metrics.costReduction = 1 - (resourceCost / 100);
 
     // Calculate load balance
-    const agentLoads = Array.from(agents.values()).map((agent: any) => agent.load || 0);
+    const agentLoads = Array.from(agents.values()).map((agent: AgentStatus) => agent.load || 0);
     const avgLoad = agentLoads.reduce((sum: number, load: number) => sum + load, 0) / agentLoads.length;
     const loadVariance = agentLoads.reduce((sum: number, load: number) => sum + Math.pow(load - avgLoad, 2), 0) / agentLoads.length;
     metrics.loadBalance = 1 - (loadVariance / 100);
@@ -445,7 +537,7 @@ export class WorkflowOptimizationService extends EventEmitter {
   /**
    * Analyze scalability
    */
-  private analyzeScalability(context: any): any {
+  private analyzeScalability(context: WorkflowContext): ScalabilityMetrics {
     const metrics = {
       scalability: 0,
       flexibility: 0,
@@ -454,17 +546,17 @@ export class WorkflowOptimizationService extends EventEmitter {
     };
 
     // Calculate scalability
-    const agents = context.agentStatuses || new Map();
-    const maxLoad = Math.max(...Array.from(agents.values()).map((agent: any) => agent.load || 0));
+    const agents = context.agentStatuses || new Map<string, AgentStatus>();
+    const maxLoad = Math.max(...Array.from(agents.values()).map((agent: AgentStatus) => agent.load || 0));
     metrics.scalability = 1 - (maxLoad / 10); // Normalize to max load of 10
 
     // Calculate flexibility
-    const taskTypes = new Set(Array.from(context.completedTasks?.values() || []).map((task: any) => task.type));
+    const taskTypes = new Set(Array.from(context.completedTasks?.values() || []).map((task: TaskContext) => task.type));
     metrics.flexibility = taskTypes.size / 10; // Normalize to 10 task types
 
     // Calculate adaptability
-    const recentTasks = Array.from(context.completedTasks?.values() || []).slice(-10);
-    const adaptationRate = recentTasks.filter((task: any) => task.adapted).length / recentTasks.length;
+    const recentTasks = Array.from(context.completedTasks?.values() || []).slice(-10) as TaskContext[];
+    const adaptationRate = recentTasks.filter((task: TaskContext) => task.adapted).length / recentTasks.length;
     metrics.adaptability = adaptationRate;
 
     // Calculate overall score
@@ -476,7 +568,7 @@ export class WorkflowOptimizationService extends EventEmitter {
   /**
    * Analyze reliability
    */
-  private analyzeReliability(context: any): any {
+  private analyzeReliability(context: WorkflowContext): ReliabilityMetrics {
     const metrics = {
       reliability: 0,
       faultTolerance: 0,
@@ -485,17 +577,17 @@ export class WorkflowOptimizationService extends EventEmitter {
     };
 
     // Calculate reliability
-    const completedTasks = Array.from(context.completedTasks?.values() || []);
-    const successfulTasks = completedTasks.filter((task: any) => task.status === 'completed').length;
+    const completedTasks = Array.from(context.completedTasks?.values() || []) as TaskContext[];
+    const successfulTasks = completedTasks.filter((task: TaskContext) => task.status === 'completed').length;
     metrics.reliability = successfulTasks / completedTasks.length;
 
     // Calculate fault tolerance
-    const failedTasks = completedTasks.filter((task: any) => task.status === 'failed').length;
+    const failedTasks = completedTasks.filter((task: TaskContext) => task.status === 'failed').length;
     const recoveredTasks = failedTasks * 0.8; // Assume 80% recovery rate
     metrics.faultTolerance = 1 - (failedTasks - recoveredTasks) / completedTasks.length;
 
     // Calculate recovery
-    const recoveryTime = completedTasks.reduce((sum: number, task: any) => sum + (task.recoveryTime || 0), 0);
+    const recoveryTime = completedTasks.reduce((sum: number, task: TaskContext) => sum + (task.recoveryTime || 0), 0);
     metrics.recovery = 1 - (recoveryTime / (completedTasks.length * 1000)); // Normalize to 1 second per task
 
     // Calculate overall score
@@ -507,7 +599,7 @@ export class WorkflowOptimizationService extends EventEmitter {
   /**
    * Generate optimizations
    */
-  async generateOptimizations(analysis: any): Promise<WorkflowOptimization[]> {
+  async generateOptimizations(analysis: WorkflowAnalysis): Promise<WorkflowOptimization[]> {
     this._logger.info('🔧 Generating workflow optimizations...');
     
     try {
@@ -567,7 +659,7 @@ export class WorkflowOptimizationService extends EventEmitter {
   /**
    * Generate performance optimizations
    */
-  private generatePerformanceOptimizations(performance: any): WorkflowOptimization[] {
+  private generatePerformanceOptimizations(performance: PerformanceMetrics): WorkflowOptimization[] {
     const optimizations: WorkflowOptimization[] = [];
 
     if (performance.throughput < 0.5) {
@@ -634,7 +726,7 @@ export class WorkflowOptimizationService extends EventEmitter {
   /**
    * Generate efficiency optimizations
    */
-  private generateEfficiencyOptimizations(efficiency: any): WorkflowOptimization[] {
+  private generateEfficiencyOptimizations(efficiency: EfficiencyMetrics): WorkflowOptimization[] {
     const optimizations: WorkflowOptimization[] = [];
 
     if (efficiency.resourceUtilization < 0.7) {
@@ -701,7 +793,7 @@ export class WorkflowOptimizationService extends EventEmitter {
   /**
    * Generate quality optimizations
    */
-  private generateQualityOptimizations(quality: any): WorkflowOptimization[] {
+  private generateQualityOptimizations(quality: QualityMetrics): WorkflowOptimization[] {
     const optimizations: WorkflowOptimization[] = [];
 
     if (quality.qualityScore < 0.8) {
@@ -768,7 +860,7 @@ export class WorkflowOptimizationService extends EventEmitter {
   /**
    * Generate resource optimizations
    */
-  private generateResourceOptimizations(resource: any): WorkflowOptimization[] {
+  private generateResourceOptimizations(resource: ResourceMetrics): WorkflowOptimization[] {
     const optimizations: WorkflowOptimization[] = [];
 
     if (resource.resourceUtilization < 0.7) {
@@ -835,7 +927,7 @@ export class WorkflowOptimizationService extends EventEmitter {
   /**
    * Generate scalability optimizations
    */
-  private generateScalabilityOptimizations(scalability: any): WorkflowOptimization[] {
+  private generateScalabilityOptimizations(scalability: ScalabilityMetrics): WorkflowOptimization[] {
     const optimizations: WorkflowOptimization[] = [];
 
     if (scalability.scalability < 0.7) {
@@ -873,7 +965,7 @@ export class WorkflowOptimizationService extends EventEmitter {
   /**
    * Generate reliability optimizations
    */
-  private generateReliabilityOptimizations(reliability: any): WorkflowOptimization[] {
+  private generateReliabilityOptimizations(reliability: ReliabilityMetrics): WorkflowOptimization[] {
     const optimizations: WorkflowOptimization[] = [];
 
     if (reliability.reliability < 0.9) {
@@ -1049,10 +1141,10 @@ export class WorkflowOptimizationService extends EventEmitter {
 
     // Update optimization pattern
     const patternKey = `${optimization.type}-${optimization.category}`;
-    let pattern = this.optimizationPatterns.get(patternKey);
+    const pattern = this.optimizationPatterns.get(patternKey);
 
     if (!pattern) {
-      pattern = {
+      const newPattern: OptimizationPattern = {
         id: patternKey,
         type: optimization.type,
         pattern: optimization.actions,
@@ -1061,38 +1153,37 @@ export class WorkflowOptimizationService extends EventEmitter {
         improvement: optimization.metrics.improvement,
         lastSeen: new Date().toISOString()
       };
+      this.optimizationPatterns.set(patternKey, newPattern);
     } else {
       pattern.frequency++;
       pattern.successRate = (pattern.successRate * (pattern.frequency - 1) + (optimization.status === 'applied' ? 1 : 0)) / pattern.frequency;
       pattern.improvement = (pattern.improvement * (pattern.frequency - 1) + optimization.metrics.improvement) / pattern.frequency;
       pattern.lastSeen = new Date().toISOString();
+      this.optimizationPatterns.set(patternKey, pattern);
     }
-
-    this.optimizationPatterns.set(patternKey, pattern);
   }
 
   /**
    * Get workflow optimization statistics
    */
-  getWorkflowOptimizationStats(): any {
+  getWorkflowOptimizationStats(): OptimizationStats {
     const optimizations = Array.from(this.optimizations.values());
     const appliedOptimizations = optimizations.filter(opt => opt.status === 'applied');
     
     return {
       totalOptimizations: optimizations.length,
-      appliedOptimizations: appliedOptimizations.length,
-      successRate: appliedOptimizations.length / optimizations.length,
       byType: optimizations.reduce((acc, opt) => {
         acc[opt.type] = (acc[opt.type] || 0) + 1;
         return acc;
-      }, {} as any),
-      byCategory: optimizations.reduce((acc, opt) => {
-        acc[opt.category] = (acc[opt.category] || 0) + 1;
+      }, {} as Record<string, number>),
+      byStatus: optimizations.reduce((acc, opt) => {
+        acc[opt.status] = (acc[opt.status] || 0) + 1;
         return acc;
-      }, {} as any),
-      optimizationStrategies: Array.from(this.optimizationStrategies.values()),
-      optimizationPatterns: Array.from(this.optimizationPatterns.values()),
-      lastOptimization: optimizations[optimizations.length - 1]
+      }, {} as Record<string, number>),
+      averageImprovement: optimizations.length > 0
+        ? optimizations.reduce((sum, opt) => sum + opt.metrics.improvement, 0) / optimizations.length
+        : 0,
+      lastOptimizations: optimizations.slice(-10)
     };
   }
 

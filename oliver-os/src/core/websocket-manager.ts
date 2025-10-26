@@ -5,29 +5,28 @@
 
 import { Server } from 'socket.io';
 import { Server as HTTPServer } from 'http';
+import { Socket } from 'socket.io';
 import { Logger } from './logger';
-
-export interface WebSocketMessage {
-  type: string;
-  data: any;
-  client_id?: string;
-  timestamp?: string;
-}
-
-export interface ConnectedClient {
-  id: string;
-  socket: any; // Socket.IO socket type
-  user_id?: string;
-  last_seen: Date;
-  subscriptions: string[];
-}
-
-export interface ThoughtSession {
-  client_id: string;
-  thoughts: any[];
-  created_at: Date;
-  last_activity: Date;
-}
+import type { 
+  WebSocketEventMessage,
+  AnyWebSocketMessage,
+  ConnectedClient, 
+  ThoughtSession, 
+  MonitoringService,
+  AIResponse,
+  ThoughtCreateData,
+  ThoughtAnalyzeData,
+  CollaborationEventData,
+  AgentSpawnData,
+  VoiceData,
+  HealthStatus,
+  DashboardData,
+  MetricsData,
+  AlertData,
+  PerformanceData,
+  TestData,
+  QualityGateData
+} from '../types/websocket-types';
 
 export class WebSocketManager {
   private io: Server;
@@ -35,7 +34,7 @@ export class WebSocketManager {
   private thoughtSessions: Map<string, ThoughtSession> = new Map();
   private _logger: Logger;
   private aiServicesUrl: string;
-  private monitoringService: any = null;
+  private monitoringService: MonitoringService | null = null;
 
   constructor(httpServer: HTTPServer, aiServicesUrl: string = 'http://localhost:8000') {
     this._logger = new Logger('WebSocketManager');
@@ -63,7 +62,7 @@ export class WebSocketManager {
       // Store client connection
       this.connectedClients.set(clientId, {
         id: clientId,
-        socket: socket as any, // Type assertion for compatibility
+        socket,
         last_seen: new Date(),
         subscriptions: []
       });
@@ -146,7 +145,7 @@ export class WebSocketManager {
       });
 
       // Handle disconnection
-      socket.on('disconnect', (reason) => {
+      socket.on('disconnect', (reason: string) => {
         this.handleDisconnection(socket, reason);
       });
 
@@ -159,7 +158,7 @@ export class WebSocketManager {
     });
   }
 
-  private async handleThoughtCreate(socket: any, data: any): Promise<void> {
+  private async handleThoughtCreate(socket: Socket, data: ThoughtCreateData): Promise<void> {
     try {
       this._logger.info(`Processing thought creation from client: ${socket.id}`);
       
@@ -177,7 +176,7 @@ export class WebSocketManager {
         })
       });
 
-      const processedThought = await response.json() as any;
+      const processedThought = await response.json() as AIResponse;
       
       // Store in session
       const session = this.thoughtSessions.get(socket.id);
@@ -204,7 +203,7 @@ export class WebSocketManager {
         });
       }
 
-      this._logger.info(`Thought processed successfully: ${processedThought.id}`);
+      this._logger.info(`Thought processed successfully: ${processedThought.data?.id || 'unknown'}`);
       
     } catch (error) {
       this._logger.error(`Error processing thought: ${error}`);
@@ -217,7 +216,7 @@ export class WebSocketManager {
     }
   }
 
-  private async handleThoughtAnalyze(socket: any, data: any): Promise<void> {
+  private async handleThoughtAnalyze(socket: Socket, data: ThoughtAnalyzeData): Promise<void> {
     try {
       this._logger.info(`Analyzing thought: ${data.thought_id}`);
       
@@ -249,7 +248,7 @@ export class WebSocketManager {
     }
   }
 
-  private async handleCollaborationEvent(socket: any, data: any): Promise<void> {
+  private async handleCollaborationEvent(socket: Socket, data: CollaborationEventData): Promise<void> {
     try {
       this._logger.info(`Handling collaboration event: ${data.type}`);
       
@@ -274,7 +273,7 @@ export class WebSocketManager {
     }
   }
 
-  private async handleAgentSpawn(socket: any, data: any): Promise<void> {
+  private async handleAgentSpawn(socket: Socket, data: AgentSpawnData): Promise<void> {
     try {
       this._logger.info(`Spawning agent: ${data.agent_type}`);
       
@@ -290,7 +289,7 @@ export class WebSocketManager {
         })
       });
 
-      const spawnedAgent = await response.json() as any;
+      const spawnedAgent = await response.json() as AIResponse;
 
       socket.emit('agent:spawned', {
         type: 'agent_spawned',
@@ -299,7 +298,7 @@ export class WebSocketManager {
         timestamp: new Date().toISOString()
       });
 
-      this._logger.info(`Agent spawned successfully: ${spawnedAgent.id}`);
+      this._logger.info(`Agent spawned successfully: ${spawnedAgent.data?.id || 'unknown'}`);
       
     } catch (error) {
       this._logger.error(`Error spawning agent: ${error}`);
@@ -312,7 +311,7 @@ export class WebSocketManager {
     }
   }
 
-  private async handleVoiceData(socket: any, data: any): Promise<void> {
+  private async handleVoiceData(socket: Socket, data: VoiceData): Promise<void> {
     try {
       this._logger.info(`Processing voice data from client: ${socket.id}`);
       
@@ -346,7 +345,7 @@ export class WebSocketManager {
     }
   }
 
-  private handleSubscription(socket: any, channel: string): void {
+  private handleSubscription(socket: Socket, channel: string): void {
     const client = this.connectedClients.get(socket.id);
     if (client && !client.subscriptions.includes(channel)) {
       client.subscriptions.push(channel);
@@ -359,7 +358,7 @@ export class WebSocketManager {
     }
   }
 
-  private handleUnsubscription(socket: any, channel: string): void {
+  private handleUnsubscription(socket: Socket, channel: string): void {
     const client = this.connectedClients.get(socket.id);
     if (client) {
       const index = client.subscriptions.indexOf(channel);
@@ -375,7 +374,7 @@ export class WebSocketManager {
     }
   }
 
-  private handleDisconnection(socket: any, reason: string): void {
+  private handleDisconnection(socket: Socket, reason: string): void {
     const clientId = socket.id;
     this._logger.info(`Client disconnected: ${clientId}, reason: ${reason}`);
     
@@ -387,20 +386,21 @@ export class WebSocketManager {
     this.broadcastToOthers(clientId, 'client:disconnected', {
       type: 'client_disconnected',
       client_id: clientId,
+      event: 'client_disconnected',
       reason,
       timestamp: new Date().toISOString()
-    });
+    } as WebSocketEventMessage);
   }
 
-  private broadcast(event: string, data: any): void {
+  private broadcast(event: string, data: AnyWebSocketMessage): void {
     this.io.emit(event, data);
   }
 
-  private broadcastToOthers(excludeClientId: string, event: string, data: any): void {
+  private broadcastToOthers(excludeClientId: string, event: string, data: AnyWebSocketMessage): void {
     this.io.except(excludeClientId).emit(event, data);
   }
 
-  private broadcastToChannel(channel: string, event: string, data: any): void {
+  private broadcastToChannel(channel: string, event: string, data: AnyWebSocketMessage): void {
     // Find clients subscribed to the channel
     for (const [, client] of this.connectedClients) {
       if (client.subscriptions.includes(channel)) {
@@ -422,7 +422,7 @@ export class WebSocketManager {
     return Array.from(this.thoughtSessions.values());
   }
 
-  public sendToClient(clientId: string, event: string, data: any): boolean {
+  public sendToClient(clientId: string, event: string, data: AnyWebSocketMessage): boolean {
     const client = this.connectedClients.get(clientId);
     if (client) {
       client.socket.emit(event, data);
@@ -431,17 +431,20 @@ export class WebSocketManager {
     return false;
   }
 
-  public sendToChannel(channel: string, event: string, data: any): void {
+  public sendToChannel(channel: string, event: string, data: AnyWebSocketMessage): void {
     this.broadcastToChannel(channel, event, data);
   }
 
-  public getHealthStatus(): any {
+  public getHealthStatus(): HealthStatus {
     return {
       status: 'healthy',
       connected_clients: this.getClientCount(),
+      active_sessions: this.thoughtSessions.size,
       thought_sessions: this.thoughtSessions.size,
       uptime: process.uptime(),
-      timestamp: new Date().toISOString()
+      timestamp: new Date(),
+      last_activity: new Date(),
+      errors: []
     };
   }
 
@@ -451,9 +454,10 @@ export class WebSocketManager {
     // Notify all clients
     this.broadcast('server:shutdown', {
       type: 'server_shutdown',
+      event: 'server_shutdown',
       message: 'Server is shutting down',
       timestamp: new Date().toISOString()
-    });
+    } as WebSocketEventMessage);
     
     // Close all connections
     this.io.close();
@@ -461,95 +465,155 @@ export class WebSocketManager {
     this._logger.info('WebSocket Manager shutdown complete');
   }
 
-  public setMonitoringService(monitoringService: any): void {
+  public setMonitoringService(monitoringService: MonitoringService): void {
     this.monitoringService = monitoringService;
     
     // Forward monitoring events to all connected clients
     if (this.monitoringService) {
-      this.monitoringService.on('dashboard:data', (data: any) => {
+      (this.monitoringService as any).on('dashboard:data', (data: DashboardData) => {
         this._logger.info('📊 Broadcasting dashboard data to clients', { 
           clientCount: this.connectedClients.size,
           dataKeys: Object.keys(data)
         });
-        this.broadcast('dashboard:data', data);
+        this.broadcast('dashboard:data', {
+          type: 'dashboard_data',
+          data,
+          timestamp: new Date().toISOString()
+        });
       });
       
-      this.monitoringService.on('metrics:update', (data: any) => {
-        this.broadcast('metrics:update', data);
+      (this.monitoringService as any).on('metrics:update', (data: MetricsData) => {
+        this.broadcast('metrics:update', {
+          type: 'metrics_update',
+          data,
+          timestamp: new Date().toISOString()
+        });
       });
       
-      this.monitoringService.on('alerts:new', (data: any) => {
-        this.broadcast('alerts:new', data);
+      (this.monitoringService as any).on('alerts:new', (data: AlertData) => {
+        this.broadcast('alerts:new', {
+          type: 'alert_new',
+          data,
+          timestamp: new Date().toISOString()
+        });
       });
       
-      this.monitoringService.on('alerts:update', (data: any) => {
-        this.broadcast('alerts:update', data);
+      (this.monitoringService as any).on('alerts:update', (data: AlertData) => {
+        this.broadcast('alerts:update', {
+          type: 'alert_update',
+          data,
+          timestamp: new Date().toISOString()
+        });
       });
       
-      this.monitoringService.on('health:update', (data: any) => {
-        this.broadcast('health:update', data);
+      (this.monitoringService as any).on('health:update', (data: HealthStatus) => {
+        this.broadcast('health:update', {
+          type: 'health_update',
+          data,
+          timestamp: new Date().toISOString()
+        });
       });
       
-      this.monitoringService.on('performance:update', (data: any) => {
-        this.broadcast('performance:update', data);
+      (this.monitoringService as any).on('performance:update', (data: PerformanceData) => {
+        this.broadcast('performance:update', {
+          type: 'performance_update',
+          data,
+          timestamp: new Date().toISOString()
+        });
       });
       
-      this.monitoringService.on('tests:update', (data: any) => {
-        this.broadcast('tests:update', data);
+      (this.monitoringService as any).on('tests:update', (data: TestData) => {
+        this.broadcast('tests:update', {
+          type: 'tests_update',
+          data,
+          timestamp: new Date().toISOString()
+        });
       });
       
-      this.monitoringService.on('quality-gates:update', (data: any) => {
-        this.broadcast('quality-gates:update', data);
+      (this.monitoringService as any).on('quality-gates:update', (data: QualityGateData) => {
+        this.broadcast('quality-gates:update', {
+          type: 'quality_gates_update',
+          data,
+          timestamp: new Date().toISOString()
+        });
       });
     }
   }
 
-  private handleDashboardRequest(socket: any): void {
+  private handleDashboardRequest(socket: Socket): void {
     if (this.monitoringService) {
       const data = this.monitoringService.getDashboardData();
-      socket.emit('dashboard:data', data);
+      socket.emit('dashboard:data', {
+        type: 'dashboard_data',
+        data,
+        timestamp: new Date().toISOString()
+      });
     }
   }
 
-  private handleMetricsRequest(socket: any): void {
+  private handleMetricsRequest(socket: Socket): void {
     if (this.monitoringService) {
       const data = this.monitoringService.getMetrics();
-      socket.emit('metrics:update', data);
+      socket.emit('metrics:update', {
+        type: 'metrics_update',
+        data,
+        timestamp: new Date().toISOString()
+      });
     }
   }
 
-  private handleAlertsRequest(socket: any): void {
+  private handleAlertsRequest(socket: Socket): void {
     if (this.monitoringService) {
       const data = this.monitoringService.getAlerts();
-      socket.emit('alerts:update', data);
+      socket.emit('alerts:update', {
+        type: 'alerts_update',
+        data,
+        timestamp: new Date().toISOString()
+      });
     }
   }
 
-  private handleHealthRequest(socket: any): void {
+  private handleHealthRequest(socket: Socket): void {
     if (this.monitoringService) {
       const data = this.monitoringService.getSystemHealth();
-      socket.emit('health:update', data);
+      socket.emit('health:update', {
+        type: 'health_update',
+        data,
+        timestamp: new Date().toISOString()
+      });
     }
   }
 
-  private handlePerformanceRequest(socket: any): void {
+  private handlePerformanceRequest(socket: Socket): void {
     if (this.monitoringService) {
       const data = this.monitoringService.getPerformance();
-      socket.emit('performance:update', data);
+      socket.emit('performance:update', {
+        type: 'performance_update',
+        data,
+        timestamp: new Date().toISOString()
+      });
     }
   }
 
-  private handleTestsRequest(socket: any): void {
+  private handleTestsRequest(socket: Socket): void {
     if (this.monitoringService) {
       const data = this.monitoringService.getTestResults();
-      socket.emit('tests:update', data);
+      socket.emit('tests:update', {
+        type: 'tests_update',
+        data,
+        timestamp: new Date().toISOString()
+      });
     }
   }
 
-  private handleQualityGatesRequest(socket: any): void {
+  private handleQualityGatesRequest(socket: Socket): void {
     if (this.monitoringService) {
       const data = this.monitoringService.getQualityGates();
-      socket.emit('quality-gates:update', data);
+      socket.emit('quality-gates:update', {
+        type: 'quality_gates_update',
+        data,
+        timestamp: new Date().toISOString()
+      });
     }
   }
 }
