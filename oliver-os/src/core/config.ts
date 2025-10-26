@@ -46,8 +46,14 @@ export class Config {
 
   async load(): Promise<void> {
     try {
-      await this.loadEnvironment();
-      await this.loadConfigFile();
+      await this.loadEnvironment().catch((error) => {
+        this._logger.error('❌ Failed to load environment', error);
+        throw new Error(`Environment loading failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      });
+      await this.loadConfigFile().catch((error) => {
+        this._logger.error('❌ Failed to load config file', error);
+        throw new Error(`Config file loading failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      });
       this.config = configSchema.parse(this.config);
       this._logger.info('✅ Configuration loaded successfully');
     } catch (error) {
@@ -59,7 +65,10 @@ export class Config {
   private async loadEnvironment(): Promise<void> {
     try {
       const envFile = process.env['NODE_ENV'] === 'production' ? '.env.production' : '.env.local';
-      const pathExists = await fs.pathExists(envFile);
+      const pathExists = await fs.pathExists(envFile).catch((error) => {
+        this._logger.warn(`⚠️ Could not check path for environment file: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        return false;
+      });
       
       if (pathExists) {
         require('dotenv').config({ path: envFile });
@@ -74,12 +83,21 @@ export class Config {
   private async loadConfigFile(): Promise<void> {
     try {
       const configPath = path.join(process.cwd(), 'config.json');
-      const pathExists = await fs.pathExists(configPath);
+      const pathExists = await fs.pathExists(configPath).catch((error) => {
+        this._logger.warn(`⚠️ Could not check path for config file: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        return false;
+      });
       
       if (pathExists) {
-        const configData = await fs.readJSON(configPath);
-        this.config = { ...this.config, ...configData };
-        this._logger.info('📄 Loaded configuration file');
+        const configData = await fs.readJSON(configPath).catch((error) => {
+          this._logger.warn(`⚠️ Could not read config file: ${error instanceof Error ? error.message : 'Unknown error'}`);
+          return null;
+        });
+        
+        if (configData) {
+          this.config = { ...this.config, ...configData };
+          this._logger.info('📄 Loaded configuration file');
+        }
       }
     } catch (error) {
       this._logger.warn(`⚠️ Could not load config file: ${error instanceof Error ? error.message : 'Unknown error'}`);
