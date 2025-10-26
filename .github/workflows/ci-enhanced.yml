@@ -438,6 +438,19 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
       - name: Download all artifacts
         uses: actions/download-artifact@v4
         continue-on-error: true
@@ -458,13 +471,13 @@ jobs:
 
       - name: Generate comprehensive Cursor integration report
         run: |
-          pnpm tsx scripts/cursor-test-integration.ts generate-report \
+          npx tsx scripts/cursor-test-integration.ts generate-report \
             --artifacts-dir . \
             --output cursor-integration-report.json
 
       - name: Generate quick fix commands
         run: |
-          pnpm tsx scripts/cursor-test-integration.ts generate-quick-fixes \
+          npx tsx scripts/cursor-test-integration.ts generate-quick-fixes \
             --report cursor-integration-report.json \
             --output quick-fix-commands.json
 
@@ -588,20 +601,26 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
       - name: Download Cursor integration report
         uses: actions/download-artifact@v4
         with:
           name: cursor-integration-report
-          path: cursor-report/
+          path: ./
         continue-on-error: true
 
       - name: Create mock report if missing
         run: |
-          mkdir -p cursor-report
-          echo '{"summary": {"totalTests": 0, "passed": 0, "failed": 0, "overallStatus": "success"}, "timestamp": "'$(date -Iseconds)'"}' > cursor-report/cursor-integration-report.json || true
+          if [ ! -f cursor-integration-report.json ]; then
+            echo '{"summary": {"totalTests": 0, "passed": 0, "failed": 0, "overallStatus": "success"}, "timestamp": "'$(date -Iseconds)'"}' > cursor-integration-report.json
+          fi
 
       - name: Send enhanced notifications
         run: |
           npx tsx scripts/cursor-test-integration.ts send-notifications \
-            --report cursor-report/cursor-integration-report.json \
+            --report cursor-integration-report.json \
             --context ${{ toJson(github) }}
