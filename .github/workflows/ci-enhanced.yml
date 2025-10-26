@@ -621,6 +621,7 @@ jobs:
 
       - name: Send enhanced notifications
         run: |
+          echo '${{ toJson(github) }}' > github-context.json
           npx tsx scripts/cursor-test-integration.ts send-notifications \
             --report cursor-integration-report.json \
-            --context ${{ toJson(github) }}
+            --context github-context.json

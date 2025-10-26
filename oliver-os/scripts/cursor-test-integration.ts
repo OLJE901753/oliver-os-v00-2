@@ -797,9 +797,11 @@ async function main() {
         break;
 
       case 'send-notifications':
+        const contextPath = args.find(arg => arg.startsWith('--context'))?.split('=')[1];
+        const context = contextPath ? JSON.parse(readFileSync(contextPath, 'utf8')) : {};
         await integration.sendNotifications({
           report: args.find(arg => arg.startsWith('--report'))?.split('=')[1] || 'cursor-integration-report.json',
-          context: JSON.parse(args.find(arg => arg.startsWith('--context'))?.split('=')[1] || '{}')
+          context
         });
         break;
 
