@@ -59,6 +59,8 @@
     "ci:report:build-analysis": "tsx scripts/generate-ci-report.ts build-analysis",
     "ci:monitor-github": "tsx scripts/github-actions-monitor.ts",
     "ci:auto-fix": "tsx scripts/github-actions-monitor.ts && pnpm ci:quick-fix",
+    "cursor:sync-ci": "tsx scripts/cursor-ci-sync.ts",
+    "cursor:sync": "pnpm cursor:sync-ci",
     "trigger-workflow": "tsx scripts/trigger-workflow.ts",
     "monitor:dev": "powershell -ExecutionPolicy Bypass -File start-monitoring.ps1",
     "monitor:build": "cd monitoring-dashboard",

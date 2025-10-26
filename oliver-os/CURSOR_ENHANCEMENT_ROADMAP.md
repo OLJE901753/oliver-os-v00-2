@@ -8,7 +8,46 @@ This roadmap prioritizes enhancements that will **directly improve your Cursor e
 
 ## 🏆 TOP PRIORITY - Immediate Impact
 
-### 1. **Git Integration for Review Service** ⭐⭐⭐⭐⭐
+### 1. **CI/CD Feedback Loop** ⭐⭐⭐⭐⭐
+**Impact**: Critical  
+**Effort**: Medium  
+**Estimate**: 4-6 hours
+
+**What It Does**:
+- Connects GitHub Actions results back to Cursor memory
+- Allows Cursor to learn from CI/CD failures and successes
+- Enables predictive testing based on historical patterns
+- Generates context-aware suggestions based on CI/CD data
+
+**Why It Matters**:
+Currently, CI/CD runs in isolation - Cursor doesn't learn from the results. This creates a feedback loop so Cursor learns what works and what doesn't, preventing similar failures in the future.
+
+**Implementation**:
+```typescript
+// New file: scripts/cursor-ci-sync.ts
+async function syncCIResults(): Promise<void> {
+  const workflowRuns = await fetchGitHubWorkflowRuns();
+  
+  for (const run of workflowRuns) {
+    if (run.conclusion === 'failure') {
+      const failures = await analyzeCIFailures(run);
+      memoryService.recordCIPattern(failures);
+    }
+  }
+  
+  memoryService.updateContextWithCIHistory();
+}
+```
+
+**Benefits**:
+- ✅ Cursor learns from CI/CD failures
+- ✅ Prevents repeating the same mistakes
+- ✅ Faster debugging with CI context
+- ✅ Better suggestions based on CI patterns
+
+---
+
+### 2. **Git Integration for Review Service** ⭐⭐⭐⭐⭐
 **Impact**: High  
 **Effort**: Medium  
 **File**: `src/services/review/self-review-service.ts`
@@ -54,7 +93,7 @@ async getRecentChanges(): Promise<Change[]> {
 
 ---
 
-### 2. **Memory Service Initialize Method** ⭐⭐⭐⭐⭐
+### 3. **Memory Service Initialize Method** ⭐⭐⭐⭐⭐
 **Impact**: High  
 **Effort**: Low  
 **File**: `src/services/memory/memory-service.ts`
@@ -107,7 +146,7 @@ class MemoryService {
 
 ---
 
-### 3. **Agent Manager Implementation** ⭐⭐⭐⭐
+### 4. **Agent Manager Implementation** ⭐⭐⭐⭐
 **Impact**: High  
 **Effort**: High  
 **File**: `src/services/agent-manager.ts`
@@ -142,7 +181,7 @@ Currently using placeholder TODOs:
 
 ## 🚀 HIGH PRIORITY - Short-term Wins
 
-### 4. **Database Query Logging** ⭐⭐⭐⭐
+### 5. **Database Query Logging** ⭐⭐⭐⭐
 **Impact**: Medium  
 **Effort**: Low  
 **File**: `src/services/database.ts:27-32`
@@ -177,7 +216,7 @@ interface PrismaQueryEvent {
 
 ---
 
-### 5. **Codebuff SDK Type Extensions** ⭐⭐⭐
+### 6. **Codebuff SDK Type Extensions** ⭐⭐⭐
 **Impact**: Medium  
 **Effort**: Low  
 **File**: `src/services/codebuff/`
@@ -205,7 +244,7 @@ declare module '@codebuff/sdk' {
 
 ---
 
-### 6. **MCP Tool Discovery** ⭐⭐⭐
+### 7. **MCP Tool Discovery** ⭐⭐⭐
 **Impact**: Medium  
 **Effort**: Medium  
 **File**: `src/services/codebuff/enhanced-codebuff-service.ts`
@@ -241,7 +280,7 @@ private async initializeMCPTools(): Promise<void> {
 
 ## 📊 MEDIUM PRIORITY - Quality Improvements
 
-### 7. **Transport Request Handlers** ⭐⭐
+### 8. **Transport Request Handlers** ⭐⭐
 **Impact**: Low  
 **Effort**: Medium  
 **File**: `src/mcp/transport.ts`
@@ -257,7 +296,7 @@ private async initializeMCPTools(): Promise<void> {
 
 ---
 
-### 8. **Configuration Management** ⭐⭐
+### 9. **Configuration Management** ⭐⭐
 **Impact**: Low  
 **Effort**: Low  
 **File**: Multiple files with `_config` commented out
@@ -276,19 +315,24 @@ private async initializeMCPTools(): Promise<void> {
 ## 📋 Implementation Order
 
 ### Phase 1: Foundation (Week 1)
-1. ✅ Memory Service Initialize
-2. ✅ Git Integration for Review Service
-3. ✅ Database Query Logging
+1. ✅ CI/CD Feedback Loop (NEW - Item 1)
+2. ✅ Memory Service Initialize
+3. ✅ Git Integration for Review Service
+4. ✅ Database Query Logging
 
 ### Phase 2: Core Features (Week 2)
-4. ✅ Agent Manager Implementation (selective)
-5. ✅ Codebuff SDK Type Extensions
-6. ✅ MCP Tool Discovery
+5. ✅ Agent Manager Implementation (selective)
+6. ✅ Codebuff SDK Type Extensions
+7. ✅ MCP Tool Discovery
 
 ### Phase 3: Polish (Week 3)
-7. Transport Request Handlers
-8. Configuration Management
-9. Remaining TODOs
+8. Transport Request Handlers
+9. Configuration Management
+10. Remaining TODOs
+
+---
+
+**Note**: Phase 2 had incorrect numbering, corrected to maintain sequence.
 
 ---
 
@@ -315,11 +359,12 @@ private async initializeMCPTools(): Promise<void> {
 
 These can be implemented immediately with high impact:
 
-1. **Git Integration** (2 hours) - Immediate context improvement
-2. **Memory Service** (1 hour) - Enables learning
-3. **Query Logging** (30 min) - Better debugging
+1. **CI/CD Feedback Loop** (4-6 hours) - Connects CI to Cursor
+2. **Git Integration** (2 hours) - Immediate context improvement
+3. **Memory Service** (1 hour) - Enables learning
+4. **Query Logging** (30 min) - Better debugging
 
-**Total Time**: ~3.5 hours for significant improvements
+**Total Time**: ~7.5 hours for critical improvements
 
 ---
 
