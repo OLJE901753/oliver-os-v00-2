@@ -35,6 +35,15 @@ describe('Smart Assistance Performance Tests', () => {
       }
     }
     testFiles = [];
+    
+    // Clean up temp directory if empty
+    const tempDir = path.join(process.cwd(), 'temp');
+    if (await fs.pathExists(tempDir)) {
+      const files = await fs.readdir(tempDir);
+      if (files.length === 0) {
+        await fs.remove(tempDir);
+      }
+    }
   });
 
   describe('Code Analysis Performance', () => {
@@ -370,8 +379,11 @@ describe('Smart Assistance Performance Tests', () => {
 
   // Helper functions
   async function createTestFile(lineCount: number): Promise<string> {
+    const tempDir = path.join(process.cwd(), 'temp');
+    await fs.ensureDir(tempDir); // Ensure temp directory exists
+    
     const fileName = `test-perf-${Date.now()}-${Math.random().toString(36).substr(2, 9)}.ts`;
-    const filePath = path.join(process.cwd(), fileName);
+    const filePath = path.join(tempDir, fileName);
     testFiles.push(filePath);
     
     let code = 'export class TestClass {\n';

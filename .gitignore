@@ -120,3 +120,8 @@ venv.bak/
 
 # Docker
 .dockerignore
+
+# Test temporary files
+test-perf-*.ts
+test-*.backup.*
+test-large-*.ts
