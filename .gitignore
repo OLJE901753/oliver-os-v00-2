@@ -125,3 +125,14 @@ venv.bak/
 test-perf-*.ts
 test-*.backup.*
 test-large-*.ts
+
+# GitHub Workflow analysis files
+github-workflow-failure-*.json
+github-workflow-fixes-*.json
+github-workflow-fixes.json
+simple-quick-fixes.json
+simple-test-report.json
+failure-analysis.json
+test-results*.json
+cursor-integration-report.json
+quick-fix-commands.json
