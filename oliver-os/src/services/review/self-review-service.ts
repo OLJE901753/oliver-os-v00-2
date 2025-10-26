@@ -455,14 +455,18 @@ export class SelfReviewService extends EventEmitter {
         const git = simpleGit();
         const status = await git.status();
         
-        // Safely check if file is tracked
-        if (status.tracked && Array.isArray(status.tracked)) {
-          isNewFile = !status.tracked.includes(filePath);
-        }
-        
-        // Safely check if file is modified
+        // Safely check if file is modified (using files array)
         if (status.files && Array.isArray(status.files)) {
-          isModified = status.files.some((f: { path?: string }) => f?.path === filePath);
+          const fileEntry = status.files.find((f: { path?: string }) => f?.path === filePath);
+          if (fileEntry) {
+            isModified = true;
+            // Check if it's a new/untracked file
+            isNewFile = fileEntry.index === '?' || fileEntry.working_dir === '?';
+          } else {
+            // File exists but not modified
+            isModified = false;
+            isNewFile = false;
+          }
         }
       } catch (statusError) {
         this._logger.debug('Could not get file status:', { error: statusError instanceof Error ? statusError.message : String(statusError) });
