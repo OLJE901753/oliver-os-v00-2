@@ -148,6 +148,7 @@ export class SelfReviewService extends EventEmitter {
 
   /**
    * Perform self-review on a file
+   * Enhanced with git context for better suggestions
    */
   async reviewFile(filePath: string, context?: ReviewContext): Promise<CodeReviewResult> {
     this._logger.info(`🔍 Performing self-review on: ${filePath}`);
@@ -164,8 +165,17 @@ export class SelfReviewService extends EventEmitter {
       const fileContent = await fs.readFile(filePath, 'utf-8');
       const fileType = path.extname(filePath).slice(1);
       
+      // Get enhanced git context for better suggestions
+      const gitContext = await this.getEnhancedGitContext(filePath);
+      this._logger.info(`📊 Git context: ${gitContext.isNewFile ? 'New file' : gitContext.isModified ? 'Modified' : 'Clean'}`);
+      
       // Create review context if not provided
       const reviewContext = context || await this.createReviewContext(filePath, fileContent, fileType);
+      
+      // Enhance context with git information
+      reviewContext.changes = gitContext.changes;
+      reviewContext.gitDiff = gitContext.diff;
+      reviewContext.recentChanges = gitContext.recentCommits;
       
       // Perform review analysis
       const suggestions = await this.analyzeCode(fileContent, fileType, reviewContext);
@@ -209,8 +219,8 @@ export class SelfReviewService extends EventEmitter {
       // Get git diff (hybrid approach)
       const gitDiff = await this.getGitDiff(filePath);
       
-      // Get recent changes (hybrid approach)
-      const recentChanges = await this.getRecentChanges();
+      // Get recent changes (hybrid approach) - pass filePath for file-specific history
+      const recentChanges = await this.getRecentChanges(filePath);
       
       // Get git statistics (execAsync for complex operations)
       const gitStats = await this.getGitStats();
@@ -254,20 +264,42 @@ export class SelfReviewService extends EventEmitter {
   /**
    * Get git diff for a file
    * Hybrid: simple-git for basic diff, execAsync for advanced options
+   * Enhanced with better context and logging
    */
   private async getGitDiff(filePath: string): Promise<string> {
     try {
+      this._logger.info(`📋 Getting git diff for: ${filePath}`);
+      
       // Use simple-git for basic, safe operations
       const git = simpleGit();
-      const diff = await git.diff(['--', filePath]);
       
-      // If no diff, try unstaged changes
-      if (!diff) {
-        const unstaged = await git.diff([filePath]);
-        return unstaged;
+      // First, try to get diff for the specific file
+      let diff = await git.diff(['HEAD', '--', filePath]);
+      
+      // If no diff against HEAD, try unstaged changes
+      if (!diff || diff.trim().length === 0) {
+        this._logger.debug('No staged diff found, checking unstaged changes...');
+        diff = await git.diff(['--', filePath]);
       }
       
-      return diff;
+      // If still no diff, try all changes (for new files)
+      if (!diff || diff.trim().length === 0) {
+        this._logger.debug('Checking for uncommitted changes...');
+        const status = await git.status();
+        if (status.files.length > 0) {
+          diff = await git.diff();
+        }
+      }
+      
+      // Log success
+      if (diff && diff.trim().length > 0) {
+        const lines = diff.split('\n').filter(line => line.startsWith('+') || line.startsWith('-')).length;
+        this._logger.info(`✅ Git diff retrieved: ${lines} lines changed`);
+      } else {
+        this._logger.debug('No git diff found (file may be clean or not tracked)');
+      }
+      
+      return diff || '';
     } catch (error) {
       this._logger.warn(`Failed to get git diff with simple-git, trying execAsync for ${filePath}:`, { error: error instanceof Error ? error.message : String(error) });
       
@@ -285,17 +317,37 @@ export class SelfReviewService extends EventEmitter {
   /**
    * Get recent git changes
    * Hybrid: simple-git for structured data, execAsync for formatting
+   * Enhanced with file-specific history
    */
-  private async getRecentChanges(): Promise<string[]> {
+  private async getRecentChanges(filePath?: string): Promise<string[]> {
     try {
       // Use simple-git for structured commit data
       const git = simpleGit();
-      const log = await git.log({ maxCount: 10 });
       
-      return log.all.map(commit => {
+      let log;
+      if (filePath) {
+        // Get history for specific file
+        this._logger.info(`📋 Getting recent changes for: ${filePath}`);
+        log = await git.log({ file: filePath, maxCount: 10 });
+      } else {
+        // Get general project history
+        this._logger.debug('Getting recent project changes...');
+        log = await git.log({ maxCount: 10 });
+      }
+      
+      const changes = log.all.map(commit => {
         const shortHash = commit.hash.substring(0, 7);
-        return `${shortHash} - ${commit.message}`;
+        const date = new Date(commit.date).toLocaleDateString();
+        return `${shortHash} - ${commit.message.trim()} (${date})`;
       });
+      
+      if (changes.length > 0) {
+        this._logger.info(`✅ Retrieved ${changes.length} recent changes`);
+      } else {
+        this._logger.debug('No recent changes found');
+      }
+      
+      return changes;
     } catch (error) {
       this._logger.warn('Failed to get recent changes with simple-git, trying execAsync:', { error: error instanceof Error ? error.message : String(error) });
       
@@ -343,6 +395,7 @@ export class SelfReviewService extends EventEmitter {
 
   /**
    * Parse changes from git diff
+   * Enhanced to extract meaningful changes for context
    */
   private parseChangesFromDiff(diff: string): string[] {
     if (!diff) return [];
@@ -351,13 +404,85 @@ export class SelfReviewService extends EventEmitter {
     const lines = diff.split('\n');
     
     for (const line of lines) {
-      // Only include added or modified lines (not deletions)
+      // Include added lines (code changes)
       if (line.startsWith('+') && !line.startsWith('+++')) {
-        changes.push(line.substring(1).trim());
+        const content = line.substring(1).trim();
+        // Filter out empty lines and metadata
+        if (content && !content.startsWith('@@') && content.length > 3) {
+          changes.push(content);
+        }
       }
     }
     
-    return changes;
+    // Limit to most relevant changes (keep first 50 lines)
+    return changes.slice(0, 50);
+  }
+
+  /**
+   * Get enhanced git context for code analysis
+   * Provides detailed git information to improve suggestions
+   */
+  private async getEnhancedGitContext(filePath: string): Promise<{
+    diff: string;
+    changes: string[];
+    recentCommits: string[];
+    stats: { filesChanged: number; insertions: number; deletions: number };
+    isNewFile: boolean;
+    isModified: boolean;
+  }> {
+    try {
+      // Get git diff
+      const diff = await this.getGitDiff(filePath);
+      const changes = this.parseChangesFromDiff(diff);
+      
+      // Get recent commits
+      const recentCommits = await this.getRecentChanges(filePath);
+      
+      // Get statistics
+      const stats = await this.getGitStats();
+      
+      // Check file status safely
+      let isNewFile = false;
+      let isModified = false;
+      
+      try {
+        const git = simpleGit();
+        const status = await git.status();
+        
+        // Safely check if file is tracked
+        if (status.tracked && Array.isArray(status.tracked)) {
+          isNewFile = !status.tracked.includes(filePath);
+        }
+        
+        // Safely check if file is modified
+        if (status.files && Array.isArray(status.files)) {
+          isModified = status.files.some((f: { path?: string }) => f?.path === filePath);
+        }
+      } catch (statusError) {
+        this._logger.debug('Could not get file status:', { error: statusError instanceof Error ? statusError.message : String(statusError) });
+      }
+      
+      this._logger.info(`📊 Git context: ${isNewFile ? 'New file' : isModified ? 'Modified' : 'Tracked'}, ${stats.filesChanged} files changed`);
+      
+      return {
+        diff,
+        changes,
+        recentCommits,
+        stats,
+        isNewFile,
+        isModified
+      };
+    } catch (error) {
+      this._logger.warn('Failed to get enhanced git context:', { error: error instanceof Error ? error.message : String(error) });
+      return {
+        diff: '',
+        changes: [],
+        recentCommits: [],
+        stats: { filesChanged: 0, insertions: 0, deletions: 0 },
+        isNewFile: false,
+        isModified: false
+      };
+    }
   }
 
   /**
