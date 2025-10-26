@@ -39,8 +39,8 @@ RUN pnpm build
 # Production stage
 FROM node:18-alpine AS production
 
-# Install dumb-init and curl for health checks
-RUN apk add --no-cache dumb-init curl
+# Install dumb-init, curl for health checks, and git for git integration
+RUN apk add --no-cache dumb-init curl git
 
 # Create app user
 RUN addgroup -g 1001 -S nodejs
