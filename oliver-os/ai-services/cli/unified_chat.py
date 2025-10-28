@@ -275,8 +275,8 @@ Provide a helpful response. If the user wants to run a command, explain what it 
                 }
             }
             
-            # Save to shared location (parent of ai-services = oliver-os)
-            cursor_file = self.current_directory.parent / 'cursor-request.json'
+            # Save to shared location (current directory = oliver-os)
+            cursor_file = self.current_directory / 'cursor-request.json'
             cursor_file.write_text(json.dumps(cursor_request, indent=2))
             
             print(f"\n✅ Message sent to Cursor AI:")

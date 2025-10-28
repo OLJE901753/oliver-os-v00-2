@@ -42,11 +42,16 @@ cd oliver-os
 pnpm chat:python
 ```
 
+**Note**: The command uses Python 3. On Windows, this uses the `py` launcher configured in package.json.
+
 ### 2. Send Message to Cursor AI
 
 ```bash
 # In Python chat:
-send-to-cursor: create a user service with authentication
+/send-to-cursor create a user service with authentication
+
+# Alternative shorter command:
+/cursor create a user service with authentication
 
 # Then switch to THIS chat (Cursor) to see me use your enriched context!
 ```
@@ -55,7 +60,10 @@ send-to-cursor: create a user service with authentication
 
 ```bash
 # In Python chat:
-send-to-agents: need database migration for users table
+/send-to-agents need database migration for users table
+
+# Alternative shorter command:
+/agents need database migration for users table
 
 # This broadcasts to all agents via the orchestrator
 ```
@@ -64,7 +72,7 @@ send-to-agents: need database migration for users table
 
 ### Python → Cursor Communication
 
-1. **You type** in Python chat: `send-to-cursor: create user service`
+1. **You type** in Python chat: `/send-to-cursor create user service`
 2. **Python agent** processes the message:
    - Reads `agent-memory.json` (your patterns)
    - Reads `cursor-memory.json` (code patterns)
@@ -76,10 +84,10 @@ send-to-agents: need database migration for users table
 
 ### Python → TypeScript Agents Communication
 
-1. **You type** in Python chat: `send-to-agents: deploy to production`
+1. **You type** in Python chat: `/send-to-agents deploy to production`
 2. **Python agent** sends HTTP POST to `http://localhost:3000/api/agents/messages`
 3. **Agent Bridge** receives message
-4. **Routes** to Central Orchestrator
+4. **Stores** message in `temp/agent-messages.jsonl` for the orchestrator to pick up
 5. **Orchestrator** broadcasts to all agents
 
 ## 📂 Files Created
@@ -108,7 +116,7 @@ Agent records patterns in `agent-memory.json`
 ### Step 2: Send Task to Cursor
 ```bash
 # In Python chat:
-python> send-to-cursor: create a user service with JWT auth
+python> /send-to-cursor create a user service with JWT auth
 
 ✅ Message sent to Cursor AI:
 📧 Original: create a user service with JWT auth
@@ -196,6 +204,30 @@ Get latest request from Python agent to Cursor
 2. **Use**: Send messages to me with enriched context
 3. **Extend**: Add more agent types and message types
 4. **Integrate**: Connect with CI/CD for automated agent work
+
+## 🔧 Troubleshooting
+
+### Python Chat Not Starting
+- Ensure Python 3 is installed: `python --version` or `py --version`
+- Install dependencies: `cd ai-services && pip install -r requirements.txt`
+
+### Server Not Running Error
+If you see "TypeScript agent server not running":
+```bash
+# Start the server in another terminal
+cd oliver-os
+pnpm dev
+```
+
+### Missing Memory Files
+- `agent-memory.json` is created automatically in `ai-services/memory/`
+- `cursor-memory.json` is created in the project root
+- Both files are optional; the system will work without them
+
+### Commands Not Working
+- Use the full command: `/send-to-cursor` or `/send-to-agents`
+- Alternative shorter forms: `/cursor` or `/agents`
+- Commands are case-sensitive
 
 ## 🎉 Summary
 
