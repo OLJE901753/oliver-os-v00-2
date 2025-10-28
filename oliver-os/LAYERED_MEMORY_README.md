@@ -60,6 +60,8 @@ This opens a unified terminal where you can:
 - **Execute commands**: `ls`, `git status`, `pnpm install`
 - **View memory**: `/memory`, `/context <task>`, `/combine`
 - **Change directory**: `/cd <path>`, `/pwd`
+- **Send messages to Cursor AI**: `/send-to-cursor <message>` or `/cursor <message>`
+- **Send messages to TypeScript agents**: `/send-to-agents <message>` or `/agents <message>`
 - **Exit**: `/exit` or Ctrl+C
 
 ### 2. Configure LLM (Optional but Recommended)
@@ -143,6 +145,9 @@ python -c "print('hello')"
 - `/combine` - See combined memories
 - `/cd <path>` - Change directory
 - `/pwd` - Show current directory
+- `/send-to-cursor <message>` or `/cursor <message>` - Send message to Cursor AI
+- `/send-to-agents <message>` or `/agents <message>` - Send message to all TypeScript agents
+- `/analyze <file>` - Run smart analysis on a file
 - `/exit` - Exit terminal
 
 ## 🔧 Configuration
@@ -235,6 +240,15 @@ pnpm chat:python
 }
 ```
 
+## 🔗 Integration with Agent Bridge
+
+The layered memory system integrates with the Agent Bridge system:
+
+- **Send to Cursor AI**: Use `/send-to-cursor <message>` to send enriched context to Cursor AI
+- **Send to TypeScript Agents**: Use `/send-to-agents <message>` to broadcast messages to all agents
+- **Enriched Context**: The system combines agent memory + cursor memory for rich context
+- **See `AGENT_BRIDGE_README.md`** for full details on agent-to-agent communication
+
 ## 🎉 Status
 
 **All Core Components**: ✅ Complete
@@ -245,6 +259,7 @@ pnpm chat:python
 - API endpoints: ✅
 - Terminal interface: ✅
 - Maintenance: ✅
+- Agent Bridge integration: ✅
 
 **Ready to**: Use! Just run `pnpm chat:python` and start chatting with the Python agent!
 
