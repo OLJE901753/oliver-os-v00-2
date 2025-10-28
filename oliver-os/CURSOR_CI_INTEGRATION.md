@@ -36,7 +36,8 @@ oliver-os/
 │   └── docker-ci.yml                # Docker CI
 ├── scripts/
 │   ├── cursor-test-integration.ts   # Main integration script
-│   └── generate-ci-report.js        # CI report generator
+│   ├── cursor-ci-sync.ts            # GitHub Actions CI/CD sync
+│   └── generate-ci-report.ts        # CI report generator
 ├── src/utils/
 │   ├── test-failure-analyzer.ts     # Test failure pattern analyzer
 │   └── quick-fix-command-generator.ts # Quick fix command generator
