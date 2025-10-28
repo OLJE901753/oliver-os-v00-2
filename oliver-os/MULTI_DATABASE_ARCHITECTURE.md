@@ -4,10 +4,13 @@
 
 Traditional single-database approaches struggle with AI-brain interface requirements. Our multi-database architecture solves this by using the **right tool for each specific job**, optimizing performance and capabilities.
 
+**Current Implementation Status**: See "Implementation Status" section below for actual deployment status.
+
 ## 🎯 **Database Specialization Strategy**
 
-### **PostgreSQL (Primary Database)**
+### **PostgreSQL (Planned - Production Database)**
 **Purpose**: Relational data, ACID transactions, complex queries
+**Status**: Configured in docker-compose but using SQLite for current development
 
 **What it stores:**
 - User accounts and authentication
@@ -23,7 +26,9 @@ Traditional single-database approaches struggle with AI-brain interface requirem
 - **Full-text Search** - Built-in text search capabilities
 - **Mature Ecosystem** - Extensive tooling and monitoring
 
-**Example Use Cases:**
+**Note**: Currently using SQLite (dev.db) for development. PostgreSQL schema will be deployed in production.
+
+**Example Use Cases (Planned):**
 ```sql
 -- Find all thoughts by user with complex filtering
 SELECT t.*, u.name, ts_rank(t.content, query) as relevance
@@ -32,7 +37,7 @@ JOIN users u ON t.user_id = u.id
 WHERE to_tsvector('english', t.content) @@ plainto_tsquery('english', 'AI collaboration')
 ORDER BY relevance DESC;
 
--- Vector similarity search for related thoughts
+-- Vector similarity search for related thoughts (requires pgvector extension)
 SELECT id, content, 1 - (embedding <=> query_vector) as similarity
 FROM thoughts 
 WHERE embedding IS NOT NULL
@@ -78,8 +83,9 @@ await redis.publish('collaboration:session:123', JSON.stringify({
 
 ---
 
-### **Neo4j (Knowledge Graph)**
+### **Neo4j (Knowledge Graph - Optional)**
 **Purpose**: Complex relationships, graph traversals, knowledge mapping
+**Status**: Configured but using fallback implementation (knowledge graph stored in SQLite KnowledgeNode/KnowledgeRelationship tables)
 
 **What it stores:**
 - Thought relationships and connections
@@ -95,7 +101,9 @@ await redis.publish('collaboration:session:123', JSON.stringify({
 - **Pattern Recognition** - Discover hidden connections
 - **Scalable Relationships** - Handle millions of connections
 
-**Example Use Cases:**
+**Current Implementation**: Using Prisma KnowledgeNode/KnowledgeRelationship models in SQLite as fallback.
+
+**Example Use Cases (When Neo4j is enabled):**
 ```cypher
 // Find thought influence networks
 MATCH (user:User)-[:CREATED]->(thought:Thought)-[:INFLUENCED]->(otherThought:Thought)
@@ -112,8 +120,9 @@ ORDER BY collaboration_count DESC;
 
 ---
 
-### **ChromaDB (Vector Database)**
+### **ChromaDB (Vector Database - Optional)**
 **Purpose**: Semantic search, AI embeddings, similarity matching
+**Status**: Configured in database/docker-compose.yml but using fallback implementation when unavailable
 
 **What it stores:**
 - Thought embeddings (vector representations)
@@ -129,7 +138,9 @@ ORDER BY collaboration_count DESC;
 - **Scalable Vectors** - Handle millions of high-dimensional vectors
 - **Fast Retrieval** - Optimized for vector operations
 
-**Example Use Cases:**
+**Current Implementation**: Available via Python AI services (knowledge_manager.py) when ChromaDB is running.
+
+**Example Use Cases (When ChromaDB is enabled):**
 ```python
 # Semantic thought search
 results = chroma_db.query(
@@ -293,3 +304,48 @@ The multi-database architecture provides:
 ✅ **Future-Proof Design** - Easy to extend and modify
 
 **This architecture transforms Oliver-OS from a simple application into a sophisticated AI-brain interface platform capable of handling complex thought processing, real-time collaboration, and advanced knowledge discovery at scale!** 🧠🚀
+
+---
+
+## 📊 **Current Implementation Status**
+
+### ✅ **Currently Active:**
+- **SQLite (dev.db)** - Primary database via Prisma ORM for development
+  - Used for: Users, Thoughts, KnowledgeGraph (KnowledgeNode/KnowledgeRelationship tables)
+  - Schema: `prisma/schema.prisma`
+  
+- **Redis** - Configured in docker-compose.prod.yml
+  - Available via environment variables
+  - Used for: Session management, caching (when connected)
+
+### 🔧 **Optional Databases (Configured but using fallbacks):**
+- **Neo4j** - Graph database for relationship mapping
+  - Status: Configured but using SQLite KnowledgeNode/KnowledgeRelationship as fallback
+  - Location: Available in `database/docker-compose.yml`
+  - Python AI services have graceful fallback when not available
+  
+- **ChromaDB** - Vector database for embeddings
+  - Status: Configured but using fallback implementation
+  - Location: Available in `database/docker-compose.yml`
+  - Python AI services detect availability and use fallback
+  
+- **PostgreSQL** - Production database
+  - Status: Defined in docker-compose.prod.yml but currently using SQLite for development
+  - Migration: Schema ready in `prisma/schema.sqlite.prisma` for SQLite
+  
+### 📝 **Deployment Notes:**
+- Development: Uses SQLite for simplicity and quick startup
+- Production: Will use PostgreSQL (via docker-compose.prod.yml)
+- Advanced features (Neo4j, ChromaDB): Available in separate `database/docker-compose.yml`
+- All database integrations include graceful fallbacks when services are unavailable
+
+### 🚀 **To Use All Databases:**
+```bash
+# Start all databases
+cd database
+docker-compose up -d
+
+# Or start production stack
+cd docker
+docker-compose -f docker-compose.prod.yml up -d
+```
