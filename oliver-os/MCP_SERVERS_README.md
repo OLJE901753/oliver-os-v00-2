@@ -31,33 +31,29 @@ pnpm run mcp:health
 pnpm run mcp:stop
 ```
 
-### Individual Servers
+### Starting Individual Servers
+
+MCP servers are managed by the orchestrator. To start a specific server, use the orchestrator's API or start all servers together:
+
 ```bash
-# Core Oliver-OS server
+# Start all MCP servers via orchestrator
+pnpm run mcp:all
+
+# Or start the core Oliver-OS server directly (stdio mode)
 pnpm run mcp:stdio
 
-# GitHub server
-pnpm run mcp:github
+# WebSocket mode
+pnpm run mcp:websocket
 
-# Filesystem server
-pnpm run mcp:filesystem
-
-# Database server
-pnpm run mcp:database
-
-# Web search server
-pnpm run mcp:websearch
-
-# Terminal server
-pnpm run mcp:terminal
-
-# Memory server
-pnpm run mcp:memory
+# HTTP mode
+pnpm run mcp:http
 ```
+
+Note: Individual server commands (`mcp:github`, `mcp:filesystem`, etc.) exist for development but don't run standalone servers. Use the orchestrator to manage all servers.
 
 ## 📋 Server Details
 
-### 1. Core Oliver-OS Server (Port 4000)
+### 1. Core Oliver-OS Server
 **Purpose**: Main system integration and Oliver-OS specific operations
 
 **Tools**:
@@ -73,7 +69,7 @@ pnpm run mcp:memory
 - `oliver-os://logs/system` - System logs
 - `oliver-os://config/current` - Current configuration
 
-### 2. GitHub Server (Port 4001)
+### 2. GitHub Server
 **Purpose**: Version control, issues, and pull request management
 
 **Tools**:
@@ -93,7 +89,7 @@ pnpm run mcp:memory
 - `github://user/profile` - User profile
 - `github://notifications` - Notifications
 
-### 3. Filesystem Server (Port 4002)
+### 3. Filesystem Server
 **Purpose**: File operations and project management
 
 **Tools**:
@@ -114,7 +110,7 @@ pnpm run mcp:memory
 - `filesystem://project/readme` - README files
 - `filesystem://project/structure` - Project structure
 
-### 4. Database Server (Port 4003)
+### 4. Database Server
 **Purpose**: Supabase integration and database operations
 
 **Tools**:
@@ -137,7 +133,7 @@ pnpm run mcp:memory
 - `database://stats/overview` - Database statistics
 - `database://tables/oliver-os` - Oliver-OS tables
 
-### 5. Web Search Server (Port 4004)
+### 5. Web Search Server
 **Purpose**: Research and information gathering
 
 **Tools**:
@@ -157,7 +153,7 @@ pnpm run mcp:memory
 - `websearch://news/headlines` - News headlines
 - `websearch://research/ai` - AI research papers
 
-### 6. Terminal Server (Port 4005)
+### 6. Terminal Server
 **Purpose**: Command execution and system operations
 
 **Tools**:
@@ -177,7 +173,7 @@ pnpm run mcp:memory
 - `terminal://processes/running` - Running processes
 - `terminal://logs/system` - System logs
 
-### 7. Memory Server (Port 4006)
+### 7. Memory Server
 **Purpose**: Persistent context and knowledge management
 
 **Tools**:
@@ -213,29 +209,16 @@ GITHUB_TOKEN=your_github_token
 ```
 
 ### Server Configuration
-Each server can be configured via `mcp-config.json`:
+Servers are managed by the orchestrator. Individual servers have internal port assignments used by the orchestrator:
+- Oliver-OS: port 4000
+- GitHub: port 4001
+- Filesystem: port 4002
+- Database: port 4003
+- WebSearch: port 4004
+- Terminal: port 4005
+- Memory: port 4006
 
-```json
-{
-  "servers": {
-    "github": {
-      "enabled": true,
-      "port": 4001,
-      "api_key": "your_github_token"
-    },
-    "filesystem": {
-      "enabled": true,
-      "port": 4002,
-      "base_path": "/path/to/project"
-    },
-    "database": {
-      "enabled": true,
-      "port": 4003,
-      "supabase_url": "your_supabase_url"
-    }
-  }
-}
-```
+Configuration is done via the orchestrator in `src/mcp/orchestrator.ts`. API keys and other settings are configured via environment variables.
 
 ## 🧪 Testing
 
@@ -263,6 +246,9 @@ curl -X POST http://localhost:4000/tools/call \
 ## 🔌 Integration Examples
 
 ### Claude Desktop Configuration
+
+For Claude Desktop, you can connect to the main Oliver-OS server which provides access to all MCP tools:
+
 ```json
 {
   "mcpServers": {
@@ -270,15 +256,19 @@ curl -X POST http://localhost:4000/tools/call \
       "command": "pnpm",
       "args": ["run", "mcp:stdio"],
       "cwd": "/path/to/oliver-os"
-    },
-    "github": {
+    }
+  }
+}
+```
+
+Or start the orchestrator with all servers:
+
+```json
+{
+  "mcpServers": {
+    "oliver-os-all": {
       "command": "pnpm",
-      "args": ["run", "mcp:github"],
-      "cwd": "/path/to/oliver-os"
-    },
-    "filesystem": {
-      "command": "pnpm",
-      "args": ["run", "mcp:filesystem"],
+      "args": ["run", "mcp:all"],
       "cwd": "/path/to/oliver-os"
     }
   }
