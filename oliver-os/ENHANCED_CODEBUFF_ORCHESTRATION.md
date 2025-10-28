@@ -95,7 +95,7 @@ pnpm deploy:windows:prod
 #### Initialization
 ```typescript
 import { EnhancedCodebuffService } from './src/services/codebuff/enhanced-codebuff-service';
-import { Config } from './src/core/config';
+import { Config } from '../../core/config';
 
 const config = new Config();
 const service = new EnhancedCodebuffService(config);
