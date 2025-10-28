@@ -108,28 +108,38 @@
 
 ## 🎯 Current Status
 
-✅ Completed:
-- Memory service initialized
+✅ All Components Complete:
+- Memory service initialized (called in master-orchestrator.ts)
 - Learning service operational
-- CI/CD sync working
-- Git integration active
+- CI/CD sync working (cursor-ci-sync.ts via `pnpm cursor:sync`)
+- Git integration active (fully implemented in self-review-service.ts)
 - Self-review functional
-- AI services running
+- AI services running (Python FastAPI services)
+- `pnpm brain:maintain` command available (scripts/brain-maintain.ts)
+- Vector embeddings implemented (knowledge_manager.py with ChromaDB/fallback)
+- Ollama LLM integration available (ai-services/llm_provider.py, configured in settings.py)
 
-⏳ Pending:
-- Uncomment `memoryService.initialize()` call
-- Create `pnpm brain:maintain` command
-- Implement vector embeddings
-- Add Ollama LLM integration
-- Auto-maintenance scheduler
+## 📦 Additional Features
 
-## 🚀 Next Steps
+### Agent Bridge Integration
+- Python agent can send messages to Cursor AI via `/send-to-cursor`
+- Python agent can communicate with TypeScript agents via `/send-to-agents`
+- Enriched context includes agent memory + cursor memory
+- See `AGENT_BRIDGE_README.md` for details
 
-1. Implement Item 3: Memory Service Initialize Method
-2. Create brain:maintain command
-3. Add vector embedding support
-4. Integrate Ollama for reasoning
-5. Set up auto-sync scheduler
+### Layered Memory System
+- Agent memory (ai-services/memory/agent-memory.json)
+- Cursor memory (cursor-memory.json)
+- Memory combiner with LLM reasoning
+- See `LAYERED_MEMORY_README.md` for details
+
+## 🚀 Optional Next Steps
+
+1. Set up Ollama for advanced LLM features (see `INSTALL_OLLAMA.md`)
+2. Enable ChromaDB for vector embeddings (in database/docker-compose.yml)
+3. Configure Neo4j for knowledge graphs (optional, has SQLite fallback)
+4. Set up auto-sync scheduler for brain maintenance
+5. Deploy PostgreSQL for production (currently using SQLite for development)
 
 ---
 
