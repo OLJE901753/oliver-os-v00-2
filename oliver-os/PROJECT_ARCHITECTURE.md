@@ -1,7 +1,11 @@
 # Oliver-OS: AI-Brain Interface System Architecture
 
+**⚠️ Status**: This document describes the CURRENT implementation architecture, not future/aspirational plans.
+
 ## 🧠 Project Overview
 Oliver-OS is an AI-brain interface system for real-time thought processing and multi-user collaboration.
+
+**Current Implementation**: Frontend, Backend, and AI Services are operational. Architecture shows actual file structure as of current development.
 
 ## 🏗️ System Architecture
 
@@ -9,25 +13,36 @@ Oliver-OS is an AI-brain interface system for real-time thought processing and m
 ```
 src/
 ├── components/
-│   ├── mind-visualization/
-│   │   ├── ThoughtBubble.tsx
-│   │   ├── BrainMap.tsx
-│   │   └── RouteVisualization.tsx
+│   ├── visualization/
+│   │   ├── MindVisualizer.tsx
+│   │   └── WireframeBrain.tsx
 │   ├── collaboration/
-│   │   ├── RealTimeChat.tsx
-│   │   ├── SharedWorkspace.tsx
-│   │   └── UserPresence.tsx
-│   └── brain-dump/
-│       ├── ThoughtInput.tsx
-│       ├── StreamDisplay.tsx
-│       └── ProcessingStatus.tsx
+│   │   └── CollaborationWorkspace.tsx
+│   ├── thought/
+│   │   └── ThoughtProcessor.tsx
+│   ├── auth/
+│   │   ├── AuthPage.tsx
+│   │   ├── LoginForm.tsx
+│   │   ├── RegisterForm.tsx
+│   │   └── UserProfile.tsx
+│   ├── ai-chat/
+│   │   └── AIChat.tsx
+│   ├── knowledge/
+│   │   └── KnowledgeGraph.tsx
+│   ├── layered-objects/
+│   │   ├── LayeredObject.tsx
+│   │   ├── InteractiveCanvas.tsx
+│   │   └── AnimationDebugger.tsx
+│   ├── dashboard/
+│   │   └── DataDashboard.tsx
+│   └── [additional components]
 ├── hooks/
-│   ├── useWebSocket.ts
-│   ├── useThoughtProcessing.ts
-│   └── useCollaboration.ts
+│   ├── useSocket.tsx
+│   ├── useAnimations.ts
+│   ├── usePositioning.ts
+│   ├── useObjectInteractions.ts
+│   └── useAssetManager.ts
 └── services/
-    ├── api.ts
-    ├── websocket.ts
     └── auth.ts
 ```
 
@@ -35,68 +50,89 @@ src/
 ```
 src/
 ├── routes/
-│   ├── thoughts.ts
-│   ├── collaboration.ts
+│   ├── agents.ts
 │   ├── auth.ts
+│   ├── disruptor.ts
+│   ├── health.ts
+│   ├── processes.ts
+│   ├── services.ts
+│   ├── status.ts
 │   └── websocket.ts
 ├── services/
-│   ├── ThoughtStreamingService.ts
-│   ├── CollaborationService.ts
-│   ├── AuthService.ts
-│   └── WebSocketManager.ts
+│   ├── agent-manager.ts
+│   ├── auth.ts
+│   ├── bureaucracy-disruptor.ts
+│   ├── memory/
+│   │   ├── memory-service.ts
+│   │   ├── learning-service.ts
+│   │   └── contextual-suggestion-engine.ts
+│   ├── review/
+│   │   ├── self-review-service.ts
+│   │   ├── quality-gate-service.ts
+│   │   ├── change-documentation-service.ts
+│   │   └── improvement-suggestions-service.ts
+│   ├── monster-mode/
+│   │   └── master-orchestrator.ts
+│   ├── codebuff/
+│   └── multi-agent/
+├── core/
+│   ├── config.ts
+│   ├── logger.ts
+│   ├── server.ts
+│   └── websocket-manager.ts
 ├── middleware/
 │   ├── auth.ts
-│   ├── rateLimit.ts
-│   └── validation.ts
-└── utils/
-    ├── thoughtProcessor.ts
-    └── realtimeSync.ts
+│   ├── rate-limit.ts
+│   ├── validation.ts
+│   └── error-handler.ts
+└── mcp/
+    ├── orchestrator.ts
+    ├── server.ts
+    └── servers/
 ```
 
-### AI Services Layer (Python + FastAPI + CrewAI)
+### AI Services Layer (Python + FastAPI + LangChain)
 ```
 ai-services/
-├── thought_analysis/
-│   ├── analyzer.py
-│   ├── pattern_recognition.py
-│   └── idea_enhancement.py
+├── services/
+│   ├── thought_processor.py
+│   ├── pattern_recognizer.py
+│   ├── agent_orchestrator.py
+│   ├── knowledge_manager.py
+│   ├── visualization_generator.py
+│   └── voice_processor.py
 ├── models/
-│   ├── thought_model.py
-│   ├── pattern_model.py
-│   └── collaboration_model.py
-├── api/
-│   ├── main.py
-│   ├── endpoints/
-│   │   ├── thoughts.py
-│   │   ├── patterns.py
-│   │   └── enhancement.py
-│   └── websocket/
-│       └── realtime.py
-└── crew/
-    ├── thought_crew.py
-    ├── analysis_crew.py
-    └── collaboration_crew.py
+│   ├── thought.py
+│   └── collaboration.py
+├── memory/
+│   ├── memory_manager.py
+│   └── memory_combiner.py
+├── config/
+│   └── settings.py
+├── cli/
+│   └── unified_chat.py
+└── main.py
 ```
 
-### Database Layer (Supabase + SQLite)
+### Database Layer (Prisma + SQLite + Docker Services)
 ```
+prisma/
+├── schema.prisma           # Prisma schema definition
+├── schema.sqlite.prisma   # SQLite-specific schema
+├── dev.db                  # Local SQLite database
+└── seed.ts                 # Database seeding
+
 database/
-├── supabase/
-│   ├── migrations/
-│   │   ├── users.sql
-│   │   ├── thoughts.sql
-│   │   └── collaborations.sql
-│   └── functions/
-│       ├── process_thought.sql
-│       └── sync_collaboration.sql
-├── local/
-│   ├── thoughts.db
-│   ├── patterns.db
-│   └── cache.db
-└── schemas/
-    ├── user.schema.ts
-    ├── thought.schema.ts
-    └── collaboration.schema.ts
+├── init.sql                # PostgreSQL initialization
+├── docker-compose.yml      # Multi-database Docker setup
+├── monitoring-compose.yml  # Monitoring services (Grafana, Prometheus)
+└── prometheus.yml         # Monitoring configuration
+
+Docker Services:
+├── PostgreSQL (port 5432)  # Primary relational database
+├── Redis (port 6379)       # Cache and real-time data
+├── Neo4j (port 7474)      # Graph database
+└── ChromaDB (port 8001)   # Vector database
 ```
 
 ## 🔄 Data Flow
@@ -195,23 +231,27 @@ database/
 ### Development Commands
 ```bash
 # Frontend development
-npm run dev          # Start Vite dev server
-npm run test         # Run Vitest tests
-npm run storybook    # Start Storybook
+cd oliver-os/frontend
+pnpm dev          # Start Vite dev server
+pnpm test         # Run Vitest tests
 
-# Backend development  
-npm run dev          # Start Express server
-npm run test         # Run Jest tests
-npm run docs         # Generate API docs
+# Backend development
+cd oliver-os
+pnpm dev          # Start Express server
+pnpm test         # Run Vitest tests
 
 # AI Services development
+cd oliver-os/ai-services
 python -m uvicorn main:app --reload  # Start FastAPI
-pytest                              # Run tests
-python -m docs                      # Generate docs
+pytest                              # Run tests (if available)
 
-# Full system
-docker-compose up    # Start all services
-npm run test:all     # Run all tests
+# Full system (Development)
+cd oliver-os
+pnpm dev:full     # Start backend + frontend + monitoring dashboard
+pnpm test:smart:all  # Run smart assistance tests
+
+# AI Chat Interface
+pnpm chat:python  # Start unified Python agent chat interface
 ```
 
 ## 🎯 Next Steps

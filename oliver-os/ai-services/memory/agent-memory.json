@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "lastUpdated": "2025-01-27T00:00:00.000Z",
+  "lastUpdated": "2025-10-29T17:43:19.568735Z",
   "deepPatterns": {
     "thinkingStyle": [],
     "decisionPatterns": [],
@@ -18,6 +18,291 @@
         "strictTyping": true,
         "errorHandling": "immediate"
       }
+    },
+    "languagePatterns": {
+      "formalityLevels": [
+        {
+          "level": "very_casual",
+          "timestamp": "2025-10-29T17:42:10.451594Z"
+        },
+        {
+          "level": "formal",
+          "timestamp": "2025-10-29T17:42:10.457889Z"
+        },
+        {
+          "level": "neutral",
+          "timestamp": "2025-10-29T17:42:10.460273Z"
+        },
+        {
+          "level": "neutral",
+          "timestamp": "2025-10-29T17:42:10.462795Z"
+        },
+        {
+          "level": "neutral",
+          "timestamp": "2025-10-29T17:42:10.491539Z"
+        },
+        {
+          "level": "neutral",
+          "timestamp": "2025-10-29T17:42:10.494401Z"
+        },
+        {
+          "level": "neutral",
+          "timestamp": "2025-10-29T17:42:10.508042Z"
+        },
+        {
+          "level": "neutral",
+          "timestamp": "2025-10-29T17:42:10.512138Z"
+        },
+        {
+          "level": "neutral",
+          "timestamp": "2025-10-29T17:42:11.482713Z"
+        },
+        {
+          "level": "neutral",
+          "timestamp": "2025-10-29T17:42:11.486706Z"
+        },
+        {
+          "level": "very_casual",
+          "timestamp": "2025-10-29T17:43:18.869436Z"
+        },
+        {
+          "level": "formal",
+          "timestamp": "2025-10-29T17:43:18.875336Z"
+        },
+        {
+          "level": "neutral",
+          "timestamp": "2025-10-29T17:43:18.878978Z"
+        },
+        {
+          "level": "neutral",
+          "timestamp": "2025-10-29T17:43:18.883221Z"
+        },
+        {
+          "level": "neutral",
+          "timestamp": "2025-10-29T17:43:18.925066Z"
+        },
+        {
+          "level": "neutral",
+          "timestamp": "2025-10-29T17:43:18.930111Z"
+        },
+        {
+          "level": "neutral",
+          "timestamp": "2025-10-29T17:43:18.941128Z"
+        },
+        {
+          "level": "neutral",
+          "timestamp": "2025-10-29T17:43:18.959947Z"
+        },
+        {
+          "level": "neutral",
+          "timestamp": "2025-10-29T17:43:19.562053Z"
+        },
+        {
+          "level": "neutral",
+          "timestamp": "2025-10-29T17:43:19.566284Z"
+        }
+      ],
+      "tonePatterns": [
+        {
+          "tone": "urgent",
+          "timestamp": "2025-10-29T17:42:10.451594Z"
+        },
+        {
+          "tone": "neutral",
+          "timestamp": "2025-10-29T17:42:10.457889Z"
+        },
+        {
+          "tone": "urgent",
+          "timestamp": "2025-10-29T17:42:10.460273Z"
+        },
+        {
+          "tone": "questioning",
+          "timestamp": "2025-10-29T17:42:10.462795Z"
+        },
+        {
+          "tone": "neutral",
+          "timestamp": "2025-10-29T17:42:10.491539Z"
+        },
+        {
+          "tone": "neutral",
+          "timestamp": "2025-10-29T17:42:10.494401Z"
+        },
+        {
+          "tone": "neutral",
+          "timestamp": "2025-10-29T17:42:10.508042Z"
+        },
+        {
+          "tone": "questioning",
+          "timestamp": "2025-10-29T17:42:10.512138Z"
+        },
+        {
+          "tone": "neutral",
+          "timestamp": "2025-10-29T17:42:11.482713Z"
+        },
+        {
+          "tone": "neutral",
+          "timestamp": "2025-10-29T17:42:11.486706Z"
+        },
+        {
+          "tone": "urgent",
+          "timestamp": "2025-10-29T17:43:18.869436Z"
+        },
+        {
+          "tone": "neutral",
+          "timestamp": "2025-10-29T17:43:18.875336Z"
+        },
+        {
+          "tone": "urgent",
+          "timestamp": "2025-10-29T17:43:18.878978Z"
+        },
+        {
+          "tone": "questioning",
+          "timestamp": "2025-10-29T17:43:18.883221Z"
+        },
+        {
+          "tone": "neutral",
+          "timestamp": "2025-10-29T17:43:18.925066Z"
+        },
+        {
+          "tone": "neutral",
+          "timestamp": "2025-10-29T17:43:18.930111Z"
+        },
+        {
+          "tone": "neutral",
+          "timestamp": "2025-10-29T17:43:18.941128Z"
+        },
+        {
+          "tone": "questioning",
+          "timestamp": "2025-10-29T17:43:18.959947Z"
+        },
+        {
+          "tone": "neutral",
+          "timestamp": "2025-10-29T17:43:19.562053Z"
+        },
+        {
+          "tone": "neutral",
+          "timestamp": "2025-10-29T17:43:19.566284Z"
+        }
+      ],
+      "taskPhrases": {
+        "code_generation": [
+          {
+            "timestamp": "2025-10-29T17:42:10.451594Z",
+            "weight": 1
+          },
+          {
+            "timestamp": "2025-10-29T17:42:10.491539Z",
+            "weight": 1
+          },
+          {
+            "timestamp": "2025-10-29T17:42:11.482713Z",
+            "weight": 1
+          },
+          {
+            "timestamp": "2025-10-29T17:42:11.486706Z",
+            "weight": 1
+          },
+          {
+            "timestamp": "2025-10-29T17:43:18.869436Z",
+            "weight": 1
+          },
+          {
+            "timestamp": "2025-10-29T17:43:18.925066Z",
+            "weight": 1
+          },
+          {
+            "timestamp": "2025-10-29T17:43:19.562053Z",
+            "weight": 1
+          },
+          {
+            "timestamp": "2025-10-29T17:43:19.566284Z",
+            "weight": 1
+          }
+        ],
+        "review": [
+          {
+            "timestamp": "2025-10-29T17:42:10.457889Z",
+            "weight": 1
+          },
+          {
+            "timestamp": "2025-10-29T17:42:10.494401Z",
+            "weight": 1
+          },
+          {
+            "timestamp": "2025-10-29T17:43:18.875336Z",
+            "weight": 1
+          },
+          {
+            "timestamp": "2025-10-29T17:43:18.930111Z",
+            "weight": 1
+          }
+        ],
+        "debugging": [
+          {
+            "timestamp": "2025-10-29T17:42:10.457889Z",
+            "weight": 1
+          },
+          {
+            "timestamp": "2025-10-29T17:43:18.875336Z",
+            "weight": 1
+          }
+        ],
+        "optimization": [
+          {
+            "timestamp": "2025-10-29T17:42:10.460273Z",
+            "weight": 1
+          },
+          {
+            "timestamp": "2025-10-29T17:42:10.508042Z",
+            "weight": 2
+          },
+          {
+            "timestamp": "2025-10-29T17:43:18.878978Z",
+            "weight": 1
+          },
+          {
+            "timestamp": "2025-10-29T17:43:18.941128Z",
+            "weight": 2
+          }
+        ],
+        "research": [
+          {
+            "timestamp": "2025-10-29T17:42:10.462795Z",
+            "weight": 1
+          },
+          {
+            "timestamp": "2025-10-29T17:43:18.883221Z",
+            "weight": 1
+          }
+        ],
+        "question": [
+          {
+            "timestamp": "2025-10-29T17:42:10.462795Z",
+            "weight": 1
+          },
+          {
+            "timestamp": "2025-10-29T17:42:10.512138Z",
+            "weight": 1
+          },
+          {
+            "timestamp": "2025-10-29T17:43:18.883221Z",
+            "weight": 1
+          },
+          {
+            "timestamp": "2025-10-29T17:43:18.959947Z",
+            "weight": 1
+          }
+        ]
+      },
+      "vocabularyProfile": {
+        "style": "mixed",
+        "lastSeen": "2025-10-29T17:43:19.566284Z"
+      },
+      "sentenceStructure": {
+        "type": "simple",
+        "lastSeen": "2025-10-29T17:43:19.566284Z"
+      },
+      "commonPhrases": []
     }
   },
   "sessionData": {
@@ -41,4 +326,3 @@
     "preferredAbstractionLevel": "moderate"
   }
 }
-

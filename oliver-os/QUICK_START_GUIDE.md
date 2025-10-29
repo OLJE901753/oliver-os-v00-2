@@ -27,15 +27,15 @@ pnpm dev
 
 # Terminal 2: Frontend (Port 5173)
 cd oliver-os/frontend
-pnpm start
+pnpm dev
 ```
 
-### **Step 4: Access Oliver-OS**
-- **Frontend**: http://localhost:3001
+### **Step 3: Access Oliver-OS**
+- **Frontend**: http://localhost:5173
 - **Backend API**: http://localhost:3000/api/health
-- **AI Services**: http://localhost:8000/health
-- **Neo4j Browser**: http://localhost:7474 (neo4j/password)
-- **ChromaDB**: http://localhost:8001
+- **AI Services**: http://localhost:8000/health (when deployed)
+- **Neo4j Browser**: http://localhost:7474 (when deployed with neo4j/password)
+- **ChromaDB**: http://localhost:8001 (when deployed)
 
 ## 🧠 **Multi-Database Architecture in Action**
 

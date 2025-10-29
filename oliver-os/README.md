@@ -7,7 +7,7 @@
 
 ## Overview
 
-The Smart Assistance System is an intelligent development assistant that provides real-time code analysis, suggestions, and quality monitoring. Built with TypeScript and following BMAD principles (Break, Map, Automate, Document), it offers comprehensive testing, quality assurance, and CI/CD integration.
+Oliver-OS is a rebellious operating system designed to disrupt bureaucracy through clean, efficient microservices architecture. It includes an intelligent development assistant that provides real-time code analysis, suggestions, and quality monitoring. Built with TypeScript and following BMAD principles (Break, Map, Automate, Document), it offers comprehensive testing, quality assurance, and CI/CD integration.
 
 ## 🚀 Features
 
@@ -172,34 +172,47 @@ Access the quality dashboard at `/quality` to view:
 
 ## 🚀 Deployment
 
-### Staging
-```bash
-# Deploy to staging
-pnpm deploy:staging
+### Automated CI/CD (GitHub Actions)
 
-# Run staging tests
-pnpm test:staging
+**Available Workflows:**
+- **Main CI Pipeline** (`.github/workflows/ci.yml`) - Runs on push to main/develop, includes lint, tests, quality gates
+- **PR Validation** (`.github/workflows/pr-validation.yml`) - Quick validation for pull requests
+- **Nightly Tests** (`.github/workflows/nightly-tests.yml`) - Comprehensive daily testing at 2 AM UTC
+- **Docker CI** (`.github/workflows/docker-ci.yml`) - Containerized testing and deployment
+
+**Trigger Tests:**
+```bash
+# Push changes to trigger automated tests
+git push origin main
+
+# Or run locally
+pnpm test:smart:all
 ```
 
-### Production
-```bash
-# Deploy to production
-pnpm deploy:production
+### Manual Deployment
 
-# Run production tests
-pnpm test:production
+#### Windows
+```bash
+# Deploy to Windows (PowerShell script)
+pnpm deploy:windows
+
+# Development deployment  
+pnpm deploy:dev
+
+# Production deployment
+pnpm deploy:prod
 ```
 
-### Docker
+#### Docker
 ```bash
 # Build Docker image
-docker build -t smart-assistance .
+docker build -t oliver-os .
 
 # Run with Docker
-docker run -p 3000:3000 smart-assistance
+docker run -p 3000:3000 oliver-os
 
 # Run tests in Docker
-docker run --rm smart-assistance pnpm test:smart:all
+docker run --rm oliver-os pnpm test:smart:all
 ```
 
 ## 📚 Documentation

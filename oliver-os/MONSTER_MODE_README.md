@@ -72,7 +72,11 @@ Monster Mode is the ultimate multi-agent orchestration system for Oliver-OS, com
 
 ## Configuration
 
+**Note**: Configuration is loaded from `monster-mode-config.json` file in the project root. If the file doesn't exist, default configuration is used and saved automatically.
+
 ### Monster Mode Configuration
+
+Example runtime configuration:
 
 ```json
 {
@@ -414,8 +418,12 @@ import { MasterOrchestrator } from './src/services/monster-mode/master-orchestra
 const multiAgentService = new MultiAgentService(config);
 const masterOrchestrator = new MasterOrchestrator(config);
 
-// Integrate with existing multi-agent system
-await masterOrchestrator.integrateWithMultiAgent(multiAgentService);
+// Initialize services separately
+await multiAgentService.initialize();
+await masterOrchestrator.initialize();
+
+// Services work together via shared Config object
+// No explicit integration method needed
 ```
 
 ### CodeBuff SDK Integration
@@ -427,8 +435,12 @@ import { MasterOrchestrator } from './src/services/monster-mode/master-orchestra
 const codebuffService = new CodebuffService(config);
 const masterOrchestrator = new MasterOrchestrator(config);
 
-// Integrate with CodeBuff SDK
-await masterOrchestrator.integrateWithCodeBuff(codebuffService);
+// Initialize services separately
+await codebuffService.initialize();
+await masterOrchestrator.initialize();
+
+// Services work together via shared Config object
+// No explicit integration method needed
 ```
 
 ### Memory System Integration
@@ -440,8 +452,12 @@ import { MasterOrchestrator } from './src/services/monster-mode/master-orchestra
 const memoryService = new MemoryService(config);
 const masterOrchestrator = new MasterOrchestrator(config);
 
-// Integrate with memory system
-await masterOrchestrator.integrateWithMemory(memoryService);
+// Initialize services separately
+await memoryService.initialize();
+await masterOrchestrator.initialize();
+
+// Monster Mode automatically uses MemoryService via Config
+// No explicit integration needed
 ```
 
 ### Review System Integration
@@ -453,8 +469,12 @@ import { MasterOrchestrator } from './src/services/monster-mode/master-orchestra
 const selfReviewService = new SelfReviewService(config);
 const masterOrchestrator = new MasterOrchestrator(config);
 
-// Integrate with review system
-await masterOrchestrator.integrateWithReview(selfReviewService);
+// Initialize services separately
+await selfReviewService.initialize();
+await masterOrchestrator.initialize();
+
+// Monster Mode automatically includes SelfReviewService
+// No explicit integration needed
 ```
 
 ## Monitoring

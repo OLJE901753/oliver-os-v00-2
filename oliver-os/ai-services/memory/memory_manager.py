@@ -87,6 +87,14 @@ class AgentMemoryManager:
                         "strictTyping": True,
                         "errorHandling": "immediate"
                     }
+                },
+                "languagePatterns": {
+                    "formalityLevels": [],
+                    "tonePatterns": [],
+                    "taskPhrases": {},
+                    "vocabularyProfile": {},
+                    "sentenceStructure": {},
+                    "commonPhrases": []
                 }
             },
             "sessionData": {

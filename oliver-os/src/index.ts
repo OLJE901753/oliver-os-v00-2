@@ -97,6 +97,8 @@ async function initialize(): Promise<void> {
       logger.info(`   GET  /api/agents - List available agent types`);
       logger.info(`   POST /api/agents/spawn - Spawn a new agent`);
       logger.info(`   POST /api/agents/spawn-multiple - Spawn multiple agents`);
+      logger.info(`   POST /api/unified/route - Unified routing (Python agent → Monster Mode)`);
+      logger.info(`   GET  /api/unified/status - Unified router status`);
       logger.info(`   POST /api/auth/register - Register new user`);
       logger.info(`   POST /api/auth/login - Login user`);
       logger.info(`   POST /api/auth/refresh - Refresh access token`);

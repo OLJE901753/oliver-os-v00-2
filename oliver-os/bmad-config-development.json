@@ -1,0 +1,6 @@
+{
+  "debugMode": true,
+  "logLevel": "debug",
+  "autoReload": true,
+  "mockServices": true
+}

@@ -7,8 +7,9 @@
         "breakdownCriteria": [
           "AI-brain interface component",
           "Real-time collaboration feature",
-          "WebSocket connection module",
-          "Thought processing service"
+          "Thought processing service",
+          "Knowledge graph node",
+          "Mind visualization element"
         ]
       },
       "codeAnalysis": {
@@ -64,23 +65,39 @@
     "phases": [
       {
         "name": "Break",
-        "description": "Decompose AI-brain interface into manageable components",
-        "tools": ["thoughtAnalysis", "componentMapping", "complexityAnalysis"]
+        "description": "Decompose complex tasks",
+        "tools": [
+          "taskAnalysis",
+          "dependencyMapping",
+          "complexityAnalysis"
+        ]
       },
       {
         "name": "Map",
-        "description": "Map AI services and real-time communication architecture",
-        "tools": ["serviceMapping", "websocketFlow", "aiIntegrationAnalysis"]
+        "description": "Understand architecture and relationships",
+        "tools": [
+          "symbolSearch",
+          "visualization",
+          "flowAnalysis"
+        ]
       },
       {
         "name": "Automate",
-        "description": "Automate thought processing and collaboration workflows",
-        "tools": ["aiServiceGeneration", "realtimeAutomation", "collaborationScripts"]
+        "description": "Generate code and automate processes",
+        "tools": [
+          "codeGeneration",
+          "refactoring",
+          "testGeneration"
+        ]
       },
       {
         "name": "Document",
-        "description": "Document AI-brain interface and collaboration APIs",
-        "tools": ["aiApiDocs", "collaborationGuides", "thoughtProcessingDocs"]
+        "description": "Document and test everything",
+        "tools": [
+          "documentation",
+          "testing",
+          "validation"
+        ]
       }
     ]
   },
@@ -92,48 +109,55 @@
     "testing": "Vitest",
     "documentation": "JSDoc"
   },
-  "project": {
-    "name": "Oliver-OS",
-    "type": "ai-brain-interface",
-    "architecture": "microservices",
-    "target": "real-time-thought-processing",
-    "collaboration": "multi-user",
-    "aiIntegration": "thought-analysis",
-    "realTime": "websocket-streaming"
-  },
-  "components": {
-    "frontend": {
-      "framework": "React + Vite + Tailwind",
-      "components": [
-        "Mind visualization components",
-        "Real-time collaboration UI", 
-        "Brain dump interface"
-      ]
+  "environments": {
+    "development": {
+      "debugMode": true,
+      "logLevel": "debug",
+      "autoReload": true,
+      "mockServices": true
     },
-    "backend": {
-      "framework": "Node.js + Express + WebSocket",
-      "services": [
-        "Real-time idea streaming",
-        "User authentication",
-        "API endpoints"
-      ]
+    "testing": {
+      "debugMode": false,
+      "logLevel": "warn",
+      "autoReload": false,
+      "mockServices": true
     },
-    "aiServices": {
-      "framework": "Python + FastAPI + CrewAI",
-      "services": [
-        "Thought analysis",
-        "Pattern recognition", 
-        "Idea enhancement"
-      ]
+    "staging": {
+      "debugMode": false,
+      "logLevel": "info",
+      "autoReload": false,
+      "mockServices": false
     },
-    "database": {
-      "primary": "Supabase",
-      "local": "SQLite",
-      "tables": [
-        "User data storage",
-        "Thought patterns",
-        "Collaboration data"
-      ]
+    "production": {
+      "debugMode": false,
+      "logLevel": "error",
+      "autoReload": false,
+      "mockServices": false
     }
+  },
+  "projectType": "ai-brain-interface",
+  "integrations": {
+    "mcp": true,
+    "codebuff": true,
+    "aiServices": true,
+    "collaboration": true,
+    "github": false,
+    "docker": false,
+    "ci": false
+  },
+  "automation": {
+    "autoCommit": true,
+    "autoTest": true,
+    "autoDeploy": false,
+    "qualityGates": true,
+    "codeReview": true,
+    "dependencyUpdates": false
+  },
+  "metrics": {
+    "tracking": false,
+    "reporting": false,
+    "dashboards": false,
+    "alerts": false,
+    "retention": 30
   }
 }

@@ -4,7 +4,7 @@
 
 ## 🎉 **WORKING STATUS - Frontend & Backend Operational**
 
-**✅ FULLY FUNCTIONAL** - Oliver-OS is now running with working authentication system!
+**✅ WORKING IN DEVELOPMENT** - Oliver-OS is running with working authentication system!
 
 ### **Current Status:**
 - 🚀 **Frontend**: Running on http://localhost:5173
@@ -54,7 +54,7 @@ pnpm dev
 
 # Terminal 2 - Frontend  
 cd oliver-os/frontend
-pnpm start
+pnpm dev
 ```
 
 ### **Access Your System:**
@@ -62,29 +62,17 @@ pnpm start
 - **Backend API**: http://localhost:3000/api/health
 - **Authentication**: Working login/register forms
 
-## 🎯 BMAD Commands
+## 🎯 BMAD Configuration
 
-Once installed globally, you can use BMAD from anywhere:
+Oliver-OS uses BMAD (Break, Map, Automate, Document) methodology for development workflow.
 
-```bash
-# Initialize BMAD in any project
-bmad init
+**BMAD is configured** via `bmad-config.json` in the oliver-os directory, which defines:
+- Task decomposition strategies
+- Architecture mapping tools
+- Automation processes
+- Documentation standards
 
-# Break down complex tasks
-bmad break --task "Implement user authentication"
-
-# Map architecture and dependencies  
-bmad map --visualize
-
-# Automate repetitive processes
-bmad automate --generate --tests
-
-# Document everything
-bmad document --api --tests
-
-# Analyze project structure
-bmad analyze
-```
+**Note**: For global BMAD CLI commands, install the bmad-global tool separately using `install-bmad-global.ps1`.
 
 ## 🔧 Oliver-OS Development
 
@@ -108,20 +96,18 @@ pnpm build
 
 ### Available Scripts
 
-```json
-{
-  "dev": "Start development server",
-  "build": "Build for production", 
-  "test": "Run tests",
-  "lint": "Lint code",
-  "bmad:init": "Initialize BMAD",
-  "bmad:analyze": "Analyze project",
-  "bmad:break": "Break down tasks",
-  "bmad:map": "Map architecture",
-  "bmad:automate": "Automate processes",
-  "bmad:document": "Generate documentation"
-}
-```
+**Development:**
+- `pnpm dev` - Start backend development server
+- `pnpm dev:full` - Start backend + frontend + monitoring dashboard
+- `pnpm dev:frontend` - Start frontend only
+- `pnpm build` - Build for production
+
+**Testing:**
+- `pnpm test` - Run all tests
+- `pnpm test:smart` - Run smart assistance tests
+- `pnpm test:smart:coverage` - Run tests with coverage
+
+**Full list**: See `oliver-os/package.json` for all 100+ available scripts
 
 ## 🏗️ Architecture
 

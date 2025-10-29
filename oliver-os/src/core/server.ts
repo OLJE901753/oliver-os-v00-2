@@ -18,6 +18,7 @@ import { disruptorRouter } from '../routes/disruptor';
 import { createAgentRoutes } from '../routes/agents';
 import { websocketRouter, setWebSocketManager } from '../routes/websocket';
 import { createAuthRoutes } from '../routes/auth';
+import { createUnifiedAgentRoutes } from '../routes/unified-agent';
 import { errorHandler } from '../middleware/error-handler';
 import { requestLogger } from '../middleware/request-logger';
 import { 
@@ -96,6 +97,9 @@ export function createServer(config: Config, serviceManager?: any, prisma?: any)
   if (serviceManager) {
     app.use('/api/agents', createAgentRoutes(serviceManager));
   }
+
+  // Unified agent routes (for Python agent communication)
+  app.use('/api/unified', createUnifiedAgentRoutes(config));
   
   // Root endpoint
   app.get('/', (_req, res) => {

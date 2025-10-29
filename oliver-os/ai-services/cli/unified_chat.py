@@ -19,6 +19,8 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from memory.memory_manager import AgentMemoryManager
 from memory.memory_combiner import MemoryCombiner
+from memory.language_learner import LanguageLearner
+from memory.language_translator import LanguageTranslator
 from services.llm_provider import LLMProviderFactory
 from config.settings import Settings
 
@@ -31,6 +33,8 @@ class UnifiedTerminal:
         self.memory_manager = AgentMemoryManager()
         self.memory_combiner = MemoryCombiner()
         self.llm_provider = None
+        self.language_learner = None
+        self.language_translator = None
         self.chat_history = []
         self.current_directory = Path.cwd()
         
@@ -59,6 +63,12 @@ class UnifiedTerminal:
         except Exception as e:
             print(f"⚠️  LLM not available: {e}")
         
+        # Initialize language learning/translation
+        print("🧠 Initializing language learning system...")
+        self.language_learner = LanguageLearner(self.memory_manager)
+        self.language_translator = LanguageTranslator(self.language_learner, self.llm_provider)
+        print("✅ Language learning system ready")
+        
         print("\n" + "="*60)
         print("💬 Oliver-OS Unified Terminal Ready!")
         print("="*60)
@@ -69,8 +79,9 @@ class UnifiedTerminal:
         print("  /combine - See combined memories")
         print("  /cd <path> - Change directory")
         print("  /pwd - Show current directory")
-        print("  /send-to-cursor <msg> - Send message to Cursor AI")
-        print("  /send-to-agents <msg> - Send message to all agents")
+        print("  /send-to-cursor <msg> | send to cursor <msg>")
+        print("  /send-to-agents <msg> | send to agents <msg>")
+        print("  /automode <msg> | /auto <msg> | automode <msg>")
         print("  /analyze <file> - Run smart analysis on a file")
         print("  /exit - Exit terminal")
         print("\nShell Commands:")
@@ -230,57 +241,84 @@ Provide a helpful response. If the user wants to run a command, explain what it 
     
     async def process_input(self, user_input: str):
         """Process user input - command or chat"""
-        if not user_input or user_input.startswith('/'):
+        text = user_input.strip()
+        lower = text.lower()
+        
+        # Support explicit phrases without leading slash
+        if lower.startswith('send to cursor '):
+            message = text[len('send to cursor '):].strip()
+            await self._handle_send_to_cursor(message)
+            return
+        if lower.startswith('send to agents '):
+            message = text[len('send to agents '):].strip()
+            await self._handle_send_to_agents(message)
+            return
+        if lower.startswith('automode ') or lower.startswith('/automode ') or lower.startswith('/auto '):
+            # Extract message after "automode" or "/automode" or "/auto"
+            parts = text.split(' ', 1)
+            message = parts[1] if len(parts) > 1 else ''
+            await self._handle_automode(message)
+            return
+        
+        # Fall back to existing command handling
+        if not text or text.startswith('/'):
             # Handle special commands
-            await self._handle_command(user_input)
-        elif self._is_command(user_input):
+            await self._handle_command(text)
+        elif self._is_command(text):
             # Execute shell command
-            print(f"\n🔧 Executing: {user_input}")
-            output, code = await self.execute_command(user_input)
+            print(f"\n🔧 Executing: {text}")
+            output, code = await self.execute_command(text)
             print(output)
             if code != 0:
                 print(f"⚠️  Exit code: {code}")
         else:
             # Regular chat
             print("\n🤖 Agent: ", end='', flush=True)
-            response = await self.chat(user_input)
+            response = await self.chat(text)
             print(response)
             
             # Store in history
             self.chat_history.append({
                 'timestamp': datetime.now().isoformat(),
-                'user': user_input,
+                'user': text,
                 'agent': response
             })
     
-    async def _send_to_cursor(self, message: str):
-        """Send enriched message to Cursor AI"""
+    async def _handle_send_to_cursor(self, message: str):
+        """Send enriched message to Cursor AI with language learning and translation"""
         try:
-            # Get enriched context
-            context = self.memory_combiner.combine_memories()
-            agent_memory = self.memory_manager.get_memory()
+            # Learn + translate
+            translation = await self.language_translator.translate(
+                message,
+                context=self.memory_manager.get_user_context()
+            )
+            enriched = self.memory_combiner.combine_memories()
+            agent_memory = self.memory_manager.memory
             
-            # Create request file
-            cursor_request = {
-                'message': message,
+            # Create request file with translation
+            payload = {
+                'original': message,
+                'translated': translation,
                 'agent_memory': agent_memory,
                 'cursor_memory': self.memory_combiner.load_cursor_memory(),
-                'combined_context': context,
+                'combined_context': enriched,
                 'timestamp': datetime.now().isoformat(),
                 'user_patterns': {
                     'thinking_style': agent_memory.get('deepPatterns', {}).get('thinkingStyle', []),
                     'coding_philosophy': agent_memory.get('deepPatterns', {}).get('codingPhilosophy', {}),
                     'cognitive_profile': agent_memory.get('userCognitive', {}),
-                    'coding_preferences': context.get('unified', {}).get('preferences', {})
+                    'language_patterns': agent_memory.get('deepPatterns', {}).get('languagePatterns', {}),
+                    'coding_preferences': enriched.get('unified', {}).get('preferences', {})
                 }
             }
             
             # Save to shared location (current directory = oliver-os)
             cursor_file = self.current_directory / 'cursor-request.json'
-            cursor_file.write_text(json.dumps(cursor_request, indent=2))
+            cursor_file.write_text(json.dumps(payload, indent=2))
             
             print(f"\n✅ Message sent to Cursor AI:")
             print(f"📧 Original: {message}")
+            print(f"📝 Translated: {translation['type']} - {translation['description']}")
             print(f"💡 Enriched with {len(agent_memory.get('deepPatterns', {}).get('thinkingStyle', []))} patterns")
             print(f"📂 Location: {cursor_file}")
             print(f"\n💭 Switch to Cursor chat to see my response!")
@@ -290,39 +328,40 @@ Provide a helpful response. If the user wants to run a command, explain what it 
             import traceback
             traceback.print_exc()
     
-    async def _send_to_agents(self, message: str):
-        """Send message to other TypeScript agents via bridge"""
+    async def _handle_send_to_agents(self, message: str):
+        """Send message to Monster Mode (TypeScript) with language learning and translation"""
         try:
             import httpx
             
-            context = self.memory_combiner.combine_memories()
-            agent_memory = self.memory_manager.get_memory()
+            # Learn + translate
+            translation = await self.language_translator.translate(
+                message,
+                context=self.memory_manager.get_user_context()
+            )
+            enriched = self.memory_combiner.combine_memories()
+            agent_memory = self.memory_manager.memory
             
-            agent_request = {
-                'id': f'msg-{int(datetime.now().timestamp() * 1000)}',
-                'sender': 'python-agent',
-                'type': 'broadcast',
-                'recipient': 'all',
-                'content': {
-                    'message': message,
-                    'context': context,
-                    'user_patterns': agent_memory.get('deepPatterns', {}),
-                    'agent_memory': agent_memory
-                },
-                'timestamp': datetime.now().isoformat(),
-                'priority': 'normal'
-            }
-            
-            async with httpx.AsyncClient(timeout=10.0) as client:
+            # Send to unified router (explicit Monster Mode routing)
+            async with httpx.AsyncClient(timeout=12.0) as client:
                 response = await client.post(
-                    'http://localhost:3000/api/agents/messages',
-                    json=agent_request
+                    'http://localhost:3000/api/unified/route',
+                    json={
+                        'sender': 'python-agent',
+                        'message': message,
+                        'translated': translation,
+                        'auto': False,  # Explicit routing to Monster Mode
+                        'target': 'monster-mode'
+                    }
                 )
-                
+            
             if response.status_code == 200:
-                print(f"\n✅ Message sent to TypeScript agents!")
-                print(f"📧 Message: {message}")
-                print(f"🎯 Recipients: All agents")
+                data = response.json()
+                print(f"\n✅ Task sent to Monster Mode (TypeScript)!")
+                print(f"📧 Original: {message}")
+                print(f"📝 Translated: {translation['type']} - {translation['description']}")
+                print(f"⚡ Priority: {translation['priority']}")
+                if 'taskId' in data:
+                    print(f"🆔 Task ID: {data['taskId']}")
             else:
                 print(f"⚠️ Failed to send (status: {response.status_code})")
                 print(f"💡 Start the server with: pnpm dev")
@@ -332,6 +371,52 @@ Provide a helpful response. If the user wants to run a command, explain what it 
             print("💡 Run in another terminal: pnpm dev")
         except Exception as e:
             print(f"❌ Error: {e}")
+            import traceback
+            traceback.print_exc()
+    
+    async def _handle_automode(self, message: str):
+        """Auto-mode: intelligent routing to best system (Monster Mode, CodeBuff, or Cursor)"""
+        try:
+            import httpx
+            
+            # Learn + translate
+            translation = await self.language_translator.translate(
+                message,
+                context=self.memory_manager.get_user_context()
+            )
+            
+            # Send to unified router with auto flag
+            async with httpx.AsyncClient(timeout=12.0) as client:
+                response = await client.post(
+                    'http://localhost:3000/api/unified/route',
+                    json={
+                        'sender': 'python-agent',
+                        'message': message,
+                        'translated': translation,
+                        'auto': True  # Let router decide destination
+                    }
+                )
+            
+            if response.status_code == 200:
+                data = response.json()
+                print("\n✅ Auto-mode routed successfully!")
+                print(f"📧 Original: {message}")
+                print(f"📝 Translated: {translation['type']} - {translation['description']}")
+                print(f"🎯 Routed to: {data.get('destination', 'unknown')}")
+                print(f"💡 Intent: {data.get('intent', {}).get('type', 'unknown')}")
+                if 'taskId' in data:
+                    print(f"🆔 Task ID: {data['taskId']}")
+            else:
+                print(f"⚠️ Auto-mode failed (status: {response.status_code})")
+                print(f"💡 Start the server with: pnpm dev")
+                
+        except httpx.ConnectError:
+            print("⚠️ TypeScript agent server not running.")
+            print("💡 Run in another terminal: pnpm dev")
+        except Exception as e:
+            print(f"❌ Auto-mode error: {e}")
+            import traceback
+            traceback.print_exc()
     
     async def _handle_command(self, command: str):
         """Handle special commands"""
@@ -379,16 +464,23 @@ Provide a helpful response. If the user wants to run a command, explain what it 
         # NEW: Send message to Cursor AI
         elif cmd == '/send-to-cursor' or cmd == '/cursor':
             if arg:
-                await self._send_to_cursor(arg)
+                await self._handle_send_to_cursor(arg)
             else:
                 print("Usage: /send-to-cursor <message>")
         
-        # NEW: Send message to TypeScript agents
+        # NEW: Send message to TypeScript agents (Monster Mode)
         elif cmd == '/send-to-agents' or cmd == '/agents':
             if arg:
-                await self._send_to_agents(arg)
+                await self._handle_send_to_agents(arg)
             else:
                 print("Usage: /send-to-agents <message>")
+        
+        # NEW: Auto mode (intelligent routing)
+        elif cmd == '/automode' or cmd == '/auto':
+            if arg:
+                await self._handle_automode(arg)
+            else:
+                print("Usage: /automode <message>")
             
         else:
             print(f"❓ Unknown command: {cmd}")
