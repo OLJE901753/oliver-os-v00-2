@@ -2,12 +2,14 @@
 Oliver-OS Language Translator
 Translates natural user language into structured AI commands
 Uses LLM with structured output (Pydantic) when available, falls back to rule-based
+Phase 2: Optionally performs semantic retrieval to enrich translation context
 """
 
 from typing import Any, Dict, Optional, List
 from pydantic import BaseModel, Field
 import logging
 import json
+from utils.tracing import trace_event
 
 logger = logging.getLogger(__name__)
 
@@ -27,40 +29,61 @@ class LanguageTranslator:
     """
     Translates user's natural language into structured AI commands.
     Uses LLM with structured output when available, with rule-based fallback.
+    Can use semantic memory to enrich context for better decisions.
     """
     
-    def __init__(self, learner, llm_provider=None):
+    def __init__(self, learner, llm_provider=None, semantic_memory=None):
         self.learner = learner
         self.llm = llm_provider
+        self.semantic_memory = semantic_memory  # Optional SemanticMemory instance
         self.logger = logging.getLogger('LanguageTranslator')
     
-    async def translate(self, message: str, context: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+    async def translate(self, message: str, context: Optional[Dict[str, Any]] = None, *, use_retrieval: bool = True) -> Dict[str, Any]:
         """
         Translate natural language message into structured command.
         Tries LLM first, falls back to rule-based.
+        Optionally retrieves top-k semantic memories and includes them in metadata.
         """
         # Always analyze first for learning
         analysis = self.learner.analyze(message)
         profile = self.learner.profile()
-        
+        try:
+            trace_event("translator.analyze", {"msg": message[:200], "analysis": analysis, "profile": profile})
+        except Exception:
+            pass
+
+        retrieved: List[Dict[str, Any]] = []
+        if use_retrieval and self.semantic_memory is not None:
+            try:
+                retrieved = self.semantic_memory.similarity_search(message, k=4)
+                try:
+                    trace_event("translator.retrieve", {"msg": message[:200], "k": 4, "num": len(retrieved)})
+                except Exception:
+                    pass
+            except Exception as e:
+                self.logger.debug(f"Retrieval failed: {e}")
+
         # Try LLM-based translation (structured output)
         if self.llm:
             try:
-                structured_result = await self._translate_with_llm(message, analysis, profile, context)
+                structured_result = await self._translate_with_llm(message, analysis, profile, context, retrieved)
                 if structured_result:
                     return structured_result
             except Exception as e:
                 self.logger.warning(f"LLM translation failed, using rule-based: {e}")
         
         # Fallback to rule-based translation
-        return self._translate_rule_based(message, analysis, profile, context)
+        return self._translate_rule_based(message, analysis, profile, context, retrieved)
     
-    async def _translate_with_llm(self, message: str, analysis: Dict[str, Any], profile: Dict[str, Any], context: Optional[Dict[str, Any]]) -> Optional[Dict[str, Any]]:
+    async def _translate_with_llm(self, message: str, analysis: Dict[str, Any], profile: Dict[str, Any], context: Optional[Dict[str, Any]], retrieved: List[Dict[str, Any]]) -> Optional[Dict[str, Any]]:
         """Use LLM with structured output for translation"""
         if not self.llm:
             return None
         
-        # Build prompt for structured translation
+        retrieved_summary = "\n".join([
+            f"- {r.get('metadata', {}).get('name', 'doc')}: {r.get('content', '')[:240]}" for r in retrieved
+        ]) if retrieved else "(no retrieved context)"
+
         system_prompt = f"""You are a language translator that converts natural user messages into structured AI commands.
 
 User Language Profile:
@@ -74,6 +97,9 @@ Task Analysis:
 - Detected Tone: {analysis.get('tone', 'neutral')}
 - Task Indicators: {json.dumps(analysis.get('task_indicators', {}))}
 
+Relevant Context (retrieved):
+{retrieved_summary}
+
 Your job is to translate the user's message into a structured command that AI systems can understand.
 
 Return a JSON object with:
@@ -83,74 +109,59 @@ Return a JSON object with:
 - requirements: array of backend, frontend, database, security, or general
 - estimated_duration: estimate in milliseconds (default 900000 = 15 minutes)
 - dependencies: any prerequisites
-- metadata: additional context
-
-Example:
-Input: "yo can you add a login button to the frontend real quick"
-Output:
-{{
-  "type": "code-generation",
-  "priority": "medium",
-  "description": "Add a login button to the frontend interface",
-  "requirements": ["frontend"],
-  "estimated_duration": 300000,
-  "dependencies": [],
-  "metadata": {{"urgency": "quick", "casual": true}}
-}}
+- metadata: additional context (include a short note about any retrieved context you used)
 """
 
         user_prompt = f"Translate this message: {message}"
         
         try:
-            # Generate with structured output
             response = await self.llm.generate(f"{system_prompt}\n\n{user_prompt}")
-            
-            # Try to extract JSON from response
             json_start = response.find('{')
             json_end = response.rfind('}') + 1
-            
             if json_start != -1 and json_end > json_start:
                 json_str = response[json_start:json_end]
                 parsed = json.loads(json_str)
-                
-                # Validate against Pydantic model
                 validated = StructuredCommand(**parsed)
                 result = validated.model_dump()
-                
-                # Add analysis metadata
                 result['formal'] = analysis['formality'] == 'formal'
                 result['style'] = analysis['tone']
                 result['context'] = context or {}
-                
+                if retrieved:
+                    result['metadata'] = {
+                        **result.get('metadata', {}),
+                        'retrieval_used': True,
+                        'retrieved': [
+                            { 'name': r.get('metadata', {}).get('name'), 'path': r.get('metadata', {}).get('path') }
+                            for r in retrieved
+                        ]
+                    }
                 self.logger.info(f"✅ LLM translation successful: {result['type']}")
+                try:
+                    trace_event("translator.output", {"msg": message[:200], "type": result.get('type'), "priority": result.get('priority'), "used_retrieval": bool(retrieved)})
+                except Exception:
+                    pass
                 return result
         except Exception as e:
             self.logger.debug(f"LLM structured output parsing failed: {e}")
         
         return None
     
-    def _translate_rule_based(self, message: str, analysis: Dict[str, Any], profile: Dict[str, Any], context: Optional[Dict[str, Any]]) -> Dict[str, Any]:
+    def _translate_rule_based(self, message: str, analysis: Dict[str, Any], profile: Dict[str, Any], context: Optional[Dict[str, Any]], retrieved: List[Dict[str, Any]]) -> Dict[str, Any]:
         """Rule-based translation fallback"""
         indicators = analysis['task_indicators']
         lower = message.lower()
         
-        # Determine task type from indicators
-        task_type = 'code-generation'  # default
+        task_type = 'code-generation'
         max_weight = 0
-        
         for task, weight in indicators.items():
             if task != 'question' and weight > max_weight:
                 max_weight = weight
                 task_type = task.replace('_', '-')
-        
-        # If no strong indicators, check for question
         if indicators.get('question', 0) > 0 and max_weight == 0:
             task_type = 'question'
         elif indicators.get('code_generation', 0) == 0 and max_weight == 0:
-            # Default to code-generation if unclear
             task_type = 'code-generation'
         
-        # Determine priority
         if analysis['tone'] == 'urgent' or 'critical' in lower or 'urgent' in lower:
             priority = 'critical'
         elif 'important' in lower or 'asap' in lower or 'soon' in lower:
@@ -160,7 +171,6 @@ Output:
         else:
             priority = 'medium'
         
-        # Extract requirements
         requirements = []
         if any(x in lower for x in ['backend', 'api', 'endpoint', 'service', 'server']):
             requirements.append('backend')
@@ -173,27 +183,22 @@ Output:
         if not requirements:
             requirements.append('general')
         
-        # Estimate duration based on task type and complexity
         base_durations = {
-            'code-generation': 15 * 60 * 1000,  # 15 minutes
-            'review': 10 * 60 * 1000,  # 10 minutes
-            'optimization': 20 * 60 * 1000,  # 20 minutes
-            'documentation': 5 * 60 * 1000,  # 5 minutes
-            'research': 10 * 60 * 1000,  # 10 minutes
-            'question': 2 * 60 * 1000,  # 2 minutes
-            'debugging': 15 * 60 * 1000,  # 15 minutes
-            'testing': 10 * 60 * 1000  # 10 minutes
+            'code-generation': 15 * 60 * 1000,
+            'review': 10 * 60 * 1000,
+            'optimization': 20 * 60 * 1000,
+            'documentation': 5 * 60 * 1000,
+            'research': 10 * 60 * 1000,
+            'question': 2 * 60 * 1000,
+            'debugging': 15 * 60 * 1000,
+            'testing': 10 * 60 * 1000
         }
-        
         estimated_duration = base_durations.get(task_type, 15 * 60 * 1000)
-        
-        # Adjust for complexity hints
         if any(x in lower for x in ['simple', 'quick', 'easy', 'just', 'only']):
             estimated_duration = int(estimated_duration * 0.5)
         elif any(x in lower for x in ['complex', 'complicated', 'difficult', 'major', 'large']):
             estimated_duration = int(estimated_duration * 2)
         
-        # Style description based on user's formality
         if analysis['formality'] == 'formal':
             description = message.strip().capitalize()
             if not description.endswith('.'):
@@ -202,6 +207,19 @@ Output:
             description = message.strip()
         else:
             description = message.strip().capitalize()
+
+        metadata = {
+            'translation_method': 'rule-based',
+            'confidence': 'medium',
+            'user_formality': analysis['formality'],
+            'user_tone': analysis['tone']
+        }
+        if retrieved:
+            metadata['retrieval_used'] = True
+            metadata['retrieved'] = [
+                { 'name': r.get('metadata', {}).get('name'), 'path': r.get('metadata', {}).get('path') }
+                for r in retrieved
+            ]
         
         result = {
             'type': task_type,
@@ -210,17 +228,16 @@ Output:
             'requirements': requirements,
             'estimated_duration': estimated_duration,
             'dependencies': [],
-            'metadata': {
-                'translation_method': 'rule-based',
-                'confidence': 'medium',
-                'user_formality': analysis['formality'],
-                'user_tone': analysis['tone']
-            },
+            'metadata': metadata,
             'formal': analysis['formality'] == 'formal',
             'style': analysis['tone'],
             'context': context or {}
         }
         
-        self.logger.info(f"✅ Rule-based translation: {result['type']}")
+        self.logger.info(f"✅ Rule-based translation: {result['type']} (retrieval={bool(retrieved)})")
+        try:
+            trace_event("translator.output", {"msg": message[:200], "type": result.get('type'), "priority": result.get('priority'), "used_retrieval": bool(retrieved)})
+        except Exception:
+            pass
         return result
 

@@ -13,7 +13,8 @@ anthropic==0.40.0
 ollama==0.3.1  # For local LLM inference
 
 # Database and Storage
-sqlalchemy==2.0.36
+# Note: langchain-community 0.3.7 requires SQLAlchemy < 2.0.36
+sqlalchemy==2.0.35
 redis==5.2.1
 psycopg2-binary==2.9.10
 
@@ -41,3 +42,7 @@ langchain==0.3.7
 langchain-community==0.3.7
 chromadb==0.5.15  # Vector store for embeddings
 sentence-transformers==3.0.1  # For embeddings (local)
+
+# Phase 3 (optional upgrades)
+qdrant-client==1.12.1
+jina-reranker==0.3.5

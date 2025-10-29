@@ -90,6 +90,21 @@ export function createUnifiedAgentRoutes(config: Config): Router {
     }
   });
 
+  router.post('/inspect', async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { message, translated } = req.body || {};
+      if (!message) { res.status(400).json({ error: 'message is required' }); return; }
+      const router_instance = getUnifiedRouter(config);
+      // Dry-run: reuse internal logic to compute reason/rules but do not submit tasks
+      const result = await router_instance.route({ sender: 'inspector', message, translated, auto: true });
+      delete result.taskId; // not actually submitted
+      res.json({ success: true, decision: result.decision, intent: result.intent, destination: result.destination });
+    } catch (error: any) {
+      logger.error('Inspect error:', error);
+      res.status(500).json({ error: 'Failed to inspect routing', details: error?.message || 'Unknown error' });
+    }
+  });
+
   return router;
 }
 
