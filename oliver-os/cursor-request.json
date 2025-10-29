@@ -1,0 +1,12 @@
+{
+  "original": "write docs for auth flow",
+  "translated": {
+    "type": "documentation",
+    "priority": "medium",
+    "description": "Write docs for auth flow",
+    "requirements": [
+      "documentation"
+    ]
+  },
+  "timestamp": "2025-10-29T21:18:21.867Z"
+}

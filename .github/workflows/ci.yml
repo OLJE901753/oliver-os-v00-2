@@ -625,3 +625,64 @@ jobs:
           npx tsx scripts/cursor-test-integration.ts send-notifications \
             --report cursor-integration-report.json \
             --context github-context.json
+
+  # CI
+  build-and-eval:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install PNPM
+        run: npm i -g pnpm@9
+
+      - name: Install backend deps
+        working-directory: oliver-os
+        run: pnpm install
+
+      - name: Build backend
+        working-directory: oliver-os
+        run: pnpm build
+
+      - name: Start backend (SKIP_DB_INIT)
+        working-directory: oliver-os
+        env:
+          SKIP_DB_INIT: 'true'
+        run: |
+          nohup node dist/index.js > server.log 2>&1 &
+          echo $! > server.pid
+          sleep 3
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install ai-services deps
+        working-directory: oliver-os/ai-services
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run eval harness
+        working-directory: oliver-os/ai-services
+        run: |
+          python eval/run_eval.py --server http://localhost:3000 --cases eval/testcases.json
+
+      - name: Upload eval artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: eval-report
+          path: oliver-os/ai-services/eval/output_eval.json
+
+      - name: Stop backend
+        if: always()
+        working-directory: oliver-os
+        run: |
+          if [ -f server.pid ]; then kill $(cat server.pid) || true; fi

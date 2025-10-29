@@ -1,0 +1,13 @@
+services:
+  backend:
+    build: ./oliver-os
+    ports:
+      - "3000:3000"
+    environment:
+      - SKIP_DB_INIT=true
+    restart: unless-stopped
+  ai-services:
+    build: ./oliver-os/ai-services
+    working_dir: /app
+    command: ["python", "-c", "print('ai-services up')"]
+    restart: unless-stopped

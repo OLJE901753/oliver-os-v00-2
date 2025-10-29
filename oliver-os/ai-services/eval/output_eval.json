@@ -1,0 +1,36 @@
+{
+  "routingPrecision": 1.0,
+  "routingResults": [
+    {
+      "message": "research docs for api",
+      "expected": "codebuff",
+      "got": "codebuff",
+      "pass": true,
+      "ms": 2052
+    },
+    {
+      "message": "write docs for auth flow",
+      "expected": "cursor",
+      "got": "cursor",
+      "pass": true,
+      "ms": 11
+    },
+    {
+      "message": "add auth middleware",
+      "expected": "monster-mode",
+      "got": "monster-mode",
+      "pass": true,
+      "ms": 9
+    }
+  ],
+  "latency": {
+    "inspectMs": 2013,
+    "inspectOk": true,
+    "inspectBudgetMs": 500,
+    "inspectWithinBudget": false,
+    "routeMs": 6,
+    "routeOk": true,
+    "routeBudgetMs": 1200,
+    "routeWithinBudget": true
+  }
+}

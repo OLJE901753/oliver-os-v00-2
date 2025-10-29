@@ -9,6 +9,8 @@ from typing import Dict, List, Any, Optional
 import requests
 from requests.exceptions import ConnectionError as RequestsConnectionError
 import logging
+import hashlib
+from utils.cache import default_cache
 
 logger = logging.getLogger(__name__)
 
@@ -44,6 +46,12 @@ class OllamaProvider(LLMProvider):
         """Generate text using Ollama"""
         try:
             full_prompt = f"{context}\n\n{prompt}" if context else prompt
+            # Cache
+            cache = default_cache()
+            key = hashlib.sha256(f"ollama:{self.model}:{full_prompt}".encode('utf-8')).hexdigest()
+            cached = cache.get(key)
+            if cached:
+                return cached
             
             response = requests.post(
                 f"{self.base_url}/api/generate",
@@ -57,7 +65,9 @@ class OllamaProvider(LLMProvider):
             
             if response.status_code == 200:
                 result = response.json()
-                return result.get('response', '')
+                text = result.get('response', '')
+                cache.set(key, text, ttl_seconds=300)
+                return text
             else:
                 self.logger.error(f"Ollama API error: {response.status_code}")
                 raise ConnectionError(f"Ollama API error: {response.status_code}")
@@ -140,4 +150,19 @@ class LLMProviderFactory:
             )
         else:
             raise ValueError(f"Unknown provider: {provider}")
+
+
+class ModelRouter:
+    """Minimal router that returns a provider tuned for task type/priority."""
+    def __init__(self, config: Dict[str, Any]) -> None:
+        self.config = config
+
+    def select(self, task_type: Optional[str], priority: Optional[str]) -> LLMProvider:
+        # For now, always Ollama; later, decide based on task/priority
+        provider = self.config.get('provider', 'ollama')
+        return LLMProviderFactory.create(provider, {
+            'ollama_base_url': self.config.get('ollama_base_url', 'http://localhost:11434'),
+            'ollama_model': self.config.get('ollama_model', 'llama3.1:8b'),
+            'openai_api_key': self.config.get('openai_api_key')
+        })
 

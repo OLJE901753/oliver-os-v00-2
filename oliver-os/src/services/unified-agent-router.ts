@@ -8,6 +8,8 @@ import { Logger } from '../core/logger';
 import { Config } from '../core/config';
 import { MasterOrchestrator } from './monster-mode/master-orchestrator';
 import type { Task } from './monster-mode/types';
+import fs from 'fs-extra'
+import path from 'node:path'
 
 export interface RouteRequest {
   sender: string;
@@ -45,10 +47,15 @@ export class UnifiedAgentRouter {
   private config: Config;
   private monster?: MasterOrchestrator;
   private initialized: boolean = false;
+  private serviceManager?: any;
+  private recentDecisions: Array<{ ts: string; sender: string; message: string; destination: string; intent: any; decision?: any; retrieved?: any[] }>= [];
+  private readonly maxDecisions = 100;
+  private pending: Map<string, { request: RouteRequest; destination: string }>= new Map();
 
-  constructor(config: Config) {
+  constructor(config: Config, serviceManager?: any) {
     this.config = config;
     this.logger = new Logger('UnifiedAgentRouter');
+    this.serviceManager = serviceManager;
   }
 
   async initialize(): Promise<void> {
@@ -78,18 +85,68 @@ export class UnifiedAgentRouter {
     this.logger.info(`📨 Routing message from ${sender}: ${message.substring(0, 50)}...`);
 
     if (target === 'monster-mode' || (!auto && !target)) {
-      return await this.routeToMonsterMode(message, translated, {
+      // Safety gate: detect risky before execution
+      const risky = isRisky(request.message, request.translated);
+      if (risky) {
+        const pendingId = this.createPending(request, 'monster-mode');
+        const res: RouteResult = {
+          destination: 'monster-mode',
+          intent: { type: request.translated?.type || 'code-generation', priority: request.translated?.priority || 'medium', confidence: 'high' },
+          decision: { reason: 'Risky action detected - confirmation required', rulesMatched: ['safety:risky'] },
+          message: pendingId
+        };
+        this.recordDecision(request, res);
+        await this.writeAudit('PENDING', request, res);
+        return res;
+      }
+      const res = await this.routeToMonsterMode(message, translated, {
         reason: target === 'monster-mode' ? 'Explicit target from client' : 'Default route (no auto/target)'.trim(),
         rulesMatched: target === 'monster-mode' ? ['explicit:monster-mode'] : ['default']
       });
+      this.recordDecision(request, res);
+      await this.writeAudit('EXECUTE', request, res);
+      return res;
     }
 
     if (auto) {
-      return await this.routeAutoMode(message, translated);
+      // Safety: evaluate risky
+      const risky = isRisky(request.message, request.translated);
+      if (risky) {
+        const pendingId = this.createPending(request, 'auto');
+        const res: RouteResult = {
+          destination: 'monster-mode',
+          intent: { type: request.translated?.type || 'code-generation', priority: request.translated?.priority || 'medium', confidence: 'high' },
+          decision: { reason: 'Risky action detected - confirmation required', rulesMatched: ['safety:risky'] },
+          message: pendingId
+        };
+        this.recordDecision(request, res);
+        await this.writeAudit('PENDING', request, res);
+        return res;
+      }
+      const res = await this.routeAutoMode(message, translated);
+      this.recordDecision(request, res);
+      await this.writeAudit('EXECUTE', request, res);
+      return res;
     }
 
     this.logger.warn('No explicit routing specified, defaulting to Monster Mode');
-    return await this.routeToMonsterMode(message, translated, { reason: 'Fallback default', rulesMatched: ['default'] });
+    const risky = isRisky(request.message, request.translated);
+    if (risky) {
+      const pendingId = this.createPending(request, 'monster-mode');
+      const res: RouteResult = {
+        destination: 'monster-mode',
+        intent: { type: request.translated?.type || 'code-generation', priority: request.translated?.priority || 'medium', confidence: 'high' },
+        decision: { reason: 'Risky action detected - confirmation required', rulesMatched: ['safety:risky'] },
+        message: pendingId
+      };
+      this.recordDecision(request, res);
+      await this.writeAudit('PENDING', request, res);
+      return res;
+    }
+    const res = await this.routeToMonsterMode(message, translated, { reason: 'Fallback default', rulesMatched: ['default'] });
+    this.recordDecision(request, res);
+    await this.writeAudit('EXECUTE', request, res);
+    return res;
   }
 
   private async routeToMonsterMode(
@@ -174,11 +231,14 @@ export class UnifiedAgentRouter {
 
     const reason = decideReason(taskType, pri, rulesMatched) + `; policyDestination=${destination}`;
 
-    // Execute: For now we only support Monster Mode execution, so fallback
-    const result = await this.routeToMonsterMode(message, translated, { reason, rulesMatched });
-    // Override reported destination for visibility
-    result.destination = destination;
-    return result;
+    // Execute destination
+    if (destination === 'codebuff') {
+      return await this.routeToCodeBuff(message, translated, { reason, rulesMatched });
+    }
+    if (destination === 'cursor') {
+      return await this.routeToCursor(message, translated, { reason, rulesMatched });
+    }
+    return await this.routeToMonsterMode(message, translated, { reason, rulesMatched });
   }
 
   getStatus(): { initialized: boolean; monsterModeReady: boolean } {
@@ -186,6 +246,63 @@ export class UnifiedAgentRouter {
       initialized: this.initialized,
       monsterModeReady: !!this.monster
     };
+  }
+
+  public getRecentDecisions(): Array<{ ts: string; sender: string; message: string; destination: string; intent: any; decision?: any; retrieved?: any[] }>{
+    return this.recentDecisions.slice(-this.maxDecisions);
+  }
+
+  private recordDecision(req: RouteRequest, res: RouteResult): void {
+    const item = {
+      ts: new Date().toISOString(),
+      sender: req.sender,
+      message: req.message,
+      destination: res.destination,
+      intent: res.intent,
+      decision: res.decision,
+      retrieved: Array.isArray((req.translated as any)?.metadata?.retrieved)
+        ? (req.translated as any).metadata.retrieved
+        : []
+    };
+    this.recentDecisions.push(item);
+    if (this.recentDecisions.length > this.maxDecisions) {
+      this.recentDecisions = this.recentDecisions.slice(-this.maxDecisions);
+    }
+  }
+
+  private createPending(request: RouteRequest, destination: string): string {
+    const id = `pending-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    this.pending.set(id, { request, destination });
+    return id;
+  }
+
+  public consumePending(id: string): { request: RouteRequest; destination: string } | undefined {
+    const it = this.pending.get(id);
+    if (it) this.pending.delete(id);
+    return it;
+  }
+
+  public getPending(): Array<{ id: string; sender: string; message: string; destination: string; intent: any }>{
+    const items: Array<{ id: string; sender: string; message: string; destination: string; intent: any }>= [];
+    for (const [id, { request, destination }] of this.pending.entries()) {
+      items.push({
+        id,
+        sender: request.sender,
+        message: request.message,
+        destination,
+        intent: { type: request.translated?.type || 'code-generation', priority: request.translated?.priority || 'medium' }
+      });
+    }
+    return items;
+  }
+
+  private async writeAudit(action: 'PENDING'|'EXECUTE'|'CONFIRM', req: RouteRequest, res: RouteResult): Promise<void> {
+    try {
+      const logDir = path.join(process.cwd(), 'logs');
+      await fs.ensureDir(logDir);
+      const line = JSON.stringify({ ts: new Date().toISOString(), action, req, res }) + '\n';
+      await fs.appendFile(path.join(logDir, 'audit.log'), line, 'utf-8');
+    } catch (_) { /* ignore */ }
   }
 }
 
@@ -217,6 +334,74 @@ function decideReason(taskType: string, priority: string, rules: string[]): stri
   if (rules.includes('intent:review')) return 'Review tasks require orchestration and QA → Monster Mode';
   if (rules.includes('intent:research|question')) return 'Research/question tasks can be orchestrated for follow-up work → Monster Mode (Phase 2)';
   return 'Code generation and execution best handled by Monster Mode';
+}
+
+// New destination handlers
+export interface DecisionCtx { reason: string; rulesMatched: string[] }
+
+// Route to CodeBuff (via AgentManager through ServiceManager)
+// Chooses an agent type based on translated.type
+UnifiedAgentRouter.prototype.routeToCodeBuff = async function (
+  this: UnifiedAgentRouter,
+  message: string,
+  translated?: RouteRequest['translated'],
+  decision?: DecisionCtx
+): Promise<RouteResult> {
+  if (!this.serviceManager || !this.serviceManager.spawnAgent) {
+    this.logger.warn('ServiceManager not available; falling back to Monster Mode');
+    return await this.routeToMonsterMode(message, translated, decision);
+  }
+  const t = (translated?.type || 'code-generation').toLowerCase();
+  let agentType = 'code-generator';
+  if (t.includes('review')) agentType = 'code-reviewer';
+  else if (t.includes('documentation') || t.includes('doc')) agentType = 'documentation-generator';
+
+  const prompt = translated?.description || message;
+  const spawned = await this.serviceManager.spawnAgent({ agentType, prompt, metadata: { translated, source: 'unified-router' } });
+
+  return {
+    destination: 'codebuff',
+    intent: { type: translated?.type || 'code-generation', priority: translated?.priority || 'medium', confidence: 'high' },
+    taskId: spawned.id,
+    decision
+  };
+};
+
+// Route to Cursor by writing a request file for the Cursor chat workflow
+UnifiedAgentRouter.prototype.routeToCursor = async function (
+  this: UnifiedAgentRouter,
+  message: string,
+  translated?: RouteRequest['translated'],
+  decision?: DecisionCtx
+): Promise<RouteResult> {
+  try {
+    const payload = {
+      original: message,
+      translated,
+      timestamp: new Date().toISOString()
+    };
+    const outPath = process.cwd() + '/cursor-request.json';
+    await fs.writeJson(outPath, payload, { spaces: 2 });
+    this.logger.info(`📝 Cursor request written at ${outPath}`);
+    return {
+      destination: 'cursor',
+      intent: { type: translated?.type || 'documentation', priority: translated?.priority || 'medium', confidence: 'high' },
+      message: outPath,
+      decision
+    };
+  } catch (e) {
+    this.logger.error('Failed to write cursor request:', e);
+    // Fallback to Monster Mode if file write fails
+    return await this.routeToMonsterMode(message, translated, decision);
+  }
+};
+
+function isRisky(message: string, translated?: any): boolean {
+  const text = `${message} ${(translated?.description || '')}`.toLowerCase();
+  const keywords = [
+    'drop database', 'truncate table', 'delete from ', 'rm -rf', 'format c:', 'shutdown -h', 'wipe', 'erase all', 'destroy', 'disable firewall'
+  ];
+  return keywords.some(k => text.includes(k));
 }
 
 

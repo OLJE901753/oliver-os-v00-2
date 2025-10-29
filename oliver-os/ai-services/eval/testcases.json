@@ -1,0 +1,11 @@
+{
+  "routing": [
+    { "message": "research docs for api", "translated": { "type": "research", "priority": "medium", "description": "Research docs for API", "requirements": ["general"] }, "expectedDestination": "codebuff" },
+    { "message": "write docs for auth flow", "translated": { "type": "documentation", "priority": "medium", "description": "Write docs for auth flow", "requirements": ["documentation"] }, "expectedDestination": "cursor" },
+    { "message": "add auth middleware", "translated": { "type": "code-generation", "priority": "high", "description": "Add auth middleware", "requirements": ["backend","security"] }, "expectedDestination": "monster-mode" }
+  ],
+  "latencyBudgetsMs": {
+    "inspect": 500,
+    "route": 1200
+  }
+}
