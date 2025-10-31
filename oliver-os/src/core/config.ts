@@ -30,6 +30,19 @@ const configSchema = z.object({
     maxConcurrentAgents: 10,
     defaultModel: 'openai/gpt-4',
     enableMetrics: true
+  })),
+  minimax: z.object({
+    apiKey: z.string().default(''),
+    baseURL: z.string().default('https://api.minimax.io/v1'),
+    model: z.string().default('MiniMax-M2'),
+    temperature: z.number().default(0.7),
+    maxTokens: z.number().default(1024)
+  }).default(() => ({
+    apiKey: '',
+    baseURL: 'https://api.minimax.io/v1',
+    model: 'MiniMax-M2',
+    temperature: 0.7,
+    maxTokens: 1024
   }))
 });
 
@@ -121,6 +134,13 @@ export class Config {
         maxConcurrentAgents: parseInt(process.env['CODEBUFF_MAX_AGENTS'] || '10', 10),
         defaultModel: process.env['CODEBUFF_DEFAULT_MODEL'] || 'openai/gpt-4',
         enableMetrics: process.env['CODEBUFF_ENABLE_METRICS'] !== 'false'
+      },
+      minimax: {
+        apiKey: process.env['MINIMAX_API_KEY'] || '',
+        baseURL: process.env['MINIMAX_BASE_URL'] || 'https://api.minimax.io/v1',
+        model: process.env['MINIMAX_MODEL'] || 'MiniMax-M2',
+        temperature: parseFloat(process.env['MINIMAX_TEMPERATURE'] || '0.7'),
+        maxTokens: parseInt(process.env['MINIMAX_MAX_TOKENS'] || '1024', 10)
       }
     };
   }

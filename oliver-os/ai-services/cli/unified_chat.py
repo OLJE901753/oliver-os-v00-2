@@ -55,7 +55,12 @@ class UnifiedTerminal:
                 {
                     'ollama_base_url': self.settings.ollama_base_url,
                     'ollama_model': self.settings.ollama_model,
-                    'openai_api_key': self.settings.openai_api_key
+                    'openai_api_key': self.settings.openai_api_key,
+                    'minimax_api_key': self.settings.minimax_api_key,
+                    'minimax_base_url': self.settings.minimax_base_url,
+                    'minimax_model': self.settings.minimax_model,
+                    'temperature': self.settings.temperature,
+                    'max_tokens': self.settings.max_tokens
                 }
             )
             self.memory_combiner.llm_provider = self.llm_provider

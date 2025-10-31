@@ -52,6 +52,11 @@ class Settings(BaseSettings):
     ollama_base_url: str = Field(default="http://localhost:11434", env="OLLAMA_BASE_URL")
     ollama_model: str = Field(default="llama3.1:8b", env="OLLAMA_MODEL")
     
+    # Minimax settings
+    minimax_api_key: Optional[str] = Field(default=None, env="MINIMAX_API_KEY")
+    minimax_base_url: str = Field(default="https://api.minimax.io/v1", env="MINIMAX_BASE_URL")
+    minimax_model: str = Field(default="MiniMax-M2", env="MINIMAX_MODEL")
+    
     # Application settings
     debug: bool = Field(default=False, env="DEBUG")
     log_level: str = Field(default="INFO", env="LOG_LEVEL")

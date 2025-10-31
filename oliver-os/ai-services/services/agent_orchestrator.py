@@ -11,13 +11,11 @@ import logging
 from dataclasses import dataclass, asdict
 from enum import Enum
 
-# CodeBuff SDK imports (when available)
-try:
-    from codebuff_sdk import AgentManager, AgentDefinition, SpawnRequest
-    CODEBUFF_AVAILABLE = True
-except ImportError:
-    CODEBUFF_AVAILABLE = False
-    logging.warning("CodeBuff SDK not available, using fallback implementation")
+# CodeBuff SDK Note:
+# CodeBuff SDK (@codebuff/sdk) is a TypeScript/JavaScript package only.
+# This Python implementation uses a fallback implementation that provides
+# similar functionality without requiring the SDK.
+CODEBUFF_AVAILABLE = False  # SDK is TypeScript-only, using Python fallback
 
 logger = logging.getLogger(__name__)
 

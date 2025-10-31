@@ -63,17 +63,22 @@ memory_combiner = MemoryCombiner()
 # Initialize LLM provider if configured
 llm_provider = None
 try:
-    if settings.llm_provider == "ollama":
-        from services.llm_provider import LLMProviderFactory
-        llm_provider = LLMProviderFactory.create(
-            settings.llm_provider,
-            {
-                'ollama_base_url': settings.ollama_base_url,
-                'ollama_model': settings.ollama_model
-            }
-        )
-        memory_combiner.llm_provider = llm_provider
-        logger.info(f"✅ LLM provider initialized: {settings.llm_provider}")
+    from services.llm_provider import LLMProviderFactory
+    llm_provider = LLMProviderFactory.create(
+        settings.llm_provider,
+        {
+            'ollama_base_url': settings.ollama_base_url,
+            'ollama_model': settings.ollama_model,
+            'openai_api_key': settings.openai_api_key,
+            'minimax_api_key': settings.minimax_api_key,
+            'minimax_base_url': settings.minimax_base_url,
+            'minimax_model': settings.minimax_model,
+            'temperature': settings.temperature,
+            'max_tokens': settings.max_tokens
+        }
+    )
+    memory_combiner.llm_provider = llm_provider
+    logger.info(f"✅ LLM provider initialized: {settings.llm_provider}")
 except Exception as e:
     logger.warning(f"⚠️ LLM provider not available: {e}")
 
@@ -126,6 +131,29 @@ async def root():
 
 @app.get("/health")
 async def health_check():
+    llm_status = {"status": "unknown", "provider": settings.llm_provider}
+    if llm_provider:
+        try:
+            # Quick connectivity test
+            test_response = await llm_provider.generate("test")
+            llm_status = {
+                "status": "healthy",
+                "provider": settings.llm_provider,
+                "connected": True
+            }
+        except Exception as e:
+            llm_status = {
+                "status": "unhealthy",
+                "provider": settings.llm_provider,
+                "connected": False,
+                "error": str(e)[:100]
+            }
+    else:
+        llm_status = {
+            "status": "not_configured",
+            "provider": settings.llm_provider
+        }
+    
     return {
         "status": "healthy",
         "timestamp": datetime.utcnow().isoformat(),
@@ -134,9 +162,41 @@ async def health_check():
             "pattern_recognizer": await pattern_recognizer.health_check(),
             "knowledge_manager": await knowledge_manager.health_check(),
             "voice_processor": await voice_processor.health_check(),
-            "visualization_generator": await visualization_generator.health_check()
+            "visualization_generator": await visualization_generator.health_check(),
+            "llm_provider": llm_status
         }
     }
+
+@app.get("/health/llm")
+async def llm_health_check():
+    """Detailed LLM provider health check"""
+    if not llm_provider:
+        return {
+            "status": "not_configured",
+            "provider": settings.llm_provider,
+            "message": "LLM provider not initialized"
+        }
+    
+    try:
+        # Test with a simple prompt
+        test_prompt = "Say 'OK' if you can read this."
+        response = await llm_provider.generate(test_prompt)
+        
+        return {
+            "status": "healthy",
+            "provider": settings.llm_provider,
+            "connected": True,
+            "test_response": response[:100] if response else "empty",
+            "timestamp": datetime.utcnow().isoformat()
+        }
+    except Exception as e:
+        return {
+            "status": "unhealthy",
+            "provider": settings.llm_provider,
+            "connected": False,
+            "error": str(e),
+            "timestamp": datetime.utcnow().isoformat()
+        }
 
 # Thought Processing Endpoints
 @app.post("/api/thoughts/process")
@@ -218,6 +278,17 @@ async def generate_knowledge_graph(center_thought_id: str, depth: int = 2):
 @app.on_event("startup")
 async def startup_event():
     await agent_orchestrator.initialize()
+    
+    # Verify LLM provider connectivity on startup
+    if llm_provider:
+        try:
+            logger.info(f"🔍 Verifying {settings.llm_provider} connectivity...")
+            test_response = await llm_provider.generate("Connection test")
+            logger.info(f"✅ {settings.llm_provider} connection verified")
+        except Exception as e:
+            logger.warning(f"⚠️ {settings.llm_provider} connectivity check failed: {e}")
+    else:
+        logger.info("⚠️ No LLM provider configured")
 
 @app.post("/api/agents/spawn")
 async def spawn_agent(request: SpawnRequest):

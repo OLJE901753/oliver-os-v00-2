@@ -11,6 +11,7 @@ from requests.exceptions import ConnectionError as RequestsConnectionError
 import logging
 import hashlib
 from utils.cache import default_cache
+from openai import OpenAI
 
 logger = logging.getLogger(__name__)
 
@@ -148,6 +149,14 @@ class LLMProviderFactory:
                 api_key=config.get('openai_api_key'),
                 model=config.get('openai_model', 'gpt-4')
             )
+        elif provider == "minimax":
+            return MinimaxProvider(
+                api_key=config.get('minimax_api_key'),
+                base_url=config.get('minimax_base_url', 'https://api.minimax.io/v1'),
+                model=config.get('minimax_model', 'MiniMax-M2'),
+                temperature=config.get('temperature', 0.7),
+                max_tokens=config.get('max_tokens', 1024)
+            )
         else:
             raise ValueError(f"Unknown provider: {provider}")
 
@@ -163,6 +172,56 @@ class ModelRouter:
         return LLMProviderFactory.create(provider, {
             'ollama_base_url': self.config.get('ollama_base_url', 'http://localhost:11434'),
             'ollama_model': self.config.get('ollama_model', 'llama3.1:8b'),
-            'openai_api_key': self.config.get('openai_api_key')
+            'openai_api_key': self.config.get('openai_api_key'),
+            'minimax_api_key': self.config.get('minimax_api_key'),
+            'minimax_base_url': self.config.get('minimax_base_url', 'https://api.minimax.io/v1'),
+            'minimax_model': self.config.get('minimax_model', 'MiniMax-M2'),
+            'temperature': self.config.get('temperature', 0.7),
+            'max_tokens': self.config.get('max_tokens', 1024)
         })
+
+
+class MinimaxProvider(LLMProvider):
+    """Minimax LLM provider via OpenAI-compatible API surface"""
+    
+    def __init__(self, api_key: Optional[str], base_url: str = "https://api.minimax.io/v1", model: str = "MiniMax-M2", temperature: float = 0.7, max_tokens: int = 1024):
+        self.api_key = api_key or os.getenv('MINIMAX_API_KEY')
+        self.base_url = base_url or os.getenv('MINIMAX_BASE_URL') or "https://api.minimax.io/v1"
+        self.model = model or os.getenv('MINIMAX_MODEL') or "MiniMax-M2"
+        self.temperature = temperature
+        self.max_tokens = max_tokens
+        self.logger = logging.getLogger('MinimaxProvider')
+        self.client = OpenAI(base_url=self.base_url, api_key=self.api_key)
+    
+    async def generate(self, prompt: str, context: Optional[str] = None) -> str:
+        full_prompt = f"{context}\n\n{prompt}" if context else prompt
+        try:
+            response = self.client.chat.completions.create(
+                model=self.model,
+                messages=[{"role": "user", "content": full_prompt}],
+                temperature=self.temperature,
+                max_tokens=self.max_tokens
+            )
+            return response.choices[0].message.content or ""
+        except Exception as e:
+            self.logger.error(f"Minimax generate failed: {e}")
+            raise
+    
+    async def reason(self, context: str, task: str) -> str:
+        prompt = (
+            "Based on the following context, provide reasoning for this task:\n\n"
+            f"Context: {context}\n\n"
+            f"Task: {task}\n\n"
+            "Provide clear, structured reasoning."
+        )
+        return await self.generate(prompt)
+    
+    async def analyze_patterns(self, data: Dict[str, Any]) -> Dict[str, Any]:
+        prompt = (
+            "Analyze the following data and identify patterns:\n\n"
+            f"Data: {data}\n\n"
+            "List key patterns, trends, and recommendations."
+        )
+        text = await self.generate(prompt)
+        return {"analysis": text, "patterns": []}
 
