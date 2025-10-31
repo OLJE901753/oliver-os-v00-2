@@ -6,7 +6,7 @@
     "code-generator": {
       "id": "code-generator",
       "displayName": "Code Generator",
-      "model": "openai/gpt-4",
+      "model": "minimax/MiniMax-M2",
       "toolNames": ["read_files", "write_file", "search_code"],
       "spawnableAgents": ["code-reviewer", "test-generator"],
       "instructionsPrompt": "Generate high-quality, maintainable code following BMAD principles. Break down complex tasks into manageable pieces, map out architecture and dependencies, automate repetitive processes, and document everything.",
@@ -15,7 +15,7 @@
     "code-reviewer": {
       "id": "code-reviewer",
       "displayName": "Code Reviewer",
-      "model": "openai/gpt-4",
+      "model": "minimax/MiniMax-M2",
       "toolNames": ["read_files", "analyze_code"],
       "spawnableAgents": ["security-analyzer"],
       "instructionsPrompt": "Review code for quality, security, and adherence to standards. Focus on BMAD principles: modularity, automation, and documentation.",
@@ -24,7 +24,7 @@
     "test-generator": {
       "id": "test-generator",
       "displayName": "Test Generator",
-      "model": "openai/gpt-4",
+      "model": "minimax/MiniMax-M2",
       "toolNames": ["read_files", "write_file"],
       "spawnableAgents": [],
       "instructionsPrompt": "Generate comprehensive unit and integration tests. Ensure good test coverage and follow testing best practices.",
@@ -33,7 +33,7 @@
     "security-analyzer": {
       "id": "security-analyzer",
       "displayName": "Security Analyzer",
-      "model": "openai/gpt-4",
+      "model": "minimax/MiniMax-M2",
       "toolNames": ["read_files", "analyze_security"],
       "spawnableAgents": [],
       "instructionsPrompt": "Analyze code for security vulnerabilities and best practices. Focus on common security issues and provide actionable recommendations.",
@@ -42,7 +42,7 @@
     "documentation-generator": {
       "id": "documentation-generator",
       "displayName": "Documentation Generator",
-      "model": "openai/gpt-4",
+      "model": "minimax/MiniMax-M2",
       "toolNames": ["read_files", "write_file"],
       "spawnableAgents": [],
       "instructionsPrompt": "Generate comprehensive documentation for code and APIs. Follow BMAD principle of documenting everything.",
@@ -51,7 +51,7 @@
     "bureaucracy-disruptor": {
       "id": "bureaucracy-disruptor",
       "displayName": "Bureaucracy Disruptor",
-      "model": "openai/gpt-4",
+      "model": "minimax/MiniMax-M2",
       "toolNames": ["analyze_processes", "optimize_workflows"],
       "spawnableAgents": ["efficiency-optimizer"],
       "instructionsPrompt": "Identify and eliminate bureaucratic inefficiencies in code and processes. Focus on automation and streamlining workflows.",
@@ -60,7 +60,7 @@
     "thought-processor": {
       "id": "thought-processor",
       "displayName": "Thought Processor",
-      "model": "openai/gpt-4",
+      "model": "minimax/MiniMax-M2",
       "toolNames": ["analyze_thought", "extract_insights", "generate_summary"],
       "spawnableAgents": ["pattern-recognizer", "knowledge-extractor"],
       "instructionsPrompt": "Process and analyze thoughts to extract meaningful insights and patterns. Break down complex thoughts into manageable components.",
@@ -69,7 +69,7 @@
     "pattern-recognizer": {
       "id": "pattern-recognizer",
       "displayName": "Pattern Recognizer",
-      "model": "openai/gpt-4",
+      "model": "minimax/MiniMax-M2",
       "toolNames": ["recognize_patterns", "identify_trends", "analyze_correlations"],
       "spawnableAgents": ["insight-generator"],
       "instructionsPrompt": "Recognize patterns and trends in data and thoughts. Identify correlations and provide insights.",
@@ -78,7 +78,7 @@
     "knowledge-extractor": {
       "id": "knowledge-extractor",
       "displayName": "Knowledge Extractor",
-      "model": "openai/gpt-4",
+      "model": "minimax/MiniMax-M2",
       "toolNames": ["extract_knowledge", "build_graph", "update_database"],
       "spawnableAgents": [],
       "instructionsPrompt": "Extract and structure knowledge from various sources. Build knowledge graphs and update databases.",
@@ -87,7 +87,7 @@
     "collaboration-coordinator": {
       "id": "collaboration-coordinator",
       "displayName": "Collaboration Coordinator",
-      "model": "openai/gpt-4",
+      "model": "minimax/MiniMax-M2",
       "toolNames": ["coordinate_agents", "manage_workflows", "resolve_conflicts"],
       "spawnableAgents": ["workflow-optimizer", "conflict-resolver"],
       "instructionsPrompt": "Coordinate multiple agents and manage collaborative workflows. Resolve conflicts and optimize processes.",
@@ -103,6 +103,13 @@
     "enableWebhooks": false
   },
   "integrations": {
+    "minimax": {
+      "apiKey": "${MINIMAX_API_KEY}",
+      "baseURL": "https://api.minimax.io/v1",
+      "model": "MiniMax-M2",
+      "temperature": 0.7,
+      "maxTokens": 4000
+    },
     "openai": {
       "apiKey": "${OPENAI_API_KEY}",
       "baseURL": "https://api.openai.com/v1",

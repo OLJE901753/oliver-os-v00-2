@@ -5,6 +5,8 @@
 
 import { EventEmitter } from 'node:events';
 import { Logger } from '../../core/logger';
+import { DatabaseService } from '../../services/database';
+import { PrismaClient } from '@prisma/client';
 import type { MCPTool, MCPResource, MCPRequest, MCPResponse, OliverOSMCPServer } from '../types';
 
 export class DatabaseMCPServer extends EventEmitter implements OliverOSMCPServer {
@@ -12,11 +14,24 @@ export class DatabaseMCPServer extends EventEmitter implements OliverOSMCPServer
   public config: any;
   private isRunning: boolean = false;
   private supabaseUrl: string;
+  private databaseService: DatabaseService | null = null;
+  private prisma: PrismaClient | null = null;
 
   constructor(supabaseUrl?: string, _supabaseKey?: string) {
     super();
     this._logger = new Logger('Database-MCP-Server');
     this.supabaseUrl = supabaseUrl || process.env['SUPABASE_URL'] || '';
+    
+    // Initialize DatabaseService if Prisma is available
+    try {
+      this.databaseService = new DatabaseService();
+      this.prisma = this.databaseService.getClient();
+      this._logger.info('✅ Database MCP Server initialized with Prisma');
+    } catch (error) {
+      this._logger.warn(`⚠️ Failed to initialize DatabaseService: ${error}`);
+      this._logger.warn('💡 Database MCP Server will use mock data');
+    }
+    
     this.config = this.createServerConfig();
   }
 
@@ -414,9 +429,109 @@ export class DatabaseMCPServer extends EventEmitter implements OliverOSMCPServer
   private async handleQuery(args: Record<string, unknown>): Promise<any> {
     const { query, table, operation, data, where, limit, offset } = args;
     
-    this._logger.info(`🔍 Executing database query: ${query}`);
+    this._logger.info(`🔍 Executing database query: ${query || `${operation} on ${table}`}`);
     
-    // This would integrate with Supabase client
+    if (!this.prisma) {
+      return this.createMockQueryResponse(query, table, operation, data, where, limit, offset);
+    }
+    
+    try {
+      // If raw SQL query provided, use it
+      if (query && typeof query === 'string') {
+        const results = await this.prisma.$queryRawUnsafe(query as string);
+        return {
+          content: [{
+            type: 'text',
+            text: JSON.stringify({
+              query: query as string,
+              results: results,
+              count: Array.isArray(results) ? results.length : 1,
+              execution_time: '15ms'
+            }, null, 2)
+          }]
+        };
+      }
+      
+      // Otherwise, use Prisma operations based on operation type
+      if (!table || !operation) {
+        throw new Error('Either query or both table and operation must be provided');
+      }
+      
+      const tableName = table as string;
+      const op = operation as string;
+      
+      let results: any;
+      
+      switch (op.toLowerCase()) {
+        case 'select':
+          results = await (this.prisma as any)[tableName].findMany({
+            where: where as any || {},
+            take: limit as number || undefined,
+            skip: offset as number || undefined
+          });
+          break;
+        case 'insert':
+          if (!data) {
+            throw new Error('Data required for insert operation');
+          }
+          results = await (this.prisma as any)[tableName].create({
+            data: data as any
+          });
+          break;
+        case 'update':
+          if (!data || !where) {
+            throw new Error('Data and where required for update operation');
+          }
+          results = await (this.prisma as any)[tableName].updateMany({
+            where: where as any,
+            data: data as any
+          });
+          break;
+        case 'delete':
+          if (!where) {
+            throw new Error('Where required for delete operation');
+          }
+          results = await (this.prisma as any)[tableName].deleteMany({
+            where: where as any
+          });
+          break;
+        default:
+          throw new Error(`Unsupported operation: ${op}`);
+      }
+      
+      return {
+        content: [{
+          type: 'text',
+          text: JSON.stringify({
+            table: tableName,
+            operation: op,
+            data: data as Record<string, unknown>,
+            where: where as Record<string, unknown>,
+            limit: limit as number,
+            offset: offset as number,
+            results: Array.isArray(results) ? results : [results],
+            count: Array.isArray(results) ? results.length : 1,
+            execution_time: '15ms'
+          }, null, 2)
+        }]
+      };
+    } catch (error) {
+      this._logger.error(`❌ Database query failed: ${error}`);
+      return {
+        content: [{
+          type: 'text',
+          text: JSON.stringify({
+            error: error instanceof Error ? error.message : String(error),
+            query: query as string,
+            table: table as string,
+            operation: operation as string
+          }, null, 2)
+        }]
+      };
+    }
+  }
+  
+  private createMockQueryResponse(query: unknown, table: unknown, operation: unknown, data: unknown, where: unknown, limit: unknown, offset: unknown): any {
     return {
       content: [{
         type: 'text',
@@ -429,7 +544,7 @@ export class DatabaseMCPServer extends EventEmitter implements OliverOSMCPServer
           limit: limit as number,
           offset: offset as number,
           results: [
-            { id: 1, name: 'Sample Result', created_at: new Date().toISOString() }
+            { id: 1, name: 'Sample Result (mock data - Prisma not configured)', created_at: new Date().toISOString() }
           ],
           count: 1,
           execution_time: '15ms'

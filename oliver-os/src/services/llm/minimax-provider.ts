@@ -4,7 +4,7 @@
  */
 
 import OpenAI from 'openai';
-import { Logger } from '../core/logger';
+import { Logger } from '../../core/logger';
 
 export interface MinimaxConfig {
   apiKey: string;

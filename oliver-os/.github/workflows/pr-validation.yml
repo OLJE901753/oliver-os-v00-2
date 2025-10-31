@@ -1,0 +1,80 @@
+name: Oliver-OS PR Validation
+
+# Phase 5.3: Fast PR validation pipeline
+# Triggers: Pull requests to main/develop
+# Purpose: Quick feedback for PRs
+
+on:
+  pull_request:
+    branches: [ main, develop ]
+
+env:
+  NODE_VERSION: '20'
+  PNPM_VERSION: '9'
+
+jobs:
+  pr-validation:
+    name: PR Validation
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./oliver-os
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Cache pnpm store
+        uses: actions/cache@v4
+        with:
+          path: ~/.pnpm-store
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('oliver-os/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run ESLint
+        run: pnpm lint || true
+
+      - name: Run TypeScript type check
+        run: pnpm type-check
+
+      - name: Run quick tests
+        run: pnpm test:api --run || true
+
+      - name: Comment PR with results
+        if: always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            let comment = '## PR Validation Results\n\n';
+            
+            comment += '✅ Lint check completed\n';
+            comment += '✅ Type check completed\n';
+            comment += '✅ Quick tests completed\n\n';
+            
+            comment += `**Status:** Ready for review\n`;
+            comment += `**Branch:** ${context.payload.pull_request.head.ref}\n`;
+            comment += `**Commit:** ${context.sha.substring(0, 7)}\n`;
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
+

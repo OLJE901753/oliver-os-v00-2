@@ -3,7 +3,7 @@
  * Implements rate limiting and slow-down protection
  */
 
-import rateLimit from 'express-rate-limit';
+import rateLimit, { ipKeyGenerator } from 'express-rate-limit';
 import slowDown from 'express-slow-down';
 import type { Request, Response } from 'express';
 import { Logger } from '../core/logger';
@@ -102,7 +102,7 @@ export const userRateLimit = rateLimit({
       return req.user.id;
     }
     // For IP-based rate limiting, use proper IPv6 handling
-    return req.ip || req.socket.remoteAddress || 'unknown';
+    return ipKeyGenerator(req as any);
   },
   message: {
     error: 'User Rate Limit Exceeded',

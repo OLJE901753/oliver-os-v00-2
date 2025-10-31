@@ -8,6 +8,8 @@ import { EventEmitter } from 'node:events';
 import { Logger } from '../../core/logger';
 import { Config } from '../../core/config';
 import { MemoryService } from './memory-service';
+import fs from 'fs-extra';
+import path from 'path';
 
 export interface LearningPattern {
   id: string;
@@ -43,6 +45,8 @@ export class LearningService extends EventEmitter {
   private memoryService!: MemoryService;
   private learningPatterns: Map<string, LearningPattern>;
   private suggestionHistory: Map<string, any[]>;
+  private currentCodingStyle: string = 'default';
+  private recentAdaptations: Array<{ pattern: string; confidence: number; timestamp: string }> = [];
 
   constructor(_config: Config, memoryService: MemoryService) {
     super();
@@ -59,9 +63,17 @@ export class LearningService extends EventEmitter {
     this._logger.info('🧠 Initializing Learning Service...');
     
     try {
+      // Ensure logs directory exists
+      await fs.ensureDir(path.join(process.cwd(), 'logs'));
+      
       await this.loadLearningPatterns();
       await this.analyzeProjectHistory();
       await this.buildPatternDatabase();
+      
+      this.logLearningEvent('service_initialized', {
+        patternsLoaded: this.learningPatterns.size,
+        timestamp: new Date().toISOString()
+      });
       
       this._logger.info('✅ Learning Service initialized successfully');
       this.emit('learning:initialized');
@@ -79,6 +91,7 @@ export class LearningService extends EventEmitter {
     const patterns = memory.memory?.codePatterns?.frequentlyUsed || [];
     
     for (const pattern of patterns) {
+      const confidence = pattern.successRate * 0.8 + (pattern.frequency / 100) * 0.2;
       this.learningPatterns.set(pattern.id, {
         id: pattern.id,
         type: 'code',
@@ -87,7 +100,16 @@ export class LearningService extends EventEmitter {
         successRate: pattern.successRate,
         frequency: pattern.frequency,
         lastUsed: pattern.lastUsed,
-        confidence: pattern.successRate * 0.8 + (pattern.frequency / 100) * 0.2
+        confidence
+      });
+      
+      // Log pattern detection
+      this.logLearningEvent('pattern_loaded', {
+        patternId: pattern.id,
+        pattern: pattern.pattern,
+        successRate: pattern.successRate,
+        frequency: pattern.frequency,
+        confidence
       });
     }
 
@@ -224,6 +246,17 @@ export class LearningService extends EventEmitter {
     const suggestions: Suggestion[] = [];
     const relevantPatterns = this.getRelevantPatterns(context, 'code');
     
+    // Detect naming style preferences from context
+    if (context.codingPatterns && context.codingPatterns.length > 0) {
+      const verboseNames = context.codingPatterns.filter(p => 
+        p.includes('process') || p.includes('calculate') || p.includes('handle')
+      );
+      
+      if (verboseNames.length >= 2) {
+        this.detectStylePreference('uses_verbose_names', verboseNames, 0.8);
+      }
+    }
+    
     for (const pattern of relevantPatterns) {
       if (pattern.confidence > 0.8) {
         suggestions.push({
@@ -322,6 +355,15 @@ export class LearningService extends EventEmitter {
    */
   recordPattern(pattern: LearningPattern): void {
     this.learningPatterns.set(pattern.id, pattern);
+    
+    this.logLearningEvent('pattern_recorded', {
+      patternId: pattern.id,
+      pattern: pattern.pattern,
+      type: pattern.type,
+      confidence: pattern.confidence,
+      successRate: pattern.successRate
+    });
+    
     this._logger.info(`📚 Recorded pattern: ${pattern.id}`);
   }
 
@@ -333,6 +375,9 @@ export class LearningService extends EventEmitter {
     const pattern = this.learningPatterns.get(patternId);
     
     if (pattern) {
+      const oldSuccessRate = pattern.successRate;
+      const oldConfidence = pattern.confidence;
+      
       if (accepted) {
         pattern.successRate = Math.min(1, pattern.successRate + 0.1);
         pattern.confidence = Math.min(1, pattern.confidence + 0.05);
@@ -342,6 +387,18 @@ export class LearningService extends EventEmitter {
       }
       
       pattern.lastUsed = new Date().toISOString();
+      
+      // Log learning from feedback
+      this.logLearningEvent('feedback_received', {
+        suggestionId,
+        patternId,
+        accepted,
+        feedback,
+        oldSuccessRate,
+        newSuccessRate: pattern.successRate,
+        oldConfidence,
+        newConfidence: pattern.confidence
+      });
     }
     
     // Record in suggestion history
@@ -398,6 +455,8 @@ export class LearningService extends EventEmitter {
         return;
       }
 
+      const oldSuccessRate = currentPattern.successRate;
+
       // Update success rate using exponential moving average
       const alpha = 0.1; // Learning rate
       const newSuccessRate = success 
@@ -408,6 +467,17 @@ export class LearningService extends EventEmitter {
       currentPattern.lastUsed = new Date().toISOString();
 
       this.learningPatterns.set(pattern.id, currentPattern);
+      
+      // Log pattern success update
+      this.logLearningEvent('pattern_success_updated', {
+        patternId: pattern.id,
+        pattern: pattern.pattern,
+        success,
+        oldSuccessRate,
+        newSuccessRate: currentPattern.successRate,
+        learningRate: alpha
+      });
+      
       this._logger.info(`📈 Updated pattern success rate: ${pattern.id} -> ${currentPattern.successRate.toFixed(3)}`);
       this.emit('learning:patternUpdated', { patternId: pattern.id, successRate: currentPattern.successRate });
     } catch (error) {
@@ -427,6 +497,9 @@ export class LearningService extends EventEmitter {
       }
 
       const currentPattern = this.learningPatterns.get(pattern.id)!;
+      const oldFrequency = currentPattern.frequency;
+      const oldConfidence = currentPattern.confidence;
+      
       currentPattern.frequency += 1;
       currentPattern.lastUsed = new Date().toISOString();
 
@@ -440,6 +513,29 @@ export class LearningService extends EventEmitter {
       pattern.frequency = currentPattern.frequency;
       pattern.confidence = currentPattern.confidence;
       pattern.lastUsed = currentPattern.lastUsed;
+      
+      // Log pattern usage
+      this.logLearningEvent('pattern_used', {
+        patternId: pattern.id,
+        pattern: pattern.pattern,
+        oldFrequency,
+        newFrequency: currentPattern.frequency,
+        oldConfidence,
+        newConfidence: currentPattern.confidence,
+        frequencyWeight
+      });
+      
+      // Track as recent adaptation
+      this.recentAdaptations.push({
+        pattern: pattern.pattern,
+        confidence: currentPattern.confidence,
+        timestamp: new Date().toISOString()
+      });
+      
+      // Keep only last 10 adaptations
+      if (this.recentAdaptations.length > 10) {
+        this.recentAdaptations.shift();
+      }
       
       this._logger.info(`📊 Updated pattern frequency: ${pattern.id} -> ${currentPattern.frequency}`);
       this.emit('learning:patternUsed', { patternId: pattern.id, frequency: currentPattern.frequency });
@@ -463,6 +559,13 @@ export class LearningService extends EventEmitter {
       };
       
       await fs.writeJson(exportPath, learningData, { spaces: 2 });
+      
+      this.logLearningEvent('learning_data_exported', {
+        exportPath,
+        patternsCount: this.learningPatterns.size,
+        historyCount: this.suggestionHistory.size
+      });
+      
       this._logger.info(`📤 Learning data exported to: ${exportPath}`);
       this.emit('learning:exported', { exportPath });
     } catch (error) {
@@ -470,6 +573,52 @@ export class LearningService extends EventEmitter {
       throw error;
     }
   }
-}
 
-import fs from 'fs-extra';
+  /**
+   * Log learning events for visibility and debugging
+   * This is GOLD for solo dev - you need to SEE what it's learning
+   */
+  private logLearningEvent(event: string, data: any): void {
+    const logEntry = {
+      timestamp: new Date().toISOString(),
+      event,
+      data,
+      context: {
+        currentStyle: this.currentCodingStyle,
+        adaptations: this.recentAdaptations
+      }
+    };
+    
+    try {
+      // Ensure logs directory exists
+      const logsDir = path.join(process.cwd(), 'logs');
+      const logFile = path.join(logsDir, 'learning-events.jsonl');
+      
+      // Write to JSONL file (one JSON object per line)
+      fs.appendFileSync(logFile, JSON.stringify(logEntry) + '\n');
+      
+      // Also console for immediate feedback
+      console.log('🧠 LEARNING:', event, JSON.stringify(data, null, 2));
+    } catch (error) {
+      // Don't fail if logging fails, just warn
+      this._logger.warn(`Failed to log learning event: ${error}`);
+    }
+  }
+
+  /**
+   * Detect and log style preferences
+   */
+  detectStylePreference(pattern: string, examples: string[], confidence: number = 0.8): void {
+    this.logLearningEvent('style_preference_detected', {
+      pattern,
+      confidence,
+      examples,
+      currentStyle: this.currentCodingStyle
+    });
+    
+    // Update current coding style if confidence is high
+    if (confidence > 0.7) {
+      this.currentCodingStyle = pattern;
+    }
+  }
+}

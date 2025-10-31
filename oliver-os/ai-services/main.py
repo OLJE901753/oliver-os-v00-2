@@ -18,6 +18,7 @@ from services.knowledge_manager import KnowledgeManager
 from services.voice_processor import VoiceProcessor
 from services.visualization_generator import VisualizationGenerator
 from services.agent_orchestrator import AgentOrchestrator, SpawnRequest
+from services.personal_style_learner import PersonalStyleLearner
 from memory.memory_manager import AgentMemoryManager
 from memory.memory_combiner import MemoryCombiner
 from services.llm_provider import LLMProviderFactory
@@ -54,7 +55,12 @@ pattern_recognizer = PatternRecognizer(settings)
 knowledge_manager = KnowledgeManager(settings)
 voice_processor = VoiceProcessor(settings)
 visualization_generator = VisualizationGenerator(settings)
-agent_orchestrator = AgentOrchestrator()
+
+# Initialize style learner
+style_learner = PersonalStyleLearner(backend_url="http://localhost:3000")
+
+# Initialize agent orchestrator with style learner
+agent_orchestrator = AgentOrchestrator(settings, style_learner=style_learner)
 
 # Initialize memory system
 memory_manager = AgentMemoryManager()
@@ -202,6 +208,14 @@ async def llm_health_check():
 @app.post("/api/thoughts/process")
 async def process_thought(thought_data: ThoughtCreate):
     try:
+        # Log thought processing decision
+        style_learner.log_decision(
+            "thought_processing",
+            {"thought_length": len(thought_data.content)},
+            {"action": "process"},
+            "Processing thought for insights"
+        )
+        
         processed_thought = await thought_processor.process_thought(thought_data)
         return processed_thought
     except Exception as e:
@@ -293,6 +307,9 @@ async def startup_event():
 @app.post("/api/agents/spawn")
 async def spawn_agent(request: SpawnRequest):
     try:
+        # Log agent spawn decision
+        style_learner.log_agent_spawn(request.agent_type, request.prompt, request.metadata)
+        
         spawned_agent = await agent_orchestrator.spawn_agent(request)
         return spawned_agent
     except Exception as e:
@@ -302,6 +319,10 @@ async def spawn_agent(request: SpawnRequest):
 @app.post("/api/agents/spawn-multiple")
 async def spawn_multiple_agents(requests: List[SpawnRequest]):
     try:
+        # Log multiple agent spawns
+        for req in requests:
+            style_learner.log_agent_spawn(req.agent_type, req.prompt, req.metadata)
+        
         spawned_agents = await agent_orchestrator.spawn_multiple_agents(requests)
         return {"spawned_agents": spawned_agents, "count": len(spawned_agents)}
     except Exception as e:
@@ -350,6 +371,59 @@ async def get_spawned_agent(agent_id: str):
         raise
     except Exception as e:
         logger.error(f"Error getting spawned agent: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/workflows/execute/{workflow_id}")
+async def execute_workflow(workflow_id: str, initial_prompt: str, metadata: Optional[Dict[str, Any]] = None):
+    """Execute a workflow"""
+    try:
+        # Log workflow execution decision
+        workflows = agent_orchestrator.get_workflows()
+        workflow_info = next((w for w in workflows if w['id'] == workflow_id), None)
+        
+        style_learner.log_workflow_execution(
+            workflow_id,
+            workflow_info['steps'] if workflow_info else [],
+            {"initial_prompt": initial_prompt, "metadata": metadata or {}}
+        )
+        
+        result = await agent_orchestrator.execute_workflow(workflow_id, initial_prompt, metadata)
+        
+        # Log workflow completion
+        style_learner.log_workflow_execution(
+            workflow_id,
+            workflow_info['steps'] if workflow_info else [],
+            result
+        )
+        
+        return result
+    except Exception as e:
+        logger.error(f"Error executing workflow: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/workflows")
+async def get_workflows():
+    """Get all workflows"""
+    try:
+        workflows = agent_orchestrator.get_workflows()
+        return {"workflows": workflows, "count": len(workflows)}
+    except Exception as e:
+        logger.error(f"Error getting workflows: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/workflows/{workflow_id}")
+async def get_workflow(workflow_id: str):
+    """Get a specific workflow"""
+    try:
+        workflows = agent_orchestrator.get_workflows()
+        workflow = next((w for w in workflows if w['id'] == workflow_id), None)
+        if not workflow:
+            raise HTTPException(status_code=404, detail="Workflow not found")
+        return workflow
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error getting workflow: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 # Memory Management Endpoints
