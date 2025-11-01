@@ -1,13 +1,51 @@
 services:
+  # Oliver-OS Backend
   backend:
-    build: ./oliver-os
+    build:
+      context: ./oliver-os
+      dockerfile: Dockerfile
+    container_name: oliver-os-backend
     ports:
       - "3000:3000"
     environment:
+      - NODE_ENV=development
       - SKIP_DB_INIT=true
+      - DATABASE_URL=postgresql://postgres:postgres@localhost:5432/oliver_os
+      - REDIS_URL=redis://localhost:6379
+      - AI_SERVICES_URL=http://ai-services:8000
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - oliver-network
+
+  # AI Services
   ai-services:
-    build: ./oliver-os/ai-services
-    working_dir: /app
-    command: ["python", "-c", "print('ai-services up')"]
+    build:
+      context: ./oliver-os/ai-services
+      dockerfile: Dockerfile
+    container_name: oliver-os-ai-services
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@localhost:5432/oliver_os
+      - REDIS_URL=redis://localhost:6379
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - oliver-network
+
+networks:
+  oliver-network:
+    driver: bridge

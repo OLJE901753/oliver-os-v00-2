@@ -34,5 +34,5 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
     CMD curl -f http://localhost:8000/health || exit 1
 
 # Run the application
-# Default to shell; users can override to run tools or evals
-CMD ["python", "-c", "print('ai-services container ready')"]
+# Start FastAPI server with uvicorn
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "1"]
