@@ -97,33 +97,9 @@ RUN echo '{ \
   } \
 }' > tsconfig.docker.json
 
-# Build TypeScript - use Docker-specific tsconfig with minimal type checking
-# Allow compilation to continue even with type errors (TypeScript will still emit JS)
-RUN set +e && \
-    if [ -f pnpm-lock.yaml ]; then \
-      echo "Building TypeScript for Docker..." && \
-      npx tsc --project tsconfig.docker.json --skipLibCheck 2>&1; \
-      TSC_EXIT=$?; \
-      echo "TypeScript compilation exit code: $TSC_EXIT"; \
-      if [ ! -d dist ]; then \
-        echo "ERROR: dist folder not created, build failed"; \
-        exit 1; \
-      fi; \
-      echo "TypeScript compilation completed, dist folder exists"; \
-      npx tsc-alias || echo "tsc-alias completed with warnings"; \
-    else \
-      echo "Building TypeScript for Docker..." && \
-      npx tsc --project tsconfig.docker.json --skipLibCheck 2>&1; \
-      TSC_EXIT=$?; \
-      echo "TypeScript compilation exit code: $TSC_EXIT"; \
-      if [ ! -d dist ]; then \
-        echo "ERROR: dist folder not created, build failed"; \
-        exit 1; \
-      fi; \
-      echo "TypeScript compilation completed, dist folder exists"; \
-      npx tsc-alias || echo "tsc-alias completed with warnings"; \
-    fi && \
-    set -e
+# Build TypeScript using Node.js script that handles type errors gracefully
+# This script ensures build succeeds as long as JavaScript files are emitted
+RUN node build-docker.js
 
 FROM node:20-alpine AS runner
 WORKDIR /app
