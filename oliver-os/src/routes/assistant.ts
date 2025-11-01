@@ -59,9 +59,9 @@ export function createAssistantRoutes(assistantService: AssistantService): IRout
    */
   router.get('/suggestions', async (req: Request, res: Response) => {
     try {
-      const currentNodeId = req.query.currentNodeId as string | undefined;
-      const recentNodes = req.query.recentNodes
-        ? (req.query.recentNodes as string).split(',').filter(Boolean)
+      const currentNodeId = (req.query['currentNodeId'] as string) || undefined;
+      const recentNodes = req.query['recentNodes']
+        ? ((req.query['recentNodes'] as string).split(',').filter(Boolean) as string[])
         : [];
 
       const suggestions = await assistantService.getSuggestions(currentNodeId, recentNodes);
@@ -115,8 +115,8 @@ export function createAssistantRoutes(assistantService: AssistantService): IRout
    */
   router.get('/sessions', async (req: Request, res: Response) => {
     try {
-      const userId = (req as any).user?.id || 'default';
-      const limit = parseInt(req.query.limit as string) || 50;
+      const userId = ((req as any).user || {})['id'] || 'default';
+      const limit = parseInt(req.query['limit'] as string) || 50;
 
       const sessions = assistantService.getSessions(userId, limit);
 
@@ -140,7 +140,7 @@ export function createAssistantRoutes(assistantService: AssistantService): IRout
   router.get('/sessions/:id', async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
-      const limit = parseInt(req.query.limit as string) || 100;
+      const limit = parseInt(req.query['limit'] as string) || 100;
 
       const messages = assistantService.getSessionMessages(id, limit);
 

@@ -13,14 +13,13 @@ import { ServiceManager } from '../services/service-manager'
 const logger = new Logger('UnifiedAgentRoutes');
 
 let unifiedRouter: UnifiedAgentRouter | null = null;
-let unifiedRouterServiceManager: ServiceManager | undefined;
 
 /**
  * Initialize the unified router (singleton pattern)
  */
 function getUnifiedRouter(config: Config, serviceManager?: ServiceManager): UnifiedAgentRouter {
   if (!unifiedRouter) {
-    unifiedRouterServiceManager = serviceManager;
+    // unifiedRouterServiceManager = serviceManager; // Reserved for future use
     unifiedRouter = new UnifiedAgentRouter(config, serviceManager);
     unifiedRouter.initialize().catch((err) => {
       logger.error('Failed to initialize UnifiedAgentRouter:', err);

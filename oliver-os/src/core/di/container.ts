@@ -78,8 +78,8 @@ export class DIContainer {
       return registration.instance as T;
     }
 
-    // Resolve dependencies first
-    const dependencies = await this.resolveDependencies(registration.dependencies || []);
+    // Resolve dependencies first (currently unused but kept for future use)
+    await this.resolveDependencies(registration.dependencies || []);
 
     // Create instance
     const instance = await registration.factory(this);

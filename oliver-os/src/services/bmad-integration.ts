@@ -51,9 +51,8 @@ class IntelligentCodeAnalyzer {
   async analyze(): Promise<any> { return {}; }
 }
 
-class OliverOSBMADService implements OliverOSBMADIntegration {
+export class OliverOSBMADService implements OliverOSBMADIntegration {
   private _logger: Logger;
-  // private _config: Config; // Unused for now
   private bmadCLI: EnhancedBMADCLI;
   private workflowEngine: BMADWorkflowEngine;
   private codeAnalyzer: IntelligentCodeAnalyzer;
@@ -62,7 +61,7 @@ class OliverOSBMADService implements OliverOSBMADIntegration {
   constructor(_config: Config) {
     this._logger = new Logger('OliverOS-BMAD');
     this.bmadCLI = new EnhancedBMADCLI();
-    this.workflowEngine = new BMADWorkflowEngine(/* this._configManager */);
+    this.workflowEngine = new BMADWorkflowEngine();
     this.codeAnalyzer = new IntelligentCodeAnalyzer({
       complexityThresholds: {
         cyclomatic: 15, // Higher threshold for AI-brain interfaces
@@ -541,6 +540,3 @@ ${report.nextSteps.map((step: string) => `- ${step}`).join('\n')}
     await fs.writeFile(outputPath, markdown);
   }
 }
-
-// Export for use in Oliver-OS
-export { OliverOSBMADService };

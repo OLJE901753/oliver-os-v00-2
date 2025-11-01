@@ -12,7 +12,7 @@ import helmet from 'helmet';
 import compression from 'compression';
 import { Logger } from './logger';
 import { Config } from './config';
-import { container, ServiceIds, getService, resolveService } from './di/index.js';
+import { container, ServiceIds, resolveService } from './di/index.js';
 import { healthRouter } from '../routes/health';
 import { backupRouter } from '../routes/backup';
 import { servicesRouter } from '../routes/services';
@@ -234,7 +234,7 @@ export function createServer(config: Config, serviceManager?: any, prisma?: any)
         success: false,
         error: 'Failed to read learning events', 
         details: e?.message || 'Unknown error',
-        stack: process.env.NODE_ENV === 'development' ? e?.stack : undefined
+        stack: process.env['NODE_ENV'] === 'development' ? e?.stack : undefined
       });
     }
   });
@@ -279,9 +279,9 @@ export function createServer(config: Config, serviceManager?: any, prisma?: any)
   app.use('/api/unified', createUnifiedAgentRoutes(config, serviceManager));
   
   // Assistant and Organizer routes - will be initialized async
-  // Store service instances for route handlers to check
-  let assistantServiceInstance: AssistantService | null = null;
-  let organizerServiceInstance: any = null;
+  // Store service instances for route handlers to check (currently unused - reserved for future use)
+  // let assistantServiceInstance: AssistantService | null = null;
+  // let organizerServiceInstance: any = null;
   
   // Create routers that will be populated when services initialize
   const assistantRouter = Router();
@@ -292,16 +292,16 @@ export function createServer(config: Config, serviceManager?: any, prisma?: any)
   app.use('/api/organizer', organizerRouter);
   
   // Add placeholder route to assistant router
-  assistantRouter.use((req, res) => {
+  assistantRouter.use((_req, res) => {
     res.status(503).json({
       success: false,
       error: 'Assistant Service is initializing. Please wait a moment and try again.',
       hint: 'Check server logs for initialization status. Service requires Knowledge Graph and Memory services to be ready.',
     });
   });
-  
+
   // Add placeholder route to organizer router
-  organizerRouter.use((req, res) => {
+  organizerRouter.use((_req, res) => {
     res.status(503).json({
       success: false,
       error: 'Organizer Service is initializing. Please wait a moment and try again.',

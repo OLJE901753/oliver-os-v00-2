@@ -174,8 +174,8 @@ export class ProactiveSuggester {
     // Check for business ideas with contacts mentioned but no follow-up
     for (const node of recentNodes.slice(0, 3)) {
       if (node.type === 'business_idea') {
-        const contacts = (node.metadata.contacts as string[]) || [];
-        const nextSteps = (node.metadata.nextSteps as string[]) || [];
+        const contacts = (node.metadata['contacts'] as string[]) || [];
+        const nextSteps = (node.metadata['nextSteps'] as string[]) || [];
 
         if (contacts.length > 0) {
           const hasFollowUpStep = nextSteps.some(step => 
@@ -219,7 +219,7 @@ export class ProactiveSuggester {
     }
 
     // Find similar ideas
-    const searchQuery = `${currentNode.title} ${currentNode.metadata.problem || ''}`;
+    const searchQuery = `${currentNode.title} ${currentNode.metadata['problem'] || ''}`;
     const similarNodes = await this.knowledgeGraph.searchNodes(searchQuery, 5);
 
     const similarIdeas = similarNodes.filter(

@@ -23,7 +23,7 @@ export class OpenAIEmbeddingsService implements EmbeddingsService {
   constructor(config: Config) {
     this.config = config;
     this.logger = new Logger('OpenAIEmbeddingsService');
-    this.apiKey = config.get('openai.apiKey') || process.env.OPENAI_API_KEY || null;
+    this.apiKey = config.get('openai.apiKey') || process.env['OPENAI_API_KEY'] || null;
   }
 
   async generateEmbedding(text: string): Promise<number[]> {

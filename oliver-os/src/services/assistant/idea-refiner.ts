@@ -72,10 +72,10 @@ export class IdeaRefiner {
 Business Idea:
 Title: ${node.title}
 Content: ${node.content}
-Problem: ${node.metadata.problem || 'Not specified'}
-Solution: ${node.metadata.solution || 'Not specified'}
-Target Market: ${node.metadata.targetMarket || 'Not specified'}
-Revenue Model: ${node.metadata.revenueModel || 'Not specified'}
+Problem: ${node.metadata['problem'] || 'Not specified'}
+Solution: ${node.metadata['solution'] || 'Not specified'}
+Target Market: ${node.metadata['targetMarket'] || 'Not specified'}
+Revenue Model: ${node.metadata['revenueModel'] || 'Not specified'}
 
 Return JSON:
 {
@@ -110,7 +110,7 @@ Return JSON:
   private async findRelatedThreads(node: KnowledgeNode): Promise<KnowledgeNode[]> {
     try {
       // Search for similar ideas
-      const searchQuery = `${node.title} ${node.metadata.problem || ''} ${node.metadata.targetMarket || ''}`;
+      const searchQuery = `${node.title} ${node.metadata['problem'] || ''} ${node.metadata['targetMarket'] || ''}`;
       const similarNodes = await this.knowledgeGraph.searchNodes(searchQuery, 5);
       
       // Filter for business ideas and projects
@@ -132,10 +132,10 @@ Return JSON:
     analysis: Record<string, unknown>,
     relatedThreads: KnowledgeNode[]
   ): Promise<RefinementSuggestions> {
-    const missingComponents = (analysis.missingComponents as string[]) || [];
-    const contradictions = (analysis.contradictions as string[]) || [];
-    const assumptions = (analysis.assumptions as string[]) || [];
-    const improvements = (analysis.improvements as string[]) || [];
+    const missingComponents = (analysis['missingComponents'] as string[]) || [];
+    const contradictions = (analysis['contradictions'] as string[]) || [];
+    const assumptions = (analysis['assumptions'] as string[]) || [];
+    const improvements = (analysis['improvements'] as string[]) || [];
 
     // Generate follow-up questions
     const followUpQuestions = await this.generateFollowUpQuestions(

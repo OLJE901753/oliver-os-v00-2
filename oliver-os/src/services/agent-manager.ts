@@ -259,15 +259,15 @@ Generate the complete code implementation:`;
       // Calculate metrics
       const totalLines = codeBlocks.reduce((sum, block) => sum + block.code.split('\n').length, 0);
       const complexity = this.calculateComplexity(generatedCode);
-      
-      return {
+    
+    return {
         generatedCode: {
           blocks: codeBlocks.map(b => b.code),
           count: codeBlocks.length,
           totalLines
         },
         files,
-        metrics: {
+      metrics: {
           linesOfCode: totalLines,
           complexity,
           filesGenerated: files.length
@@ -334,7 +334,7 @@ Generate the complete code implementation:`;
     
     try {
       // Extract file path from prompt or metadata
-      const filePath = (agent.metadata?.filePath as string) || agent.prompt.split('\n')[0].trim();
+      const filePath = ((agent.metadata || {})['filePath'] as string) || agent.prompt.split('\n')[0].trim();
       
       let codeContent = '';
       let eslintIssues: Array<{ line: number; column: number; message: string; severity: string }> = [];
@@ -441,7 +441,7 @@ Format as JSON:
       };
     } catch (error) {
       this._logger.error(`❌ Code review failed: ${error}`);
-      return {
+    return {
         issues: [],
         score: 0,
         recommendations: ['Code review failed - check logs'],
@@ -455,7 +455,7 @@ Format as JSON:
     
     try {
       // Extract file path from prompt or metadata
-      const filePath = (agent.metadata?.filePath as string) || agent.prompt.split('\n')[0].trim();
+      const filePath = ((agent.metadata || {})['filePath'] as string) || agent.prompt.split('\n')[0].trim();
       
       let codeContent = '';
       let sourceFile = '';
@@ -540,7 +540,7 @@ Generate complete test file with imports and setup:`;
       };
     } catch (error) {
       this._logger.error(`❌ Test generation failed: ${error}`);
-      return {
+    return {
         tests: [],
         totalCoverage: '0%',
         error: error instanceof Error ? error.message : String(error)
@@ -553,7 +553,7 @@ Generate complete test file with imports and setup:`;
     
     try {
       // Extract file path from prompt or metadata
-      const filePath = (agent.metadata?.filePath as string) || agent.prompt.split('\n')[0].trim();
+      const filePath = ((agent.metadata || {})['filePath'] as string) || agent.prompt.split('\n')[0].trim();
       
       let codeContent = '';
       
@@ -595,7 +595,7 @@ Generate complete test file with imports and setup:`;
       
       // AI-powered security analysis
       let aiVulnerabilities: Array<{ type: string; severity: string; description: string }> = [];
-      let aiScore = 9.2;
+      // let aiScore = 9.2; // Reserved for future AI score integration
       let aiRecommendations: string[] = [];
       
       if (this.minimaxProvider) {
@@ -626,7 +626,7 @@ Format as JSON:
           if (jsonMatch) {
             const parsed = JSON.parse(jsonMatch[0]);
             aiVulnerabilities = parsed.vulnerabilities || [];
-            aiScore = parsed.score || 9.2;
+            // aiScore = parsed.score || 9.2; // Reserved for future AI score integration
             aiRecommendations = parsed.recommendations || [];
           }
         } catch (parseError) {
@@ -669,8 +669,8 @@ Format as JSON:
       };
     } catch (error) {
       this._logger.error(`❌ Security analysis failed: ${error}`);
-      return {
-        vulnerabilities: [],
+    return {
+      vulnerabilities: [],
         securityScore: 0,
         recommendations: ['Security analysis failed - check logs'],
         error: error instanceof Error ? error.message : String(error)
@@ -683,7 +683,7 @@ Format as JSON:
     
     try {
       // Extract file path or directory from prompt or metadata
-      const targetPath = (agent.metadata?.filePath as string) || agent.prompt.split('\n')[0].trim();
+      const targetPath = ((agent.metadata || {})['filePath'] as string) || agent.prompt.split('\n')[0].trim();
       
       let codeContent = '';
       let files: string[] = [];
@@ -760,8 +760,8 @@ Format as markdown with clear sections:`;
       };
     } catch (error) {
       this._logger.error(`❌ Documentation generation failed: ${error}`);
-      return {
-        documentation: {
+    return {
+      documentation: {
           api: '',
           readme: '',
           architecture: ''
@@ -845,7 +845,7 @@ Format as markdown with clear sections:`;
     
     try {
       // Analyze workflow, processes, or codebase for inefficiencies
-      const targetPath = (agent.metadata?.targetPath as string) || process.cwd();
+      const targetPath = ((agent.metadata || {})['targetPath'] as string) || process.cwd();
       
       let inefficiencies: Array<{ type: string; description: string; impact: string; location?: string }> = [];
       let improvements: string[] = [];
@@ -872,7 +872,7 @@ Format as markdown with clear sections:`;
         });
         
         // Check for manual deployment scripts
-        if (scripts.deploy && !scripts['deploy:ci']) {
+        if (scripts['deploy'] && !scripts['deploy:ci']) {
           inefficiencies.push({
             type: 'manual_workflow',
             description: 'Manual deployment process detected - consider CI/CD automation',
@@ -984,7 +984,7 @@ Format as JSON:
       };
     } catch (error) {
       this._logger.error(`❌ Bureaucracy disruption analysis failed: ${error}`);
-      return {
+    return {
         inefficiencies: [],
         improvements: ['Analysis failed - check logs'],
         efficiencyGained: '0%',
@@ -1037,8 +1037,9 @@ Format as JSON:
   /**
    * Simulate processing time for development/testing
    * TODO: Replace with actual processing logic
+   * Reserved for future use
    */
-  private async simulateProcessing(ms: number): Promise<void> {
-    await new Promise(resolve => setTimeout(resolve, ms));
-  }
+  // private async simulateProcessing(ms: number): Promise<void> {
+  //   await new Promise(resolve => setTimeout(resolve, ms));
+  // }
 }

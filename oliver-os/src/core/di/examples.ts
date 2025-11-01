@@ -10,7 +10,7 @@ import type { AssistantService } from '../services/assistant/assistant-service';
 /**
  * Example: Using DI in a route handler
  */
-export async function exampleRouteHandler(req: any, res: any) {
+export async function exampleRouteHandler(_req: any, res: any) {
   try {
     // Get service from DI container (synchronous - for already initialized singletons)
     const knowledgeGraph = getService<KnowledgeGraphService>(ServiceIds.KNOWLEDGE_GRAPH_SERVICE);
@@ -33,12 +33,11 @@ export async function exampleRouteHandler(req: any, res: any) {
  */
 export class ExampleService {
   private knowledgeGraph: KnowledgeGraphService;
-  private assistant: AssistantService;
   
   constructor() {
     // Services are injected via DI container
     this.knowledgeGraph = getService<KnowledgeGraphService>(ServiceIds.KNOWLEDGE_GRAPH_SERVICE);
-    this.assistant = getService<AssistantService>(ServiceIds.ASSISTANT_SERVICE);
+    // const assistant = getService<AssistantService>(ServiceIds.ASSISTANT_SERVICE); // Reserved for future use
   }
   
   async doSomething() {

@@ -157,41 +157,41 @@ Return JSON in this format:
     extracted: Record<string, unknown>
   ): BusinessIdeaCanvas {
     return {
-      title: (extracted.title as string) || 'Untitled Business Idea',
-      description: (extracted.description as string) || '',
-      confidenceScore: typeof extracted.confidenceScore === 'number'
-        ? Math.max(0, Math.min(1, extracted.confidenceScore))
+      title: (extracted['title'] as string) || 'Untitled Business Idea',
+      description: (extracted['description'] as string) || '',
+      confidenceScore: typeof extracted['confidenceScore'] === 'number'
+        ? Math.max(0, Math.min(1, extracted['confidenceScore']))
         : 0.5,
       
       // Business Model Canvas
-      valuePropositions: this.ensureArray(extracted.valuePropositions),
-      customerSegments: this.ensureArray(extracted.customerSegments),
-      channels: this.ensureArray(extracted.channels),
-      customerRelationships: this.ensureArray(extracted.customerRelationships),
-      revenueStreams: this.ensureArray(extracted.revenueStreams),
-      keyResources: this.ensureArray(extracted.keyResources),
-      keyActivities: this.ensureArray(extracted.keyActivities),
-      keyPartnerships: this.ensureArray(extracted.keyPartnerships),
-      costStructure: this.ensureArray(extracted.costStructure),
+      valuePropositions: this.ensureArray(extracted['valuePropositions']),
+      customerSegments: this.ensureArray(extracted['customerSegments']),
+      channels: this.ensureArray(extracted['channels']),
+      customerRelationships: this.ensureArray(extracted['customerRelationships']),
+      revenueStreams: this.ensureArray(extracted['revenueStreams']),
+      keyResources: this.ensureArray(extracted['keyResources']),
+      keyActivities: this.ensureArray(extracted['keyActivities']),
+      keyPartnerships: this.ensureArray(extracted['keyPartnerships']),
+      costStructure: this.ensureArray(extracted['costStructure']),
       
       // Business context
-      problem: (extracted.problem as string) || '',
-      solution: (extracted.solution as string) || '',
-      targetMarket: (extracted.targetMarket as string) || '',
-      marketSize: (extracted.marketSize as string) || '',
-      revenueModel: (extracted.revenueModel as string) || '',
-      pricing: (extracted.pricing as string) || '',
-      features: this.ensureArray(extracted.features),
-      competitiveAdvantage: this.ensureArray(extracted.competitiveAdvantage),
-      challenges: this.ensureArray(extracted.challenges),
-      nextSteps: this.ensureArray(extracted.nextSteps),
-      contacts: this.ensureArray(extracted.contacts),
-      marketInsights: (extracted.marketInsights as string) || '',
+      problem: (extracted['problem'] as string) || '',
+      solution: (extracted['solution'] as string) || '',
+      targetMarket: (extracted['targetMarket'] as string) || '',
+      marketSize: (extracted['marketSize'] as string) || '',
+      revenueModel: (extracted['revenueModel'] as string) || '',
+      pricing: (extracted['pricing'] as string) || '',
+      features: this.ensureArray(extracted['features']),
+      competitiveAdvantage: this.ensureArray(extracted['competitiveAdvantage']),
+      challenges: this.ensureArray(extracted['challenges']),
+      nextSteps: this.ensureArray(extracted['nextSteps']),
+      contacts: this.ensureArray(extracted['contacts']),
+      marketInsights: (extracted['marketInsights'] as string) || '',
       
       // Metadata
-      tags: this.ensureArray(extracted.tags),
-      priority: this.validatePriority(extracted.priority),
-      sentiment: this.validateSentiment(extracted.sentiment),
+      tags: this.ensureArray(extracted['tags']),
+      priority: this.validatePriority(extracted['priority']),
+      sentiment: this.validateSentiment(extracted['sentiment']),
     };
   }
 

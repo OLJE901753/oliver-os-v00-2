@@ -159,8 +159,8 @@ export class KnowledgeQA {
         contextParts.push(`Tags: ${node.metadata.tags.join(', ')}`);
       }
       
-      if (node.type === 'business_idea' && node.metadata.problem) {
-        contextParts.push(`Problem: ${node.metadata.problem}`);
+      if (node.type === 'business_idea' && node.metadata['problem']) {
+        contextParts.push(`Problem: ${node.metadata['problem']}`);
       }
     }
 

@@ -84,7 +84,7 @@ export function createKnowledgeGraphRoutes(knowledgeGraphService: KnowledgeGraph
   router.get('/nodes/:id/related', async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
-      const depth = parseInt(req.query.depth as string) || 1;
+      const depth = parseInt(req.query['depth'] as string) || 1;
 
       const relatedNodes = await knowledgeGraphService.getRelatedNodes(id, depth);
 
@@ -288,7 +288,7 @@ export function createKnowledgeGraphRoutes(knowledgeGraphService: KnowledgeGraph
    * GET /api/knowledge/stats
    * Get graph statistics
    */
-  router.get('/stats', async (req: Request, res: Response) => {
+  router.get('/stats', async (_req: Request, res: Response) => {
     try {
       const stats = await knowledgeGraphService.getGraphStats();
       return res.json(stats);

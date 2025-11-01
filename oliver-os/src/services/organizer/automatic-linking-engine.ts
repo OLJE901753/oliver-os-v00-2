@@ -480,7 +480,7 @@ export class AutomaticLinkingEngine extends EventEmitter {
 
         if (existingRel) {
           // Update if strength improved significantly
-          const existingStrength = (existingRel.metadata?.strength as number) || 0;
+          const existingStrength = ((existingRel.metadata || {})['strength'] as number) || 0;
           if (candidate.strength > existingStrength + 0.1) {
             await this.knowledgeGraph.updateRelationship(existingRel.id, {
               metadata: {

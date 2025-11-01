@@ -58,7 +58,7 @@ export function createMemoryCaptureRoutes(memoryService: CaptureMemoryService): 
    */
   router.get('/recent', async (req: Request, res: Response) => {
     try {
-      const limit = parseInt(req.query.limit as string) || 10;
+      const limit = parseInt(req.query['limit'] as string) || 10;
       const memories = await memoryService.getRecentMemories(limit);
 
       return res.json({
@@ -235,7 +235,7 @@ export function createMemoryCaptureRoutes(memoryService: CaptureMemoryService): 
    * GET /api/memory/stats
    * Get service statistics
    */
-  router.get('/stats', async (req: Request, res: Response) => {
+  router.get('/stats', async (_req: Request, res: Response) => {
     try {
       const stats = await memoryService.getStats();
       return res.json(stats);
