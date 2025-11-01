@@ -1,26 +1,39 @@
 FROM node:20-alpine AS deps
 WORKDIR /app
 
-# Install pnpm globally
+# Install curl (needed for potential fallbacks)
+RUN apk add --no-cache curl
+
+# Install pnpm using npm
 RUN npm install -g pnpm@9
+
+# Ensure pnpm is in PATH and verify installation
+ENV PATH="/usr/local/bin:$PATH"
+RUN which pnpm || npm list -g pnpm
 
 # Copy package files
 COPY package.json pnpm-lock.yaml* package-lock.json* ./
 
-# Install dependencies
+# Install dependencies - try pnpm first, fallback to npm
 RUN if [ -f pnpm-lock.yaml ]; then \
-    pnpm install --frozen-lockfile; \
-  elif [ -f package-lock.json ]; then \
-    npm ci; \
-  else \
-    npm install; \
-  fi
+      echo "Found pnpm-lock.yaml, using pnpm..." && \
+      (pnpm install --frozen-lockfile || npm install); \
+    elif [ -f package-lock.json ]; then \
+      echo "Found package-lock.json, using npm ci..." && \
+      npm ci; \
+    else \
+      echo "No lockfile found, using npm install..." && \
+      npm install; \
+    fi
 
 FROM node:20-alpine AS build
 WORKDIR /app
 
 # Install pnpm
 RUN npm install -g pnpm@9
+
+# Ensure pnpm is in PATH
+ENV PATH="/usr/local/bin:$PATH"
 
 # Copy dependencies and source
 COPY --from=deps /app/node_modules ./node_modules
@@ -30,12 +43,14 @@ COPY . .
 ENV SKIP_DB_INIT=true
 ENV NODE_ENV=production
 
-# Build TypeScript
+# Build TypeScript - use pnpm if lockfile exists, otherwise npm
 RUN if [ -f pnpm-lock.yaml ]; then \
-    pnpm run build; \
-  else \
-    npm run build; \
-  fi
+      echo "Building with pnpm..." && \
+      (pnpm run build || npm run build); \
+    else \
+      echo "Building with npm..." && \
+      npm run build; \
+    fi
 
 FROM node:20-alpine AS runner
 WORKDIR /app
