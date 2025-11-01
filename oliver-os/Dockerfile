@@ -39,14 +39,44 @@ ENV PATH="/usr/local/bin:$PATH"
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
+# Create tsconfig.base.json (needed because tsconfig.json extends ../tsconfig.base.json)
+# In Docker build context (oliver-os/), parent directory isn't available
+RUN echo '{ \
+  "compilerOptions": { \
+    "target": "ES2022", \
+    "module": "ESNext", \
+    "moduleResolution": "node", \
+    "lib": ["ES2022"], \
+    "strict": true, \
+    "esModuleInterop": true, \
+    "allowSyntheticDefaultImports": true, \
+    "skipLibCheck": true, \
+    "forceConsistentCasingInFileNames": true, \
+    "declaration": true, \
+    "declarationMap": true, \
+    "sourceMap": true, \
+    "resolveJsonModule": true, \
+    "isolatedModules": true \
+  } \
+}' > tsconfig.base.json
+
+# Fix tsconfig.json to use local tsconfig.base.json instead of ../tsconfig.base.json
+# Use sed or node to update the JSON file
+RUN if command -v sed > /dev/null; then \
+      sed -i 's|"extends": "../tsconfig.base.json"|"extends": "./tsconfig.base.json"|' tsconfig.json; \
+    else \
+      node -e "const fs=require('fs'); const ts=JSON.parse(fs.readFileSync('tsconfig.json')); ts.extends='./tsconfig.base.json'; fs.writeFileSync('tsconfig.json', JSON.stringify(ts, null, 2));"; \
+    fi
+
 # Set environment to skip database init during build
 ENV SKIP_DB_INIT=true
 ENV NODE_ENV=production
 
 # Build TypeScript - use pnpm if lockfile exists, otherwise npm
+# Show verbose output to help debug any TypeScript errors
 RUN if [ -f pnpm-lock.yaml ]; then \
       echo "Building with pnpm..." && \
-      (pnpm run build || npm run build); \
+      pnpm run build 2>&1 || (echo "pnpm build failed, trying npm..." && npm run build); \
     else \
       echo "Building with npm..." && \
       npm run build; \
