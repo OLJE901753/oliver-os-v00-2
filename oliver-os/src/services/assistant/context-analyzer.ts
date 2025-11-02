@@ -166,13 +166,13 @@ export class ContextAnalyzer {
       // Count by time of day
       const hour = created.getHours();
       if (hour >= 6 && hour < 12) {
-        timeOfDayCounts['morning']++;
+        timeOfDayCounts['morning'] = (timeOfDayCounts['morning'] || 0) + 1;
       } else if (hour >= 12 && hour < 17) {
-        timeOfDayCounts['afternoon']++;
+        timeOfDayCounts['afternoon'] = (timeOfDayCounts['afternoon'] || 0) + 1;
       } else if (hour >= 17 && hour < 22) {
-        timeOfDayCounts['evening']++;
+        timeOfDayCounts['evening'] = (timeOfDayCounts['evening'] || 0) + 1;
       } else {
-        timeOfDayCounts['night']++;
+        timeOfDayCounts['night'] = (timeOfDayCounts['night'] || 0) + 1;
       }
 
       // Count by day of week

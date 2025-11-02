@@ -333,7 +333,7 @@ Generate the complete code implementation:`;
     
     try {
       // Extract file path from prompt or metadata
-      const filePath = ((agent.metadata || {})['filePath'] as string) || agent.prompt.split('\n')[0].trim();
+      const filePath = ((agent.metadata || {})['filePath'] as string) || (agent.prompt.split('\n')[0]?.trim() || '');
       
       let codeContent = '';
       let eslintIssues: Array<{ line: number; column: number; message: string; severity: string }> = [];
@@ -454,7 +454,7 @@ Format as JSON:
     
     try {
       // Extract file path from prompt or metadata
-      const filePath = ((agent.metadata || {})['filePath'] as string) || agent.prompt.split('\n')[0].trim();
+      const filePath = ((agent.metadata || {})['filePath'] as string) || (agent.prompt.split('\n')[0]?.trim() || '');
       
       let codeContent = '';
       let sourceFile = '';
@@ -553,7 +553,7 @@ Generate complete test file with imports and setup:`;
     
     try {
       // Extract file path from prompt or metadata
-      const filePath = ((agent.metadata || {})['filePath'] as string) || agent.prompt.split('\n')[0].trim();
+      const filePath = ((agent.metadata || {})['filePath'] as string) || (agent.prompt.split('\n')[0]?.trim() || '');
       
       let codeContent = '';
       
@@ -683,7 +683,7 @@ Format as JSON:
     
     try {
       // Extract file path or directory from prompt or metadata
-      const targetPath = ((agent.metadata || {})['filePath'] as string) || agent.prompt.split('\n')[0].trim();
+      const targetPath = ((agent.metadata || {})['filePath'] as string) || (agent.prompt.split('\n')[0]?.trim() || '');
       
       let codeContent = '';
       let files: string[] = [];

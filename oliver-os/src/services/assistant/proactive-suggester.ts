@@ -127,10 +127,11 @@ export class ProactiveSuggester {
           const nodeDate = node.metadata.created instanceof Date
             ? node.metadata.created
             : new Date(node.metadata.created);
-          const oldestRecent = recentNodes.length > 0
-            ? (recentNodes[recentNodes.length - 1].metadata.created instanceof Date
-                ? recentNodes[recentNodes.length - 1].metadata.created
-                : new Date(recentNodes[recentNodes.length - 1].metadata.created))
+          const lastNode = recentNodes.length > 0 ? recentNodes[recentNodes.length - 1] : undefined;
+          const oldestRecent = lastNode
+            ? (lastNode.metadata.created instanceof Date
+                ? lastNode.metadata.created
+                : new Date(lastNode.metadata.created))
             : new Date();
           
           return nodeDate < oldestRecent;

@@ -105,10 +105,12 @@ export class OpenAIEmbeddingsService implements EmbeddingsService {
     let magnitude1 = 0;
     let magnitude2 = 0;
 
-    for (let i = 0; i < embedding1.length; i++) {
-      dotProduct += embedding1[i] * embedding2[i];
-      magnitude1 += embedding1[i] * embedding1[i];
-      magnitude2 += embedding2[i] * embedding2[i];
+    for (let i = 0; i < embedding1.length && i < embedding2.length; i++) {
+      const val1 = embedding1[i] ?? 0;
+      const val2 = embedding2[i] ?? 0;
+      dotProduct += val1 * val2;
+      magnitude1 += val1 * val1;
+      magnitude2 += val2 * val2;
     }
 
     magnitude1 = Math.sqrt(magnitude1);
