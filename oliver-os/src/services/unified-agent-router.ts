@@ -184,7 +184,7 @@ export class UnifiedAgentRouter {
       const taskId = await this.monster.submitTask(task);
       this.logger.info(`✅ Task routed to Monster Mode: ${taskId}`);
 
-      return {
+      const routeResult: RouteResult = {
         taskId,
         destination: 'monster-mode',
         intent: {
@@ -192,8 +192,10 @@ export class UnifiedAgentRouter {
           priority: translated?.priority || 'medium',
           confidence: translated ? 'high' : 'medium'
         },
-        decision
       };
+      if (decision !== undefined) routeResult.decision = decision;
+
+      return routeResult;
     } catch (error) {
       this.logger.error('Failed to route to Monster Mode:', error);
       throw error;
@@ -323,12 +325,14 @@ export class UnifiedAgentRouter {
     const prompt = translated?.description || message;
     const spawned = await this.serviceManager.spawnAgent({ agentType, prompt, metadata: { translated, source: 'unified-router' } });
 
-    return {
+    const routeResult: RouteResult = {
       destination: 'codebuff',
       intent: { type: translated?.type || 'code-generation', priority: translated?.priority || 'medium', confidence: 'high' },
       taskId: spawned.id,
-      decision
     };
+    if (decision !== undefined) routeResult.decision = decision;
+
+    return routeResult;
   }
 
   // Route to Cursor by writing a request file for the Cursor chat workflow
@@ -342,12 +346,14 @@ export class UnifiedAgentRouter {
       const outPath = process.cwd() + '/cursor-request.json';
       await fs.writeJson(outPath, payload, { spaces: 2 });
       this.logger.info(`📝 Cursor request written at ${outPath}`);
-      return {
+      const routeResult: RouteResult = {
         destination: 'cursor',
         intent: { type: translated?.type || 'documentation', priority: translated?.priority || 'medium', confidence: 'high' },
         message: outPath,
-        decision
       };
+      if (decision !== undefined) routeResult.decision = decision;
+
+      return routeResult;
     } catch (e) {
       this.logger.error('Failed to write cursor request:', e);
       // Fallback to Monster Mode if file write fails

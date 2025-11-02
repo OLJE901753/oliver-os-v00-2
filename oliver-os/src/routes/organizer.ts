@@ -37,13 +37,13 @@ export function createOrganizerRoutes(
 
       const result = await organizerService.organizeMemory(memoryId, options);
 
-      res.json({
+      return res.json({
         success: true,
         data: result,
       });
     } catch (error) {
       logger.error(`Failed to organize memory: ${error}`);
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error',
       });
@@ -72,7 +72,7 @@ export function createOrganizerRoutes(
 
       const results = await organizerService.organizeMemories(memoryIds, options);
 
-      res.json({
+      return res.json({
         success: true,
         data: results,
         stats: {
@@ -83,7 +83,7 @@ export function createOrganizerRoutes(
       });
     } catch (error) {
       logger.error(`Failed to organize memories: ${error}`);
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error',
       });
@@ -144,13 +144,13 @@ export function createOrganizerRoutes(
 
         const extraction = await businessStructurer.extractBusinessIdea(text, options);
 
-        res.json({
+        return res.json({
           success: true,
           data: extraction,
         });
       } catch (error) {
         logger.error(`Failed to extract business idea: ${error}`);
-        res.status(500).json({
+        return res.status(500).json({
           success: false,
           error: error instanceof Error ? error.message : 'Unknown error',
         });

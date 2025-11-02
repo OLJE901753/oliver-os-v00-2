@@ -300,11 +300,12 @@ Generate the complete code implementation:`;
     
     while ((match = codeBlockRegex.exec(text)) !== null) {
       if (!match[3]) continue; // Skip if code content is missing
-      blocks.push({
+      const block: { code: string; filename?: string; language?: string } = {
+        code: match[3].trim(),
         language: match[1] || 'typescript',
-        filename: match[2]?.trim(),
-        code: match[3].trim()
-      });
+      };
+      if (match[2]?.trim()) block.filename = match[2].trim();
+      blocks.push(block);
     }
     
     // If no code blocks found, treat entire response as code

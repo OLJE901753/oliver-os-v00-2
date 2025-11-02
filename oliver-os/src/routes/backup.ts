@@ -21,7 +21,7 @@ router.post('/create', async (_req: Request, res: Response) => {
     const result = await backupService.createBackup();
     
     if (result.success) {
-      res.status(201).json({
+      return res.status(201).json({
         success: true,
         backup: {
           path: result.backupPath,
@@ -32,14 +32,14 @@ router.post('/create', async (_req: Request, res: Response) => {
         }
       });
     } else {
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
         error: result.error
       });
     }
   } catch (error: any) {
     logger.error('Backup creation failed', { error: error.message });
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       error: error.message
     });
@@ -91,19 +91,19 @@ router.post('/restore', async (req: Request, res: Response) => {
     const result = await backupService.restoreBackup(backupPath);
     
     if (result.success) {
-      res.json({
+      return res.json({
         success: true,
         message: 'Backup restored successfully'
       });
     } else {
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
         error: result.error
       });
     }
   } catch (error: any) {
     logger.error('Backup restore failed', { error: error.message });
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       error: error.message
     });

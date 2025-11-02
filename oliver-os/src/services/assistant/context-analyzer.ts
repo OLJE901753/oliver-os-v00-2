@@ -67,13 +67,15 @@ export class ContextAnalyzer {
       // Determine focus areas
       const focusAreas = this.extractFocusAreas(recentNodes, currentNode);
 
-      return {
-        currentNodeId: currentNode?.id,
+      const userContext: UserContext = {
         recentNodes,
         recentActivity: activityPattern,
         timePattern,
         focusAreas,
       };
+      if (currentNode?.id !== undefined) userContext.currentNodeId = currentNode.id;
+
+      return userContext;
     } catch (error) {
       this.logger.error(`Failed to analyze context: ${error}`);
       // Return fallback context

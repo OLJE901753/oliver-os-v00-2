@@ -13,7 +13,6 @@ import type { MinimaxProvider } from '../llm/minimax-provider';
 import type { KnowledgeNode, NodeCreateInput } from '../knowledge/node.types';
 import type { RelationshipCreateInput } from '../knowledge/relationship.types';
 import { LLMExtractor, type ExtractedStructure } from './llm-extractor';
-import { EntityExtractor } from './entity-extractor';
 import { RelationshipFinder } from './relationship-finder';
 import { BusinessIdeaStructurer } from './business-structurer';
 
@@ -32,29 +31,25 @@ export interface OrganizeOptions {
 
 export class ThoughtOrganizerService extends EventEmitter {
   private logger: Logger;
-  private _config: Config;
   private knowledgeGraph: KnowledgeGraphService;
   private memoryService: CaptureMemoryService;
   private llmExtractor: LLMExtractor;
-  private _entityExtractor: EntityExtractor;
   private relationshipFinder: RelationshipFinder;
   private businessStructurer: BusinessIdeaStructurer;
 
   constructor(
-    config: Config,
+    _config: Config,
     knowledgeGraph: KnowledgeGraphService,
     memoryService: CaptureMemoryService,
     llmProvider: MinimaxProvider
   ) {
     super();
     this.logger = new Logger('ThoughtOrganizerService');
-    this._config = config;
     this.knowledgeGraph = knowledgeGraph;
     this.memoryService = memoryService;
     
     // Initialize extractors
     this.llmExtractor = new LLMExtractor(llmProvider);
-    this._entityExtractor = new EntityExtractor();
     this.relationshipFinder = new RelationshipFinder(knowledgeGraph);
     this.businessStructurer = new BusinessIdeaStructurer(llmProvider, knowledgeGraph);
   }

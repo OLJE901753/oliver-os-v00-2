@@ -22,12 +22,10 @@ export interface Suggestion {
 export class ProactiveSuggester {
   private logger: Logger;
   private knowledgeGraph: KnowledgeGraphService;
-  private _llm: MinimaxProvider;
 
-  constructor(knowledgeGraph: KnowledgeGraphService, llm: MinimaxProvider) {
+  constructor(knowledgeGraph: KnowledgeGraphService, _llm: MinimaxProvider) {
     this.logger = new Logger('ProactiveSuggester');
     this.knowledgeGraph = knowledgeGraph;
-    this._llm = llm;
   }
 
   /**

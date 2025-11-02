@@ -350,7 +350,6 @@ export function createServer(config: Config, serviceManager?: any, prisma?: any)
         const organizerRoutes = createOrganizerRoutes(organizerService, businessStructurer);
         organizerRouter.stack.length = 0;
         organizerRouter.stack.push(...organizerRoutes.stack);
-        organizerServiceInstance = organizerService;
 
         if (serviceManager) {
           await serviceManager.registerService('thought-organizer', 'Thought Organizer Service', {
@@ -369,7 +368,6 @@ export function createServer(config: Config, serviceManager?: any, prisma?: any)
         const assistantRoutes = createAssistantRoutes(assistantService);
         assistantRouter.stack.length = 0;
         assistantRouter.stack.push(...assistantRoutes.stack);
-        assistantServiceInstance = assistantService;
 
         if (serviceManager) {
           await serviceManager.registerService('assistant', 'AI Assistant Service', {
@@ -446,7 +444,6 @@ export function createServer(config: Config, serviceManager?: any, prisma?: any)
       const organizerRoutes = createOrganizerRoutes(service, businessStructurer);
       organizerRouter.stack.length = 0;
       organizerRouter.stack.push(...organizerRoutes.stack);
-      organizerServiceInstance = service;
       
       if (serviceManager) {
         await serviceManager.registerService('thought-organizer', 'Thought Organizer Service', {
@@ -463,7 +460,6 @@ export function createServer(config: Config, serviceManager?: any, prisma?: any)
       const assistantRoutes = createAssistantRoutes(service);
       assistantRouter.stack.length = 0;
       assistantRouter.stack.push(...assistantRoutes.stack);
-      assistantServiceInstance = service;
       
       if (serviceManager) {
         await serviceManager.registerService('assistant', 'AI Assistant Service', {

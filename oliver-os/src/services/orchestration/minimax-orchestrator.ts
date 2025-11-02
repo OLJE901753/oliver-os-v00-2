@@ -9,7 +9,7 @@ import * as fs from 'fs-extra';
 import * as path from 'path';
 import { Logger } from '../../core/logger';
 import { Config } from '../../core/config';
-import { MinimaxProvider, type MinimaxConfig } from '../llm/minimax-provider';
+import { MinimaxProvider } from '../llm/minimax-provider';
 import type { AgentDefinition, WorkflowDefinition, WorkflowStep } from '../codebuff/types';
 
 export enum AgentStatus {

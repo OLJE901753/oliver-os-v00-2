@@ -197,9 +197,9 @@ export class InMemoryGraphStorage extends EventEmitter implements GraphStorage {
       toNodeId: input.toNodeId,
       type: input.type,
       strength: input.strength ?? 0.5,
-      metadata: input.metadata,
       createdAt: new Date(),
     };
+    if (input.metadata !== undefined) relationship.metadata = input.metadata;
     
     this.relationships.set(id, relationship);
     this.logger.debug(`Created relationship: ${id} (${input.type})`);

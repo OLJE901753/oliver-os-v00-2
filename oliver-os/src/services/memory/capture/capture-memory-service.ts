@@ -95,15 +95,17 @@ export class CaptureMemoryService extends EventEmitter implements QueueProcessor
       const validated = MemoryCaptureSchema.parse(input);
 
       // Create memory record
-      const memory = this.storage.createMemory({
+      const memoryData: Omit<MemoryRecord, 'id' | 'timestamp'> = {
         rawContent: validated.rawContent,
         type: validated.type,
         status: 'raw',
         metadata: validated.metadata || {},
-        audioUrl: validated.audioUrl,
-        transcript: validated.transcript,
-        durationSeconds: validated.durationSeconds,
-      });
+      };
+      if (validated.audioUrl !== undefined) memoryData.audioUrl = validated.audioUrl;
+      if (validated.transcript !== undefined) memoryData.transcript = validated.transcript;
+      if (validated.durationSeconds !== undefined) memoryData.durationSeconds = validated.durationSeconds;
+
+      const memory = this.storage.createMemory(memoryData);
 
       this._logger.info(`Captured memory: ${memory.id} (${memory.type})`);
 

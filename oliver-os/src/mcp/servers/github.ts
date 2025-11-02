@@ -506,15 +506,17 @@ export class GitHubMCPServer extends EventEmitter implements OliverOSMCPServer {
       const stateStr = (state as 'open' | 'closed' | 'all') || 'open';
       const perPage = (per_page as number) || 30;
       
-      const response = await this.octokit.issues.listForRepo({
+      const params: any = {
         owner: ownerStr,
         repo: repoStr,
-        state: stateStr === 'all' ? undefined : stateStr,
-        labels: labels ? (labels as string).split(',').map(l => l.trim()).join(',') : undefined,
-        assignee: assignee as string | undefined,
-        creator: creator as string | undefined,
         per_page: Math.min(perPage, 100)
-      });
+      };
+      if (stateStr !== 'all') params.state = stateStr;
+      if (labels) params.labels = (labels as string).split(',').map(l => l.trim()).join(',');
+      if (assignee) params.assignee = assignee as string;
+      if (creator) params.creator = creator as string;
+
+      const response = await this.octokit.issues.listForRepo(params);
       
       return {
         content: [{
@@ -597,14 +599,16 @@ export class GitHubMCPServer extends EventEmitter implements OliverOSMCPServer {
       const repoStr = repo as string;
       const titleStr = title as string;
       
-      const response = await this.octokit.issues.create({
+      const params: any = {
         owner: ownerStr,
         repo: repoStr,
-        title: titleStr,
-        body: (body as string) || undefined,
-        labels: labels ? (labels as string[]) : undefined,
-        assignees: assignees ? (assignees as string[]) : undefined
-      });
+        title: titleStr
+      };
+      if (body) params.body = body as string;
+      if (labels) params.labels = labels as string[];
+      if (assignees) params.assignees = assignees as string[];
+
+      const response = await this.octokit.issues.create(params);
       
       return {
         content: [{
@@ -689,14 +693,16 @@ export class GitHubMCPServer extends EventEmitter implements OliverOSMCPServer {
       const stateStr = (state as 'open' | 'closed' | 'all') || 'open';
       const perPage = (per_page as number) || 30;
       
-      const response = await this.octokit.pulls.list({
+      const params: any = {
         owner: ownerStr,
         repo: repoStr,
-        state: stateStr === 'all' ? undefined : stateStr,
-        head: head as string | undefined,
-        base: base as string | undefined,
         per_page: Math.min(perPage, 100)
-      });
+      };
+      if (stateStr !== 'all') params.state = stateStr;
+      if (head) params.head = head as string;
+      if (base) params.base = base as string;
+
+      const response = await this.octokit.pulls.list(params);
       
       return {
         content: [{
@@ -781,15 +787,17 @@ export class GitHubMCPServer extends EventEmitter implements OliverOSMCPServer {
       const headStr = head as string;
       const baseStr = base as string;
       
-      const response = await this.octokit.pulls.create({
+      const params: any = {
         owner: ownerStr,
         repo: repoStr,
         title: titleStr,
         head: headStr,
         base: baseStr,
-        body: (body as string) || undefined,
         draft: (draft as boolean) || false
-      });
+      };
+      if (body) params.body = body as string;
+
+      const response = await this.octokit.pulls.create(params);
       
       return {
         content: [{
@@ -874,16 +882,18 @@ export class GitHubMCPServer extends EventEmitter implements OliverOSMCPServer {
       const repoStr = repo as string;
       const perPage = (per_page as number) || 30;
       
-      const response = await this.octokit.repos.listCommits({
+      const params: any = {
         owner: ownerStr,
         repo: repoStr,
-        sha: sha as string | undefined,
-        path: path as string | undefined,
-        author: author as string | undefined,
-        since: since as string | undefined,
-        until: until as string | undefined,
         per_page: Math.min(perPage, 100)
-      });
+      };
+      if (sha) params.sha = sha as string;
+      if (path) params.path = path as string;
+      if (author) params.author = author as string;
+      if (since) params.since = since as string;
+      if (until) params.until = until as string;
+
+      const response = await this.octokit.repos.listCommits(params);
       
       return {
         content: [{

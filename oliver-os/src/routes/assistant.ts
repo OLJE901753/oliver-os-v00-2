@@ -31,22 +31,22 @@ export function createAssistantRoutes(assistantService: AssistantService): IRout
 
       const userId = (req as any).user?.id || 'default';
 
+      const chatRequest: ChatRequest = { message };
+      if (sessionId !== undefined) chatRequest.sessionId = sessionId;
+      if (context !== undefined) chatRequest.context = context;
+
       const response = await assistantService.chat(
-        {
-          sessionId,
-          message,
-          context,
-        },
+        chatRequest,
         userId
       );
 
-      res.json({
+      return res.json({
         success: true,
         data: response,
       });
     } catch (error) {
       logger.error(`Failed to process chat: ${error}`);
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error',
       });
@@ -96,13 +96,13 @@ export function createAssistantRoutes(assistantService: AssistantService): IRout
 
       const refinements = await assistantService.refineIdea(nodeId);
 
-      res.json({
+      return res.json({
         success: true,
         data: refinements,
       });
     } catch (error) {
       logger.error(`Failed to refine idea: ${error}`);
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error',
       });
@@ -147,7 +147,7 @@ export function createAssistantRoutes(assistantService: AssistantService): IRout
 
       const messages = assistantService.getSessionMessages(id, limit);
 
-      res.json({
+      return res.json({
         success: true,
         data: {
           sessionId: id,
@@ -156,7 +156,7 @@ export function createAssistantRoutes(assistantService: AssistantService): IRout
       });
     } catch (error) {
       logger.error(`Failed to get session: ${error}`);
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error',
       });

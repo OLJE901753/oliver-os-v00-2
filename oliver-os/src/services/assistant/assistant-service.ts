@@ -40,8 +40,6 @@ export interface ChatResponse {
 
 export class AssistantService extends EventEmitter {
   private logger: Logger;
-  private _config: Config;
-  private _knowledgeGraph: KnowledgeGraphService;
   private llm: MinimaxProvider;
   private chatHistory: ChatHistoryStorage;
   private contextAnalyzer: ContextAnalyzer;
@@ -50,22 +48,20 @@ export class AssistantService extends EventEmitter {
   private proactiveSuggester: ProactiveSuggester;
 
   constructor(
-    config: Config,
-    knowledgeGraph: KnowledgeGraphService,
+    _config: Config,
+    _knowledgeGraph: KnowledgeGraphService,
     llmProvider: MinimaxProvider
   ) {
     super();
     this.logger = new Logger('AssistantService');
-    this._config = config;
-    this._knowledgeGraph = knowledgeGraph;
     this.llm = llmProvider;
 
     // Initialize components
     this.chatHistory = new ChatHistoryStorage();
-    this.contextAnalyzer = new ContextAnalyzer(knowledgeGraph);
-    this.knowledgeQA = new KnowledgeQA(knowledgeGraph, llmProvider);
-    this.ideaRefiner = new IdeaRefiner(knowledgeGraph, llmProvider);
-    this.proactiveSuggester = new ProactiveSuggester(knowledgeGraph, llmProvider);
+    this.contextAnalyzer = new ContextAnalyzer(_knowledgeGraph);
+    this.knowledgeQA = new KnowledgeQA(_knowledgeGraph, llmProvider);
+    this.ideaRefiner = new IdeaRefiner(_knowledgeGraph, llmProvider);
+    this.proactiveSuggester = new ProactiveSuggester(_knowledgeGraph, llmProvider);
   }
 
   /**
@@ -137,13 +133,15 @@ export class AssistantService extends EventEmitter {
         contextNodes,
       });
 
-      return {
+      const chatResponse: ChatResponse = {
         sessionId,
         message: response,
-        suggestions: suggestions.length > 0 ? suggestions : undefined,
-        citations,
         contextNodes,
       };
+      if (suggestions.length > 0) chatResponse.suggestions = suggestions;
+      if (citations !== undefined) chatResponse.citations = citations;
+
+      return chatResponse;
     } catch (error) {
       this.logger.error(`Failed to process chat: ${error}`);
       throw error;
