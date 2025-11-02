@@ -114,6 +114,9 @@ export function createMemoryCaptureRoutes(memoryService: CaptureMemoryService): 
   router.get('/:id', async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
+      if (!id) {
+        return res.status(400).json({ error: 'Memory ID required' });
+      }
       const memory = await memoryService.getMemory(id);
 
       if (!memory) {
@@ -168,6 +171,9 @@ export function createMemoryCaptureRoutes(memoryService: CaptureMemoryService): 
   router.get('/status/:status', async (req: Request, res: Response) => {
     try {
       const { status } = req.params;
+      if (!status) {
+        return res.status(400).json({ error: 'Status required' });
+      }
 
       if (!['raw', 'processing', 'organized', 'linked'].includes(status)) {
         return res.status(400).json({
@@ -199,6 +205,9 @@ export function createMemoryCaptureRoutes(memoryService: CaptureMemoryService): 
   router.patch('/:id/status', async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
+      if (!id) {
+        return res.status(400).json({ error: 'Memory ID required' });
+      }
       const { status } = req.body;
 
       if (!status || !['raw', 'processing', 'organized', 'linked'].includes(status)) {

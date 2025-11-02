@@ -140,6 +140,9 @@ export function createAssistantRoutes(assistantService: AssistantService): IRout
   router.get('/sessions/:id', async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
+      if (!id) {
+        return res.status(400).json({ success: false, error: 'Session ID required' });
+      }
       const limit = parseInt(req.query['limit'] as string) || 100;
 
       const messages = assistantService.getSessionMessages(id, limit);

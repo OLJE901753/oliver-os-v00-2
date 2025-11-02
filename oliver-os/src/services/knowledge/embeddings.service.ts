@@ -67,7 +67,9 @@ export class OpenAIEmbeddingsService implements EmbeddingsService {
       // Limit cache size
       if (this.embeddingCache.size > 1000) {
         const firstKey = this.embeddingCache.keys().next().value;
-        this.embeddingCache.delete(firstKey);
+        if (firstKey !== undefined) {
+          this.embeddingCache.delete(firstKey);
+        }
       }
 
       this.logger.debug(`Generated embedding for text (${text.length} chars)`);

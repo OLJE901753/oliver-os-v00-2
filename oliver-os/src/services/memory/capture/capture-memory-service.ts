@@ -46,8 +46,9 @@ export class CaptureMemoryService extends EventEmitter implements QueueProcessor
     this._logger = new Logger('CaptureMemoryService');
     
     // Initialize storage
-    const dbPath = config.get('memory.dbPath') || path.join(process.cwd(), 'data', 'memories.db');
-    this.storage = new MemoryStorage(dbPath);
+    const dbPath = config.get('memory.dbPath');
+    const dbPathString = typeof dbPath === 'string' ? dbPath : path.join(process.cwd(), 'data', 'memories.db');
+    this.storage = new MemoryStorage(dbPathString);
     
     // Initialize queue and search
     this.queue = new MemoryQueue(this.storage);
@@ -73,7 +74,8 @@ export class CaptureMemoryService extends EventEmitter implements QueueProcessor
     try {
       // Start queue processing
       const intervalMs = this._config.get('memory.queueInterval', 5000);
-      this.queue.start(intervalMs);
+      const intervalMsNumber = typeof intervalMs === 'number' ? intervalMs : 5000;
+      this.queue.start(intervalMsNumber);
 
       this.isInitialized = true;
       this._logger.info('✅ Memory Capture Service initialized successfully');

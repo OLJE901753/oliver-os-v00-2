@@ -58,6 +58,9 @@ export function createKnowledgeGraphRoutes(knowledgeGraphService: KnowledgeGraph
   router.get('/nodes/:id', async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
+      if (!id) {
+        return res.status(400).json({ error: 'Node ID required' });
+      }
       const node = await knowledgeGraphService.getNode(id);
 
       if (!node) {
@@ -84,6 +87,9 @@ export function createKnowledgeGraphRoutes(knowledgeGraphService: KnowledgeGraph
   router.get('/nodes/:id/related', async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
+      if (!id) {
+        return res.status(400).json({ error: 'Node ID required' });
+      }
       const depth = parseInt(req.query['depth'] as string) || 1;
 
       const relatedNodes = await knowledgeGraphService.getRelatedNodes(id, depth);
@@ -110,6 +116,9 @@ export function createKnowledgeGraphRoutes(knowledgeGraphService: KnowledgeGraph
   router.put('/nodes/:id', async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
+      if (!id) {
+        return res.status(400).json({ error: 'Node ID required' });
+      }
       const { title, content, metadata, tags } = req.body;
 
       const updated = await knowledgeGraphService.updateNode(id, {
@@ -236,6 +245,9 @@ export function createKnowledgeGraphRoutes(knowledgeGraphService: KnowledgeGraph
   router.get('/relationships/:nodeId', async (req: Request, res: Response) => {
     try {
       const { nodeId } = req.params;
+      if (!nodeId) {
+        return res.status(400).json({ error: 'Node ID required' });
+      }
       const relationships = await knowledgeGraphService.getRelationships(nodeId);
 
       return res.json({

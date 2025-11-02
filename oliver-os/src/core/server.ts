@@ -391,42 +391,42 @@ export function createServer(config: Config, serviceManager?: any, prisma?: any)
   
   if (useDI) {
     // Use DI container for service resolution
-    resolveService(ServiceIds.KNOWLEDGE_GRAPH_SERVICE).then(async (kgService: KnowledgeGraphService) => {
-      knowledgeGraphService = kgService;
+    resolveService<KnowledgeGraphService>(ServiceIds.KNOWLEDGE_GRAPH_SERVICE).then(async (service) => {
+      knowledgeGraphService = service;
       knowledgeGraphReady = true;
-      app.use('/api/knowledge', createKnowledgeGraphRoutes(kgService));
+      app.use('/api/knowledge', createKnowledgeGraphRoutes(service));
       
       if (serviceManager) {
         await serviceManager.registerService('knowledge-graph', 'Knowledge Graph Service', {
-          stats: await kgService.getGraphStats(),
+          stats: await service.getGraphStats(),
         });
       }
 
       // Initialize Automatic Linking Engine
       try {
         const { AutomaticLinkingEngine } = await import('../services/organizer/automatic-linking-engine');
-        const linkingEngine = new AutomaticLinkingEngine(kgService);
-        kgService.setAutomaticLinkingEngine(linkingEngine);
+        const linkingEngine = new AutomaticLinkingEngine(service);
+        service.setAutomaticLinkingEngine(linkingEngine);
         logger.info('✅ Automatic Linking Engine initialized');
       } catch (error) {
         logger.warn(`Automatic Linking Engine initialization failed: ${error}`);
       }
       
-      if (memoryReady && kgService) {
+      if (memoryReady && service) {
         await initializeAssistantServices();
       }
     }).catch((error) => {
       logger.warn(`Knowledge Graph Service initialization failed: ${error}`);
     });
 
-    resolveService(ServiceIds.CAPTURE_MEMORY_SERVICE).then(async (memService: CaptureMemoryService) => {
-      captureMemoryService = memService;
+    resolveService<CaptureMemoryService>(ServiceIds.CAPTURE_MEMORY_SERVICE).then(async (service) => {
+      captureMemoryService = service;
       memoryReady = true;
-      app.use('/api/memory', createMemoryCaptureRoutes(memService));
+      app.use('/api/memory', createMemoryCaptureRoutes(service));
       
       if (serviceManager) {
         await serviceManager.registerService('memory-capture', 'Memory Capture Service', {
-          stats: await memService.getStats(),
+          stats: await service.getStats(),
         });
       }
 
@@ -438,15 +438,15 @@ export function createServer(config: Config, serviceManager?: any, prisma?: any)
     });
 
     // Use DI for assistant services
-    resolveService(ServiceIds.THOUGHT_ORGANIZER_SERVICE).then(async (orgService: ThoughtOrganizerService) => {
+    resolveService<ThoughtOrganizerService>(ServiceIds.THOUGHT_ORGANIZER_SERVICE).then(async (service) => {
       const { BusinessIdeaStructurer } = await import('../services/organizer/business-structurer');
-      const llmProvider = await resolveService(ServiceIds.MINIMAX_PROVIDER);
+      const llmProvider = await resolveService<MinimaxProvider>(ServiceIds.MINIMAX_PROVIDER);
       const businessStructurer = new BusinessIdeaStructurer(llmProvider, knowledgeGraphService!);
       
-      const organizerRoutes = createOrganizerRoutes(orgService, businessStructurer);
+      const organizerRoutes = createOrganizerRoutes(service, businessStructurer);
       organizerRouter.stack.length = 0;
       organizerRouter.stack.push(...organizerRoutes.stack);
-      organizerServiceInstance = orgService;
+      organizerServiceInstance = service;
       
       if (serviceManager) {
         await serviceManager.registerService('thought-organizer', 'Thought Organizer Service', {
@@ -459,11 +459,11 @@ export function createServer(config: Config, serviceManager?: any, prisma?: any)
       logger.warn(`Thought Organizer Service initialization failed: ${error}`);
     });
 
-    resolveService(ServiceIds.ASSISTANT_SERVICE).then(async (assistantService: AssistantService) => {
-      const assistantRoutes = createAssistantRoutes(assistantService);
+    resolveService<AssistantService>(ServiceIds.ASSISTANT_SERVICE).then(async (service) => {
+      const assistantRoutes = createAssistantRoutes(service);
       assistantRouter.stack.length = 0;
       assistantRouter.stack.push(...assistantRoutes.stack);
-      assistantServiceInstance = assistantService;
+      assistantServiceInstance = service;
       
       if (serviceManager) {
         await serviceManager.registerService('assistant', 'AI Assistant Service', {

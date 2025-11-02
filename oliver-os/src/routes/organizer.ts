@@ -26,6 +26,9 @@ export function createOrganizerRoutes(
   router.post('/organize/:memoryId', async (req: Request, res: Response) => {
     try {
       const { memoryId } = req.params;
+      if (!memoryId) {
+        return res.status(400).json({ success: false, error: 'Memory ID required' });
+      }
       const options: OrganizeOptions = {
         autoLink: req.body.autoLink !== false,
         extractBusinessIdea: req.body.extractBusinessIdea === true,

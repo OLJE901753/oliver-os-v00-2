@@ -113,9 +113,9 @@ export async function bootstrapContainer(container: DIContainer): Promise<void> 
     ServiceIds.THOUGHT_ORGANIZER_SERVICE,
     async (c) => {
       const config = c.get<Config>(ServiceIds.CONFIG);
-      const knowledgeGraph = await c.resolve(ServiceIds.KNOWLEDGE_GRAPH_SERVICE);
-      const memoryService = await c.resolve(ServiceIds.CAPTURE_MEMORY_SERVICE);
-      const llmProvider = await c.resolve(ServiceIds.MINIMAX_PROVIDER);
+      const knowledgeGraph = await c.resolve(ServiceIds.KNOWLEDGE_GRAPH_SERVICE) as KnowledgeGraphService;
+      const memoryService = await c.resolve(ServiceIds.CAPTURE_MEMORY_SERVICE) as CaptureMemoryService;
+      const llmProvider = await c.resolve(ServiceIds.MINIMAX_PROVIDER) as MinimaxProvider;
       
       return new ThoughtOrganizerService(
         config,
@@ -139,8 +139,8 @@ export async function bootstrapContainer(container: DIContainer): Promise<void> 
   container.register(
     ServiceIds.BUSINESS_STRUCTURER,
     async (c) => {
-      const llmProvider = await c.resolve(ServiceIds.MINIMAX_PROVIDER);
-      const knowledgeGraph = await c.resolve(ServiceIds.KNOWLEDGE_GRAPH_SERVICE);
+      const llmProvider = await c.resolve(ServiceIds.MINIMAX_PROVIDER) as MinimaxProvider;
+      const knowledgeGraph = await c.resolve(ServiceIds.KNOWLEDGE_GRAPH_SERVICE) as KnowledgeGraphService;
       
       return new BusinessIdeaStructurer(llmProvider, knowledgeGraph);
     },
@@ -155,8 +155,8 @@ export async function bootstrapContainer(container: DIContainer): Promise<void> 
     ServiceIds.ASSISTANT_SERVICE,
     async (c) => {
       const config = c.get<Config>(ServiceIds.CONFIG);
-      const knowledgeGraph = await c.resolve(ServiceIds.KNOWLEDGE_GRAPH_SERVICE);
-      const llmProvider = await c.resolve(ServiceIds.MINIMAX_PROVIDER);
+      const knowledgeGraph = await c.resolve(ServiceIds.KNOWLEDGE_GRAPH_SERVICE) as KnowledgeGraphService;
+      const llmProvider = await c.resolve(ServiceIds.MINIMAX_PROVIDER) as MinimaxProvider;
       
       return new AssistantService(config, knowledgeGraph, llmProvider);
     },
