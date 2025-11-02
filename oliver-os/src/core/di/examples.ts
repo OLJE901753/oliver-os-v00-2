@@ -4,8 +4,8 @@
  */
 
 import { getService, resolveService, ServiceIds } from './index';
-import type { KnowledgeGraphService } from '../services/knowledge/knowledge-graph-service';
-import type { AssistantService } from '../services/assistant/assistant-service';
+import type { KnowledgeGraphService } from '../../services/knowledge/knowledge-graph-service';
+import type { AssistantService } from '../../services/assistant/assistant-service';
 
 /**
  * Example: Using DI in a route handler

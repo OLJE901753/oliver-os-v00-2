@@ -410,20 +410,22 @@ export class GitHubMCPServer extends EventEmitter implements OliverOSMCPServer {
       let response;
       try {
         // Try as organization first
-        response = await this.octokit.repos.listForOrg({
+        const orgParams: any = {
           org: ownerStr,
-          type: typeStr === 'all' ? undefined : typeStr,
           sort: sortStr,
           per_page: Math.min(perPage, 100)
-        });
+        };
+        if (typeStr !== 'all') orgParams.type = typeStr as any; // Type mismatch, but acceptable
+        response = await this.octokit.repos.listForOrg(orgParams);
       } catch (orgError) {
         // If organization fails, try as user
-        response = await this.octokit.repos.listForUser({
+        const userParams: any = {
           username: ownerStr,
-          type: typeStr === 'all' ? undefined : typeStr,
           sort: sortStr,
           per_page: Math.min(perPage, 100)
-        });
+        };
+        if (typeStr !== 'all') userParams.type = typeStr as any; // Type mismatch, but acceptable
+        response = await this.octokit.repos.listForUser(userParams);
       }
       
       return {
@@ -541,10 +543,10 @@ export class GitHubMCPServer extends EventEmitter implements OliverOSMCPServer {
                 login: issue.assignee.login,
                 avatar_url: issue.assignee.avatar_url
               } : null,
-              user: {
+              user: issue.user ? {
                 login: issue.user.login,
                 avatar_url: issue.user.avatar_url
-              },
+              } : null,
               created_at: issue.created_at,
               updated_at: issue.updated_at,
               html_url: issue.html_url
@@ -625,14 +627,14 @@ export class GitHubMCPServer extends EventEmitter implements OliverOSMCPServer {
                   ? { name: (label as any).name, color: (label as any).color }
                   : { name: String(label), color: 'ffffff' }
               ),
-              assignees: response.data.assignees.map(a => ({
+              assignees: response.data.assignees ? response.data.assignees.map((a: any) => ({
                 login: a.login,
                 avatar_url: a.avatar_url
-              })),
-              user: {
+              })) : [],
+              user: response.data.user ? {
                 login: response.data.user.login,
                 avatar_url: response.data.user.avatar_url
-              },
+              } : null,
               created_at: response.data.created_at,
               updated_at: response.data.updated_at,
               html_url: response.data.html_url
@@ -726,10 +728,10 @@ export class GitHubMCPServer extends EventEmitter implements OliverOSMCPServer {
                 ref: pr.base.ref,
                 sha: pr.base.sha
               },
-              user: {
+              user: pr.user ? {
                 login: pr.user.login,
                 avatar_url: pr.user.avatar_url
-              },
+              } : null,
               created_at: pr.created_at,
               updated_at: pr.updated_at,
               merged_at: pr.merged_at,
@@ -1000,7 +1002,8 @@ export class GitHubMCPServer extends EventEmitter implements OliverOSMCPServer {
         };
       } else {
         // File
-        const content = Buffer.from(response.data.content, 'base64').toString('utf-8');
+        const fileData = response.data as any; // Type narrowing for file response
+        const content = fileData.content ? Buffer.from(fileData.content, 'base64').toString('utf-8') : '';
         return {
           content: [{
             type: 'text',
@@ -1010,14 +1013,14 @@ export class GitHubMCPServer extends EventEmitter implements OliverOSMCPServer {
               path: pathStr,
               ref: refStr,
               file: {
-                name: response.data.name,
-                path: response.data.path,
-                sha: response.data.sha,
-                size: response.data.size,
+                name: fileData.name,
+                path: fileData.path,
+                sha: fileData.sha,
+                size: fileData.size,
                 content: content,
                 encoding: 'utf-8',
-                html_url: response.data.html_url,
-                download_url: response.data.download_url
+                html_url: fileData.html_url,
+                download_url: fileData.download_url
               }
             }, null, 2)
           }]

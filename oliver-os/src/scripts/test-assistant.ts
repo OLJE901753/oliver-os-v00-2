@@ -22,7 +22,7 @@ async function testAssistant() {
       }),
     });
 
-    const chatData = await chatResponse.json();
+    const chatData = await chatResponse.json() as any;
     console.log('✅ Chat Response:', JSON.stringify(chatData, null, 2));
     
     const sessionId = chatData.data?.sessionId;

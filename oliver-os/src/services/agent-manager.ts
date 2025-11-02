@@ -337,7 +337,7 @@ Generate the complete code implementation:`;
       const filePath = ((agent.metadata || {})['filePath'] as string) || (agent.prompt.split('\n')[0]?.trim() || '');
       
       let codeContent = '';
-      let eslintIssues: Array<{ line: number; column: number; message: string; severity: string }> = [];
+      let eslintIssues: Array<{ line: number; column: number; message: string; severity: string; rule?: string }> = [];
       
       // Read file if path exists
       if (await fs.pathExists(filePath)) {

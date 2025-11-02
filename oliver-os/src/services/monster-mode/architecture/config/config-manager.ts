@@ -5,7 +5,7 @@
 
 import * as fs from 'fs-extra';
 import * as path from 'path';
-import { Logger } from '../../../core/logger';
+import { Logger } from '../../../../core/logger';
 import type { ArchitectureConfig } from '../types';
 
 export class ArchitectureConfigManager {

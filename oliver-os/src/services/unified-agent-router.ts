@@ -6,8 +6,7 @@
 
 import { Logger } from '../core/logger';
 import { Config } from '../core/config';
-import { MasterOrchestrator } from './monster-mode/master-orchestrator';
-import type { Task } from './monster-mode/types';
+import { MasterOrchestrator, type Task } from './monster-mode/master-orchestrator';
 import fs from 'fs-extra'
 import path from 'node:path'
 

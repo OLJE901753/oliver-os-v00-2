@@ -179,7 +179,8 @@ export class ContextAnalyzer {
 
       // Count by day of week
       const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
-      dayOfWeekCounts[dayNames[created.getDay()]]++;
+      const dayName = dayNames[created.getDay()];
+      if (dayName) dayOfWeekCounts[dayName] = (dayOfWeekCounts[dayName] || 0) + 1;
 
       // Count tags
       const tags = node.metadata.tags || [];
@@ -241,7 +242,7 @@ export class ContextAnalyzer {
       isWeekend,
       timeOfDay,
       typicalActivity,
-    };
+    } as TimePattern;
   }
 
   /**

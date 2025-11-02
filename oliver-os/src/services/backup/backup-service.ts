@@ -7,7 +7,7 @@ import { exec } from 'child_process';
 import { promisify } from 'util';
 import * as fs from 'fs-extra';
 import * as path from 'path';
-import { Logger } from '../core/logger';
+import { Logger } from '../../core/logger';
 
 const execAsync = promisify(exec);
 

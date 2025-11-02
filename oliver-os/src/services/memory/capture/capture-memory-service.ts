@@ -17,7 +17,7 @@ import { z } from 'zod';
 const MemoryCaptureSchema = z.object({
   rawContent: z.string().min(1),
   type: z.enum(['text', 'voice', 'email']),
-  metadata: z.record(z.unknown()).optional(),
+  metadata: z.record(z.string(), z.unknown()).optional(),
   audioUrl: z.string().url().optional(),
   transcript: z.string().optional(),
   durationSeconds: z.number().positive().optional(),

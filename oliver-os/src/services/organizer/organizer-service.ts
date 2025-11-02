@@ -8,7 +8,8 @@ import { EventEmitter } from 'node:events';
 import { Logger } from '../../core/logger';
 import { Config } from '../../core/config';
 import type { KnowledgeGraphService } from '../knowledge/knowledge-graph-service';
-import type { CaptureMemoryService, MemoryRecord } from '../memory/capture/capture-memory-service';
+import type { CaptureMemoryService } from '../memory/capture/capture-memory-service';
+import type { MemoryRecord } from '../memory/capture/storage';
 import type { MinimaxProvider } from '../llm/minimax-provider';
 import type { KnowledgeNode, NodeCreateInput } from '../knowledge/node.types';
 import type { RelationshipCreateInput } from '../knowledge/relationship.types';
@@ -88,8 +89,8 @@ export class ThoughtOrganizerService extends EventEmitter {
 
         for (const candidate of relationshipCandidates) {
           relationships.push({
-            sourceNodeId: node.id,
-            targetNodeId: candidate.targetNode.id,
+            fromNodeId: node.id,
+            toNodeId: candidate.targetNode.id,
             type: candidate.relationshipType,
             metadata: {
               strength: candidate.strength,

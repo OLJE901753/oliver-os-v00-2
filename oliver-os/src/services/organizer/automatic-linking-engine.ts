@@ -77,8 +77,8 @@ export class AutomaticLinkingEngine extends EventEmitter {
         try {
           // Create relationship
           const relInput: RelationshipCreateInput = {
-            sourceNodeId: newNode.id,
-            targetNodeId: candidate.targetNode.id,
+            fromNodeId: newNode.id,
+            toNodeId: candidate.targetNode.id,
             type: candidate.relationshipType,
             metadata: {
               strength: candidate.strength,
@@ -94,8 +94,8 @@ export class AutomaticLinkingEngine extends EventEmitter {
           // Create bidirectional link if enabled
           if (opts.bidirectional) {
             const bidirectionalRelInput: RelationshipCreateInput = {
-              sourceNodeId: candidate.targetNode.id,
-              targetNodeId: newNode.id,
+              fromNodeId: candidate.targetNode.id,
+              toNodeId: newNode.id,
               type: this.getBidirectionalType(candidate.relationshipType),
               metadata: {
                 strength: candidate.strength,
@@ -475,7 +475,7 @@ export class AutomaticLinkingEngine extends EventEmitter {
       for (const candidate of candidates) {
         // Check if relationship already exists
         const existingRel = existingRels.find(
-          r => r.targetNodeId === candidate.targetNode.id
+          r => (r.toNodeId === candidate.targetNode.id) || (r.fromNodeId === candidate.targetNode.id)
         );
 
         if (existingRel) {
@@ -494,8 +494,8 @@ export class AutomaticLinkingEngine extends EventEmitter {
         } else {
           // Create new relationship
           const relInput: RelationshipCreateInput = {
-            sourceNodeId: nodeId,
-            targetNodeId: candidate.targetNode.id,
+            fromNodeId: nodeId,
+            toNodeId: candidate.targetNode.id,
             type: candidate.relationshipType,
             metadata: {
               strength: candidate.strength,

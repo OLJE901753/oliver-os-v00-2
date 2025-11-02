@@ -7,13 +7,6 @@
 import fs from 'fs-extra';
 import path from 'path';
 
-interface LearningInsight {
-  timestamp: string;
-  pattern: string;
-  confidence: number;
-  examples: string[];
-}
-
 interface LearningEvent {
   timestamp: string;
   event: string;
@@ -125,13 +118,9 @@ function generatePersonalDashboard(): void {
     });
   }
   
-  // Source breakdown
-  const pythonEvents = logs.filter(log => log.context?.source === 'python_agent').length;
-  const typescriptEvents = logs.length - pythonEvents;
-  
+  // Source breakdown (simplified - no source property in logs)
   console.log('\n  Event sources:');
-  console.log(`    TypeScript: ${typescriptEvents} events`);
-  console.log(`    Python: ${pythonEvents} events`);
+  console.log(`    Total: ${logs.length} events`);
   
   console.log('\n' + '='.repeat(80));
   console.log('\n💡 View full dashboard: http://localhost:3000/ui/learning\n');

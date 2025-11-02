@@ -21,7 +21,8 @@ export class OpenAIEmbeddingsService implements EmbeddingsService {
 
   constructor(config: Config) {
     this.logger = new Logger('OpenAIEmbeddingsService');
-    this.apiKey = config.get('openai.apiKey') || process.env['OPENAI_API_KEY'] || null;
+    const apiKeyValue = config.get('openai.apiKey');
+    this.apiKey = typeof apiKeyValue === 'string' ? apiKeyValue : (process.env['OPENAI_API_KEY'] || null);
   }
 
   async generateEmbedding(text: string): Promise<number[]> {
@@ -54,7 +55,7 @@ export class OpenAIEmbeddingsService implements EmbeddingsService {
         throw new Error(`OpenAI API error: ${JSON.stringify(error)}`);
       }
 
-      const data = await response.json();
+      const data = await response.json() as any;
       const embedding = data.data[0]?.embedding;
 
       if (!embedding || !Array.isArray(embedding)) {

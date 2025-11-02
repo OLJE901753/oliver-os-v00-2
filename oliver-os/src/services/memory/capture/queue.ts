@@ -59,7 +59,8 @@ export class MemoryQueue extends EventEmitter {
   stop(): void {
     if (this.processingInterval) {
       clearInterval(this.processingInterval);
-      this.processingInterval = undefined;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (this as any).processingInterval = undefined; // Avoid TS2412 with exactOptionalPropertyTypes
       this.logger.info('Queue processing stopped');
     }
   }
@@ -98,7 +99,7 @@ export class MemoryQueue extends EventEmitter {
    */
   private async processItem(item: ProcessingQueueItem): Promise<void> {
     this.processing.add(item.memoryId);
-    this.storage.updateQueueStatus(item.id, 'processing');
+    this.storage.updateQueueStatus(item.id, 'processing', undefined);
 
     this.logger.debug(`Processing queue item: ${item.id} for memory ${item.memoryId}`);
 
@@ -110,7 +111,7 @@ export class MemoryQueue extends EventEmitter {
       await this.processor.process(item.memoryId);
 
       // Mark as completed
-      this.storage.updateQueueStatus(item.id, 'completed');
+      this.storage.updateQueueStatus(item.id, 'completed', undefined);
       this.emit('queue:completed', item);
       this.logger.debug(`Queue item completed: ${item.id}`);
 
