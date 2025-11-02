@@ -149,6 +149,9 @@ export function createKnowledgeGraphRoutes(knowledgeGraphService: KnowledgeGraph
   router.delete('/nodes/:id', async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
+      if (!id) {
+        return res.status(400).json({ error: 'Node ID required' });
+      }
       const deleted = await knowledgeGraphService.deleteNode(id);
 
       if (!deleted) {
