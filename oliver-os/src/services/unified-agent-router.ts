@@ -42,6 +42,8 @@ export interface RouteResult {
   message?: string;
 }
 
+export interface DecisionCtx { reason: string; rulesMatched: string[] }
+
 export class UnifiedAgentRouter {
   protected logger: Logger;
   private config: Config;
@@ -51,6 +53,7 @@ export class UnifiedAgentRouter {
   private recentDecisions: Array<{ ts: string; sender: string; message: string; destination: string; intent: any; decision?: any; retrieved?: any[] }>= [];
   private readonly maxDecisions = 100;
   private pending: Map<string, { request: RouteRequest; destination: string }>= new Map();
+
 
   constructor(config: Config, serviceManager?: any) {
     this.config = config;
@@ -304,6 +307,53 @@ export class UnifiedAgentRouter {
       await fs.appendFile(path.join(logDir, 'audit.log'), line, 'utf-8');
     } catch (_) { /* ignore */ }
   }
+
+  // Route to CodeBuff (via AgentManager through ServiceManager)
+  // Chooses an agent type based on translated.type
+  protected async routeToCodeBuff(message: string, translated?: RouteRequest['translated'], decision?: DecisionCtx): Promise<RouteResult> {
+    if (!this.serviceManager || !this.serviceManager.spawnAgent) {
+      this.logger.warn('ServiceManager not available; falling back to Monster Mode');
+      return await this.routeToMonsterMode(message, translated, decision);
+    }
+    const t = (translated?.type || 'code-generation').toLowerCase();
+    let agentType = 'code-generator';
+    if (t.includes('review')) agentType = 'code-reviewer';
+    else if (t.includes('documentation') || t.includes('doc')) agentType = 'documentation-generator';
+
+    const prompt = translated?.description || message;
+    const spawned = await this.serviceManager.spawnAgent({ agentType, prompt, metadata: { translated, source: 'unified-router' } });
+
+    return {
+      destination: 'codebuff',
+      intent: { type: translated?.type || 'code-generation', priority: translated?.priority || 'medium', confidence: 'high' },
+      taskId: spawned.id,
+      decision
+    };
+  }
+
+  // Route to Cursor by writing a request file for the Cursor chat workflow
+  protected async routeToCursor(message: string, translated?: RouteRequest['translated'], decision?: DecisionCtx): Promise<RouteResult> {
+    try {
+      const payload = {
+        original: message,
+        translated,
+        timestamp: new Date().toISOString()
+      };
+      const outPath = process.cwd() + '/cursor-request.json';
+      await fs.writeJson(outPath, payload, { spaces: 2 });
+      this.logger.info(`📝 Cursor request written at ${outPath}`);
+      return {
+        destination: 'cursor',
+        intent: { type: translated?.type || 'documentation', priority: translated?.priority || 'medium', confidence: 'high' },
+        message: outPath,
+        decision
+      };
+    } catch (e) {
+      this.logger.error('Failed to write cursor request:', e);
+      // Fallback to Monster Mode if file write fails
+      return await this.routeToMonsterMode(message, translated, decision);
+    }
+  }
 }
 
 function mapTypeToMonsterMode(type: string): Task['type'] {
@@ -336,65 +386,6 @@ function decideReason(_taskType: string, _priority: string, rules: string[]): st
   return 'Code generation and execution best handled by Monster Mode';
 }
 
-// New destination handlers
-export interface DecisionCtx { reason: string; rulesMatched: string[] }
-
-// Route to CodeBuff (via AgentManager through ServiceManager)
-// Chooses an agent type based on translated.type
-UnifiedAgentRouter.prototype.routeToCodeBuff = async function (
-  this: UnifiedAgentRouter,
-  message: string,
-  translated?: RouteRequest['translated'],
-  decision?: DecisionCtx
-): Promise<RouteResult> {
-  if (!this.serviceManager || !this.serviceManager.spawnAgent) {
-    this.logger.warn('ServiceManager not available; falling back to Monster Mode');
-    return await this.routeToMonsterMode(message, translated, decision);
-  }
-  const t = (translated?.type || 'code-generation').toLowerCase();
-  let agentType = 'code-generator';
-  if (t.includes('review')) agentType = 'code-reviewer';
-  else if (t.includes('documentation') || t.includes('doc')) agentType = 'documentation-generator';
-
-  const prompt = translated?.description || message;
-  const spawned = await this.serviceManager.spawnAgent({ agentType, prompt, metadata: { translated, source: 'unified-router' } });
-
-  return {
-    destination: 'codebuff',
-    intent: { type: translated?.type || 'code-generation', priority: translated?.priority || 'medium', confidence: 'high' },
-    taskId: spawned.id,
-    decision
-  };
-};
-
-// Route to Cursor by writing a request file for the Cursor chat workflow
-UnifiedAgentRouter.prototype.routeToCursor = async function (
-  this: UnifiedAgentRouter,
-  message: string,
-  translated?: RouteRequest['translated'],
-  decision?: DecisionCtx
-): Promise<RouteResult> {
-  try {
-    const payload = {
-      original: message,
-      translated,
-      timestamp: new Date().toISOString()
-    };
-    const outPath = process.cwd() + '/cursor-request.json';
-    await fs.writeJson(outPath, payload, { spaces: 2 });
-    this.logger.info(`📝 Cursor request written at ${outPath}`);
-    return {
-      destination: 'cursor',
-      intent: { type: translated?.type || 'documentation', priority: translated?.priority || 'medium', confidence: 'high' },
-      message: outPath,
-      decision
-    };
-  } catch (e) {
-    this.logger.error('Failed to write cursor request:', e);
-    // Fallback to Monster Mode if file write fails
-    return await this.routeToMonsterMode(message, translated, decision);
-  }
-};
 
 function isRisky(message: string, translated?: any): boolean {
   const text = `${message} ${(translated?.description || '')}`.toLowerCase();
