@@ -29,7 +29,7 @@ import { createMemoryCaptureRoutes } from '../routes/memory-capture';
 import { CaptureMemoryService } from '../services/memory/capture/capture-memory-service';
 import { createOrganizerRoutes } from '../routes/organizer';
 import { ThoughtOrganizerService } from '../services/organizer/organizer-service';
-import { MinimaxProvider } from '../services/llm/minimax-provider';
+import { MinimaxProvider, type MinimaxConfig } from '../services/llm/minimax-provider';
 import { createAssistantRoutes } from '../routes/assistant';
 import { AssistantService } from '../services/assistant/assistant-service';
 import { errorHandler } from '../middleware/error-handler';
@@ -330,13 +330,12 @@ export function createServer(config: Config, serviceManager?: any, prisma?: any)
       };
 
       if (minimaxConfig?.apiKey) {
-        const llmProvider = new MinimaxProvider({
-          apiKey: minimaxConfig.apiKey,
-          baseURL: minimaxConfig.baseURL,
-          model: minimaxConfig.model,
-          temperature: minimaxConfig.temperature,
-          maxTokens: minimaxConfig.maxTokens,
-        });
+        const mmConfig: MinimaxConfig = { apiKey: minimaxConfig.apiKey };
+        if (minimaxConfig.baseURL !== undefined) mmConfig.baseURL = minimaxConfig.baseURL;
+        if (minimaxConfig.model !== undefined) mmConfig.model = minimaxConfig.model;
+        if (minimaxConfig.temperature !== undefined) mmConfig.temperature = minimaxConfig.temperature;
+        if (minimaxConfig.maxTokens !== undefined) mmConfig.maxTokens = minimaxConfig.maxTokens;
+        const llmProvider = new MinimaxProvider(mmConfig);
 
         const organizerService = new ThoughtOrganizerService(
           config,

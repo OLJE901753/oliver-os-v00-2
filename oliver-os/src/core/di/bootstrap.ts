@@ -6,7 +6,7 @@
 import { DIContainer } from './container';
 import { Config } from '../config';
 import { Logger } from '../logger';
-import { MinimaxProvider } from '../../services/llm/minimax-provider';
+import { MinimaxProvider, type MinimaxConfig } from '../../services/llm/minimax-provider';
 import { KnowledgeGraphService } from '../../services/knowledge/knowledge-graph-service';
 import { CaptureMemoryService } from '../../services/memory/capture/capture-memory-service';
 import { ThoughtOrganizerService } from '../../services/organizer/organizer-service';
@@ -65,13 +65,12 @@ export async function bootstrapContainer(container: DIContainer): Promise<void> 
         throw new Error('Minimax API key not configured');
       }
 
-      return new MinimaxProvider({
-        apiKey: minimaxConfig.apiKey,
-        baseURL: minimaxConfig.baseURL,
-        model: minimaxConfig.model,
-        temperature: minimaxConfig.temperature,
-        maxTokens: minimaxConfig.maxTokens,
-      });
+      const mmConfig: MinimaxConfig = { apiKey: minimaxConfig.apiKey };
+      if (minimaxConfig.baseURL !== undefined) mmConfig.baseURL = minimaxConfig.baseURL;
+      if (minimaxConfig.model !== undefined) mmConfig.model = minimaxConfig.model;
+      if (minimaxConfig.temperature !== undefined) mmConfig.temperature = minimaxConfig.temperature;
+      if (minimaxConfig.maxTokens !== undefined) mmConfig.maxTokens = minimaxConfig.maxTokens;
+      return new MinimaxProvider(mmConfig);
     },
     { 
       singleton: true,

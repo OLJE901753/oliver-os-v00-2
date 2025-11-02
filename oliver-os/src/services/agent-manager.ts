@@ -5,7 +5,7 @@
 
 import { Logger } from '../core/logger';
 import { Config } from '../core/config';
-import { MinimaxProvider } from './llm/minimax-provider';
+import { MinimaxProvider, type MinimaxConfig } from './llm/minimax-provider';
 import { exec } from 'child_process';
 import { promisify } from 'util';
 import * as fs from 'fs-extra';
@@ -59,13 +59,12 @@ export class AgentManager {
       };
       
       if (minimaxConfig?.apiKey) {
-        this.minimaxProvider = new MinimaxProvider({
-          apiKey: minimaxConfig.apiKey,
-          baseURL: minimaxConfig.baseURL,
-          model: minimaxConfig.model,
-          temperature: minimaxConfig.temperature,
-          maxTokens: minimaxConfig.maxTokens,
-        });
+        const mmConfig: MinimaxConfig = { apiKey: minimaxConfig.apiKey };
+        if (minimaxConfig.baseURL !== undefined) mmConfig.baseURL = minimaxConfig.baseURL;
+        if (minimaxConfig.model !== undefined) mmConfig.model = minimaxConfig.model;
+        if (minimaxConfig.temperature !== undefined) mmConfig.temperature = minimaxConfig.temperature;
+        if (minimaxConfig.maxTokens !== undefined) mmConfig.maxTokens = minimaxConfig.maxTokens;
+        this.minimaxProvider = new MinimaxProvider(mmConfig);
         this._logger.info('✅ MinimaxProvider initialized for Agent Manager');
       } else {
         this._logger.warn('⚠️ Minimax API key not configured - Agent Manager will use fallback methods');
