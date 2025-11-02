@@ -43,11 +43,9 @@ export class AgentManager {
   private agents: Map<string, AgentDefinition> = new Map();
   private spawnedAgents: Map<string, SpawnedAgent> = new Map();
   private _logger: Logger;
-  private _config: Config;
   private minimaxProvider: MinimaxProvider | null = null;
 
   constructor(config: Config) {
-    this._config = config;
     this._logger = new Logger('AgentManager');
     
     // Initialize MinimaxProvider if API key is available
@@ -301,6 +299,7 @@ Generate the complete code implementation:`;
     let match;
     
     while ((match = codeBlockRegex.exec(text)) !== null) {
+      if (!match[3]) continue; // Skip if code content is missing
       blocks.push({
         language: match[1] || 'typescript',
         filename: match[2]?.trim(),

@@ -330,7 +330,7 @@ function mapPriority(priority: string): Task['priority'] {
   return priorityMap[priority] || 'medium';
 }
 
-function decideReason(taskType: string, priority: string, rules: string[]): string {
+function decideReason(_taskType: string, _priority: string, rules: string[]): string {
   if (rules.includes('intent:review')) return 'Review tasks require orchestration and QA → Monster Mode';
   if (rules.includes('intent:research|question')) return 'Research/question tasks can be orchestrated for follow-up work → Monster Mode (Phase 2)';
   return 'Code generation and execution best handled by Monster Mode';

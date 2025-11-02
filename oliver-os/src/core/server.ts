@@ -481,8 +481,9 @@ export function createServer(config: Config, serviceManager?: any, prisma?: any)
     try {
       knowledgeGraphService = new KnowledgeGraphService(config);
       knowledgeGraphService.initialize().then(async () => {
+        if (!knowledgeGraphService) return;
         knowledgeGraphReady = true;
-        app.use('/api/knowledge', createKnowledgeGraphRoutes(knowledgeGraphService!));
+        app.use('/api/knowledge', createKnowledgeGraphRoutes(knowledgeGraphService));
         
         // Register with service manager if available
         if (serviceManager) {
@@ -502,7 +503,7 @@ export function createServer(config: Config, serviceManager?: any, prisma?: any)
         }
         
         // Try to initialize assistant/organizer if memory service is also ready
-        if (memoryReady && knowledgeGraphService) {
+        if (memoryReady) {
           await initializeAssistantServices();
         }
       }).catch((error) => {
@@ -516,8 +517,9 @@ export function createServer(config: Config, serviceManager?: any, prisma?: any)
     try {
       captureMemoryService = new CaptureMemoryService(config);
       captureMemoryService.initialize().then(async () => {
+        if (!captureMemoryService) return;
         memoryReady = true;
-        app.use('/api/memory', createMemoryCaptureRoutes(captureMemoryService!));
+        app.use('/api/memory', createMemoryCaptureRoutes(captureMemoryService));
         
         // Register with service manager if available
         if (serviceManager) {
@@ -527,7 +529,7 @@ export function createServer(config: Config, serviceManager?: any, prisma?: any)
         }
 
         // Try to initialize assistant/organizer if knowledge graph is also ready
-        if (knowledgeGraphReady && knowledgeGraphService) {
+        if (knowledgeGraphReady) {
           await initializeAssistantServices();
         }
       }).catch((error) => {

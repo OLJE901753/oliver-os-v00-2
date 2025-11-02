@@ -14,7 +14,6 @@ import type { Relationship, RelationshipCreateInput, RelationshipUpdateInput } f
 
 export class KnowledgeGraphService extends EventEmitter {
   private _logger: Logger;
-  private _config: Config;
   private storage: GraphStorage;
   private embeddingsService: EmbeddingsService;
   private isInitialized: boolean = false;
@@ -23,7 +22,6 @@ export class KnowledgeGraphService extends EventEmitter {
 
   constructor(config: Config, enableAutomaticLinking: boolean = true) {
     super();
-    this._config = config;
     this._logger = new Logger('KnowledgeGraphService');
     this.storage = new InMemoryGraphStorage();
     this.embeddingsService = new OpenAIEmbeddingsService(config);

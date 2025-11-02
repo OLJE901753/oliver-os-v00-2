@@ -15,13 +15,11 @@ export interface EmbeddingsService {
 
 export class OpenAIEmbeddingsService implements EmbeddingsService {
   private logger: Logger;
-  private config: Config;
   private apiKey: string | null;
   private embeddingModel: string = 'text-embedding-3-small'; // 1536 dimensions
   private embeddingCache: Map<string, number[]> = new Map();
 
   constructor(config: Config) {
-    this.config = config;
     this.logger = new Logger('OpenAIEmbeddingsService');
     this.apiKey = config.get('openai.apiKey') || process.env['OPENAI_API_KEY'] || null;
   }

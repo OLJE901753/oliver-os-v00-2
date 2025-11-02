@@ -11,7 +11,6 @@ import { MemoryStorage, type MemoryRecord, type MemoryType, type MemoryStatus } 
 import { MemoryQueue, type QueueProcessor } from './queue';
 import { MemorySearch } from './search';
 import path from 'node:path';
-import fs from 'fs-extra';
 import { z } from 'zod';
 
 // Validation schemas
@@ -118,7 +117,7 @@ export class CaptureMemoryService extends EventEmitter implements QueueProcessor
     } catch (error) {
       this._logger.error(`Failed to capture memory: ${error}`);
       if (error instanceof z.ZodError) {
-        throw new Error(`Validation error: ${error.errors.map(e => e.message).join(', ')}`);
+        throw new Error(`Validation error: ${error.issues.map(e => e.message).join(', ')}`);
       }
       throw error;
     }

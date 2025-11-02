@@ -173,7 +173,7 @@ export class KnowledgeQA {
   private async generateAnswer(
     question: string,
     context: string,
-    nodes: KnowledgeNode[]
+    _nodes: KnowledgeNode[]
   ): Promise<string> {
     const prompt = `You are an AI assistant helping the user understand their own knowledge. Answer their question based ONLY on the knowledge from their knowledge graph provided below.
 

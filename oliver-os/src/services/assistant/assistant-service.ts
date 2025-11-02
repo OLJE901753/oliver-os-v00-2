@@ -11,7 +11,7 @@ import type { KnowledgeGraphService } from '../knowledge/knowledge-graph-service
 import type { MinimaxProvider } from '../llm/minimax-provider';
 import { ChatHistoryStorage } from './chat-history';
 import { ContextAnalyzer, type UserContext } from './context-analyzer';
-import { KnowledgeQA, type QAResult } from './knowledge-qa';
+import { KnowledgeQA } from './knowledge-qa';
 import { IdeaRefiner, type RefinementSuggestions } from './idea-refiner';
 import { ProactiveSuggester, type Suggestion } from './proactive-suggester';
 
@@ -40,8 +40,8 @@ export interface ChatResponse {
 
 export class AssistantService extends EventEmitter {
   private logger: Logger;
-  private config: Config;
-  private knowledgeGraph: KnowledgeGraphService;
+  private _config: Config;
+  private _knowledgeGraph: KnowledgeGraphService;
   private llm: MinimaxProvider;
   private chatHistory: ChatHistoryStorage;
   private contextAnalyzer: ContextAnalyzer;
@@ -56,8 +56,8 @@ export class AssistantService extends EventEmitter {
   ) {
     super();
     this.logger = new Logger('AssistantService');
-    this.config = config;
-    this.knowledgeGraph = knowledgeGraph;
+    this._config = config;
+    this._knowledgeGraph = knowledgeGraph;
     this.llm = llmProvider;
 
     // Initialize components

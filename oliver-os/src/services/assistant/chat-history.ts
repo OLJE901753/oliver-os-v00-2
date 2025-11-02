@@ -5,7 +5,6 @@
  */
 
 import Database from 'better-sqlite3';
-import { Logger } from '../../core/logger';
 import path from 'node:path';
 import fs from 'fs-extra';
 
@@ -27,11 +26,9 @@ export interface ChatMessage {
 
 export class ChatHistoryStorage {
   private db: Database.Database;
-  private logger: Logger;
   private dbPath: string;
 
   constructor(dbPath?: string) {
-    this.logger = new Logger('ChatHistoryStorage');
     this.dbPath = dbPath || path.join(process.cwd(), 'data', 'chat.db');
     
     // Ensure data directory exists

@@ -12,9 +12,9 @@ import type { CaptureMemoryService, MemoryRecord } from '../memory/capture/captu
 import type { MinimaxProvider } from '../llm/minimax-provider';
 import type { KnowledgeNode, NodeCreateInput } from '../knowledge/node.types';
 import type { RelationshipCreateInput } from '../knowledge/relationship.types';
-import { LLMExtractor, type ExtractedStructure, type BusinessIdeaExtraction } from './llm-extractor';
+import { LLMExtractor, type ExtractedStructure } from './llm-extractor';
 import { EntityExtractor } from './entity-extractor';
-import { RelationshipFinder, type RelationshipCandidate } from './relationship-finder';
+import { RelationshipFinder } from './relationship-finder';
 import { BusinessIdeaStructurer } from './business-structurer';
 
 export interface OrganizeResult {
@@ -32,11 +32,11 @@ export interface OrganizeOptions {
 
 export class ThoughtOrganizerService extends EventEmitter {
   private logger: Logger;
-  private config: Config;
+  private _config: Config;
   private knowledgeGraph: KnowledgeGraphService;
   private memoryService: CaptureMemoryService;
   private llmExtractor: LLMExtractor;
-  private entityExtractor: EntityExtractor;
+  private _entityExtractor: EntityExtractor;
   private relationshipFinder: RelationshipFinder;
   private businessStructurer: BusinessIdeaStructurer;
 
@@ -48,13 +48,13 @@ export class ThoughtOrganizerService extends EventEmitter {
   ) {
     super();
     this.logger = new Logger('ThoughtOrganizerService');
-    this.config = config;
+    this._config = config;
     this.knowledgeGraph = knowledgeGraph;
     this.memoryService = memoryService;
     
     // Initialize extractors
     this.llmExtractor = new LLMExtractor(llmProvider);
-    this.entityExtractor = new EntityExtractor();
+    this._entityExtractor = new EntityExtractor();
     this.relationshipFinder = new RelationshipFinder(knowledgeGraph);
     this.businessStructurer = new BusinessIdeaStructurer(llmProvider, knowledgeGraph);
   }

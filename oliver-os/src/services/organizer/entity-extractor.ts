@@ -4,7 +4,6 @@
  * Following BMAD principles: Break, Map, Automate, Document
  */
 
-import { Logger } from '../../core/logger';
 import type { ExtractedEntity } from './llm-extractor';
 
 export interface EntityMatch {
@@ -14,10 +13,7 @@ export interface EntityMatch {
 }
 
 export class EntityExtractor {
-  private logger: Logger;
-
   constructor() {
-    this.logger = new Logger('EntityExtractor');
   }
 
   /**

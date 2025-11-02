@@ -15,7 +15,6 @@ export interface QueueProcessor {
 export class MemoryQueue extends EventEmitter {
   private storage: MemoryStorage;
   private logger: Logger;
-  private queue: ProcessingQueueItem[] = [];
   private processing: Set<string> = new Set();
   private processor?: QueueProcessor;
   private maxAttempts: number = 3;

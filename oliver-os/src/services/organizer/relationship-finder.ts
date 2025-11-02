@@ -7,7 +7,7 @@
 import { Logger } from '../../core/logger';
 import type { KnowledgeGraphService } from '../knowledge/knowledge-graph-service';
 import type { KnowledgeNode } from '../knowledge/node.types';
-import type { Relationship, RelationshipCreateInput } from '../knowledge/relationship.types';
+import type { Relationship } from '../knowledge/relationship.types';
 import type { ExtractedEntity } from './llm-extractor';
 
 export interface RelationshipCandidate {

@@ -8,7 +8,6 @@ import { Logger } from '../../core/logger';
 import type { KnowledgeGraphService } from '../knowledge/knowledge-graph-service';
 import type { MinimaxProvider } from '../llm/minimax-provider';
 import type { UserContext } from './context-analyzer';
-import type { KnowledgeNode } from '../knowledge/node.types';
 
 export interface Suggestion {
   type: 'review_node' | 'create_task' | 'follow_up' | 'compare_ideas' | 'reminder';
@@ -23,12 +22,12 @@ export interface Suggestion {
 export class ProactiveSuggester {
   private logger: Logger;
   private knowledgeGraph: KnowledgeGraphService;
-  private llm: MinimaxProvider;
+  private _llm: MinimaxProvider;
 
   constructor(knowledgeGraph: KnowledgeGraphService, llm: MinimaxProvider) {
     this.logger = new Logger('ProactiveSuggester');
     this.knowledgeGraph = knowledgeGraph;
-    this.llm = llm;
+    this._llm = llm;
   }
 
   /**
@@ -113,7 +112,7 @@ export class ProactiveSuggester {
 
     // Find old nodes with similar topics
     const allNodes = await this.knowledgeGraph.getAllNodes();
-    const recentTopics = new Set(focusAreas);
+    // const recentTopics = new Set(focusAreas); // Reserved for future use
 
     for (const topic of focusAreas.slice(0, 3)) {
       // Find older nodes with this topic
@@ -207,7 +206,7 @@ export class ProactiveSuggester {
    */
   private async generateSimilarIdeaSuggestions(context: UserContext): Promise<Suggestion[]> {
     const suggestions: Suggestion[] = [];
-    const { currentNodeId, recentNodes } = context;
+    const { currentNodeId } = context;
 
     if (!currentNodeId) {
       return suggestions;
