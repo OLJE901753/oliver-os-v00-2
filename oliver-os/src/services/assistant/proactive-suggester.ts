@@ -148,15 +148,17 @@ export class ProactiveSuggester {
 
       if (oldNodes.length > 0) {
         const oldNode = oldNodes[0];
-        suggestions.push({
-          type: 'review_node',
-          title: `Reviewing ${topic}?`,
-          description: `You haven't thought about "${topic}" in a while. You had notes on "${oldNode.title}" - still relevant?`,
-          action: 'review_node',
-          nodeId: oldNode.id,
-          priority: 'low',
-          reasoning: `Topic resurfacing: ${topic}`,
-        });
+        if (oldNode) {
+          suggestions.push({
+            type: 'review_node',
+            title: `Reviewing ${topic}?`,
+            description: `You haven't thought about "${topic}" in a while. You had notes on "${oldNode.title}" - still relevant?`,
+            action: 'review_node',
+            nodeId: oldNode.id,
+            priority: 'low',
+            reasoning: `Topic resurfacing: ${topic}`,
+          });
+        }
       }
     }
 
@@ -227,15 +229,17 @@ export class ProactiveSuggester {
 
     if (similarIdeas.length > 0) {
       const similarIdea = similarIdeas[0];
-      suggestions.push({
-        type: 'compare_ideas',
-        title: 'Similar Idea Found',
-        description: `This idea is similar to "${similarIdea.title}" from ${this.formatDate(similarIdea.metadata.created)}. Want to compare?`,
-        action: 'compare_ideas',
-        nodeId: similarIdea.id,
-        priority: 'low',
-        reasoning: 'Similar idea detected',
-      });
+      if (similarIdea) {
+        suggestions.push({
+          type: 'compare_ideas',
+          title: 'Similar Idea Found',
+          description: `This idea is similar to "${similarIdea.title}" from ${this.formatDate(similarIdea.metadata.created)}. Want to compare?`,
+          action: 'compare_ideas',
+          nodeId: similarIdea.id,
+          priority: 'low',
+          reasoning: 'Similar idea detected',
+        });
+      }
     }
 
     return suggestions;

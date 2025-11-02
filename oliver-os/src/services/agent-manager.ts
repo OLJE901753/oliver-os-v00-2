@@ -247,6 +247,7 @@ Generate the complete code implementation:`;
       
       for (let i = 0; i < codeBlocks.length; i++) {
         const block = codeBlocks[i];
+        if (!block) continue;
         const fileName = block.filename || `generated-${Date.now()}-${i}.ts`;
         const filePath = path.join(outputDir, fileName);
         await fs.writeFile(filePath, block.code, 'utf-8');
@@ -501,6 +502,7 @@ Generate complete test file with imports and setup:`;
       
       for (let i = 0; i < testBlocks.length; i++) {
         const block = testBlocks[i];
+        if (!block) continue;
         const fileName = block.filename || `test-${path.basename(sourceFile, path.extname(sourceFile))}-${Date.now()}-${i}.test.ts`;
         const testFilePath = path.join(testDir, fileName);
         await fs.writeFile(testFilePath, block.code, 'utf-8');
@@ -735,6 +737,7 @@ Format as markdown with clear sections:`;
       
       for (let i = 0; i < docBlocks.length; i++) {
         const block = docBlocks[i];
+        if (!block) continue;
         const fileName = block.filename || `documentation-${Date.now()}-${i}.md`;
         const docFilePath = path.join(docsDir, fileName);
         await fs.writeFile(docFilePath, block.content, 'utf-8');

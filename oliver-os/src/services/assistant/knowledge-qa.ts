@@ -151,6 +151,7 @@ export class KnowledgeQA {
 
     for (let i = 0; i < nodes.length; i++) {
       const node = nodes[i];
+      if (!node) continue;
       contextParts.push(`\n[${i + 1}] ${node.title} (${node.type})`);
       contextParts.push(`Content: ${node.content.substring(0, 500)}`);
       
