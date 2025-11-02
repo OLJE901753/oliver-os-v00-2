@@ -43,11 +43,11 @@ export interface RouteResult {
 }
 
 export class UnifiedAgentRouter {
-  private logger: Logger;
+  protected logger: Logger;
   private config: Config;
   private monster?: MasterOrchestrator;
   private initialized: boolean = false;
-  private serviceManager?: any;
+  protected serviceManager?: any;
   private recentDecisions: Array<{ ts: string; sender: string; message: string; destination: string; intent: any; decision?: any; retrieved?: any[] }>= [];
   private readonly maxDecisions = 100;
   private pending: Map<string, { request: RouteRequest; destination: string }>= new Map();
@@ -149,7 +149,7 @@ export class UnifiedAgentRouter {
     return res;
   }
 
-  private async routeToMonsterMode(
+  protected async routeToMonsterMode(
     message: string,
     translated?: RouteRequest['translated'],
     decision?: { reason: string; rulesMatched: string[] }
