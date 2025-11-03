@@ -391,7 +391,7 @@ export class GitHubMCPServer extends EventEmitter implements OliverOSMCPServer {
   }
 
   // Tool Handlers
-  private async handleGetRepos(args: Record<string, unknown>): Promise<any> {
+  private async handleGetRepos(args: Record<string, unknown>): Promise<MCPToolResult> {
     const { owner, type, sort, per_page } = args;
     
     this._logger.info(`📁 Getting repositories for ${owner}`);
@@ -410,20 +410,24 @@ export class GitHubMCPServer extends EventEmitter implements OliverOSMCPServer {
       let response;
       try {
         // Try as organization first
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const orgParams: any = {
           org: ownerStr,
           sort: sortStr,
           per_page: Math.min(perPage, 100)
         };
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         if (typeStr !== 'all') orgParams.type = typeStr as any; // Type mismatch, but acceptable
         response = await this.octokit.repos.listForOrg(orgParams);
       } catch (orgError) {
         // If organization fails, try as user
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const userParams: any = {
           username: ownerStr,
           sort: sortStr,
           per_page: Math.min(perPage, 100)
         };
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         if (typeStr !== 'all') userParams.type = typeStr as any; // Type mismatch, but acceptable
         response = await this.octokit.repos.listForUser(userParams);
       }
@@ -508,6 +512,7 @@ export class GitHubMCPServer extends EventEmitter implements OliverOSMCPServer {
       const stateStr = (state as 'open' | 'closed' | 'all') || 'open';
       const perPage = (per_page as number) || 30;
       
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const params: any = {
         owner: ownerStr,
         repo: repoStr,
@@ -534,11 +539,12 @@ export class GitHubMCPServer extends EventEmitter implements OliverOSMCPServer {
               title: issue.title,
               body: issue.body,
               state: issue.state,
-              labels: issue.labels.map(label => 
-                typeof label === 'object' && label !== null
-                  ? { name: (label as any).name, color: (label as any).color }
-                  : { name: String(label), color: 'ffffff' }
-              ),
+              labels: issue.labels.map(label => {
+                if (typeof label === 'object' && label !== null && 'name' in label && 'color' in label) {
+                  return { name: String(label.name), color: String(label.color) };
+                }
+                return { name: String(label), color: 'ffffff' };
+              }),
               assignee: issue.assignee ? {
                 login: issue.assignee.login,
                 avatar_url: issue.assignee.avatar_url
@@ -601,6 +607,7 @@ export class GitHubMCPServer extends EventEmitter implements OliverOSMCPServer {
       const repoStr = repo as string;
       const titleStr = title as string;
       
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const params: any = {
         owner: ownerStr,
         repo: repoStr,
@@ -622,12 +629,13 @@ export class GitHubMCPServer extends EventEmitter implements OliverOSMCPServer {
               title: response.data.title,
               body: response.data.body,
               state: response.data.state,
-              labels: response.data.labels.map(label => 
-                typeof label === 'object' && label !== null
-                  ? { name: (label as any).name, color: (label as any).color }
-                  : { name: String(label), color: 'ffffff' }
-              ),
-              assignees: response.data.assignees ? response.data.assignees.map((a: any) => ({
+              labels: response.data.labels.map(label => {
+                if (typeof label === 'object' && label !== null && 'name' in label && 'color' in label) {
+                  return { name: String(label.name), color: String(label.color) };
+                }
+                return { name: String(label), color: 'ffffff' };
+              }),
+              assignees: response.data.assignees ? response.data.assignees.map((a: { login: string; avatar_url: string }) => ({
                 login: a.login,
                 avatar_url: a.avatar_url
               })) : [],
@@ -680,7 +688,7 @@ export class GitHubMCPServer extends EventEmitter implements OliverOSMCPServer {
     };
   }
 
-  private async handleGetPullRequests(args: Record<string, unknown>): Promise<any> {
+  private async handleGetPullRequests(args: Record<string, unknown>): Promise<MCPToolResult> {
     const { owner, repo, state, head, base, per_page } = args;
     
     this._logger.info(`🔀 Getting pull requests for ${owner}/${repo}`);
@@ -695,6 +703,7 @@ export class GitHubMCPServer extends EventEmitter implements OliverOSMCPServer {
       const stateStr = (state as 'open' | 'closed' | 'all') || 'open';
       const perPage = (per_page as number) || 30;
       
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const params: any = {
         owner: ownerStr,
         repo: repoStr,
@@ -773,7 +782,7 @@ export class GitHubMCPServer extends EventEmitter implements OliverOSMCPServer {
     };
   }
 
-  private async handleCreatePullRequest(args: Record<string, unknown>): Promise<any> {
+  private async handleCreatePullRequest(args: Record<string, unknown>): Promise<MCPToolResult> {
     const { owner, repo, title, head, base, body, draft } = args;
     
     this._logger.info(`🔀 Creating pull request: ${title} in ${owner}/${repo}`);
@@ -789,6 +798,7 @@ export class GitHubMCPServer extends EventEmitter implements OliverOSMCPServer {
       const headStr = head as string;
       const baseStr = base as string;
       
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const params: any = {
         owner: ownerStr,
         repo: repoStr,
@@ -870,7 +880,7 @@ export class GitHubMCPServer extends EventEmitter implements OliverOSMCPServer {
     };
   }
 
-  private async handleGetCommits(args: Record<string, unknown>): Promise<any> {
+  private async handleGetCommits(args: Record<string, unknown>): Promise<MCPToolResult> {
     const { owner, repo, sha, path, author, since, until, per_page } = args;
     
     this._logger.info(`📝 Getting commits for ${owner}/${repo}`);
@@ -884,6 +894,7 @@ export class GitHubMCPServer extends EventEmitter implements OliverOSMCPServer {
       const repoStr = repo as string;
       const perPage = (per_page as number) || 30;
       
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const params: any = {
         owner: ownerStr,
         repo: repoStr,
@@ -956,7 +967,7 @@ export class GitHubMCPServer extends EventEmitter implements OliverOSMCPServer {
     };
   }
 
-  private async handleGetFileContents(args: Record<string, unknown>): Promise<any> {
+  private async handleGetFileContents(args: Record<string, unknown>): Promise<MCPToolResult> {
     const { owner, repo, path, ref } = args;
     const pathStr = path as string;
     
@@ -1002,7 +1013,7 @@ export class GitHubMCPServer extends EventEmitter implements OliverOSMCPServer {
         };
       } else {
         // File
-        const fileData = response.data as any; // Type narrowing for file response
+        const fileData = response.data as { name: string; path: string; sha: string; size: number; content?: string; html_url: string; download_url: string };
         const content = fileData.content ? Buffer.from(fileData.content, 'base64').toString('utf-8') : '';
         return {
           content: [{
@@ -1056,7 +1067,7 @@ export class GitHubMCPServer extends EventEmitter implements OliverOSMCPServer {
     };
   }
 
-  private async handleSearchRepositories(args: Record<string, unknown>): Promise<any> {
+  private async handleSearchRepositories(args: Record<string, unknown>): Promise<MCPToolResult> {
     const { query, sort, order, per_page } = args;
     
     this._logger.info(`🔍 Searching repositories: ${query}`);
@@ -1137,7 +1148,7 @@ export class GitHubMCPServer extends EventEmitter implements OliverOSMCPServer {
     };
   }
 
-  private async handleGetUserInfo(args: Record<string, unknown>): Promise<any> {
+  private async handleGetUserInfo(args: Record<string, unknown>): Promise<MCPToolResult> {
     const { username } = args;
     
     this._logger.info(`👤 Getting user info: ${username}`);
@@ -1215,7 +1226,7 @@ export class GitHubMCPServer extends EventEmitter implements OliverOSMCPServer {
     };
   }
 
-  private async handleGetWorkflowRuns(args: Record<string, unknown>): Promise<any> {
+  private async handleGetWorkflowRuns(args: Record<string, unknown>): Promise<MCPToolResult> {
     const { owner, repo, workflow_id, status, conclusion, per_page } = args;
     
     this._logger.info(`⚙️ Getting workflow runs for ${owner}/${repo}`);
