@@ -64,8 +64,8 @@ export interface CursorMemory {
   };
   architecture: {
     decisions: ArchitectureDecision[];
-    patterns: any[];
-    preferences: any;
+    patterns: string[];
+    preferences: Record<string, unknown>;
   };
   namingConventions: {
     variables: NamingConvention;
@@ -77,16 +77,31 @@ export interface CursorMemory {
   };
   projectHistory: {
     sessions: ProjectSession[];
-    decisions: any[];
-    evolution: any[];
+    decisions: string[];
+    evolution: Array<Record<string, unknown>>;
   };
   learning: {
     successfulSuggestions: LearningFeedback[];
     rejectedSuggestions: LearningFeedback[];
-    userFeedback: any;
+    userFeedback: Record<string, unknown>;
   };
-  feedback?: any[]; // Add missing feedback property
-  preferences?: any; // Add missing preferences property
+  feedback?: Array<Record<string, unknown>>; // Add missing feedback property
+  preferences?: Record<string, unknown>; // Add missing preferences property
+}
+
+interface ContextualSuggestion {
+  type: 'patterns' | 'decisions' | 'conventions';
+  data: unknown;
+  confidence: number;
+}
+
+interface MemoryStats {
+  totalPatterns: number;
+  totalDecisions: number;
+  totalSessions: number;
+  totalSuggestions: number;
+  successRate: number;
+  lastUpdated: string;
 }
 
 export class MemoryService extends EventEmitter {
@@ -356,8 +371,8 @@ export class MemoryService extends EventEmitter {
   /**
    * Get contextual suggestions based on history
    */
-  getContextualSuggestions(_context: string): any[] {
-    const suggestions = [];
+  getContextualSuggestions(_context: string): ContextualSuggestion[] {
+    const suggestions: ContextualSuggestion[] = [];
     
     // Get relevant patterns
     const relevantPatterns = this.memory.codePatterns.frequentlyUsed
@@ -425,7 +440,7 @@ export class MemoryService extends EventEmitter {
   /**
    * Get memory statistics
    */
-  getMemoryStats(): any {
+  getMemoryStats(): MemoryStats {
     return {
       totalPatterns: this.memory.codePatterns.frequentlyUsed.length,
       totalDecisions: this.memory.architecture.decisions.length,
@@ -495,7 +510,7 @@ export class MemoryService extends EventEmitter {
   /**
    * Store user feedback for learning
    */
-  async storeFeedback(feedback: any): Promise<void> {
+  async storeFeedback(feedback: Record<string, unknown>): Promise<void> {
     try {
       if (!this.memory.feedback) {
         this.memory.feedback = [];
@@ -521,7 +536,7 @@ export class MemoryService extends EventEmitter {
   /**
    * Store user preferences
    */
-  async storePreferences(preferences: any): Promise<void> {
+  async storePreferences(preferences: Record<string, unknown>): Promise<void> {
     try {
       this.memory.preferences = {
         ...this.memory.preferences,
