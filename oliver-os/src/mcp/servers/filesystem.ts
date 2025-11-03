@@ -7,11 +7,11 @@ import { EventEmitter } from 'node:events';
 import * as fs from 'fs-extra';
 import * as path from 'path';
 import { Logger } from '../../core/logger';
-import type { MCPTool, MCPResource, MCPRequest, MCPResponse, OliverOSMCPServer } from '../types';
+import type { MCPTool, MCPResource, MCPRequest, MCPResponse, OliverOSMCPServer, MCPServerConfig, MCPToolResult, MCPResourceResult } from '../types';
 
 export class FilesystemMCPServer extends EventEmitter implements OliverOSMCPServer {
   private _logger: Logger;
-  public config: any;
+  public config: MCPServerConfig;
   private isRunning: boolean = false;
   private basePath: string;
 
@@ -22,7 +22,7 @@ export class FilesystemMCPServer extends EventEmitter implements OliverOSMCPServ
     this.config = this.createServerConfig();
   }
 
-  private createServerConfig() {
+  private createServerConfig(): MCPServerConfig {
     return {
       name: 'filesystem-mcp-server',
       version: '1.0.0',
@@ -315,7 +315,7 @@ export class FilesystemMCPServer extends EventEmitter implements OliverOSMCPServ
   }
 
   private async handleResourcesList(request: MCPRequest): Promise<MCPResponse> {
-    const resources = this.config.resources.map((resource: any) => ({
+    const resources = this.config.resources.map((resource: MCPResource) => ({
       uri: resource.uri,
       name: resource.name,
       description: resource.description,
@@ -332,7 +332,7 @@ export class FilesystemMCPServer extends EventEmitter implements OliverOSMCPServ
   private async handleResourcesRead(request: MCPRequest): Promise<MCPResponse> {
     const { uri } = request.params as { uri: string };
     
-    const resource = this.config.resources.find((r: any) => r.uri === uri);
+    const resource = this.config.resources.find((r: MCPResource) => r.uri === uri);
     if (!resource) {
       return this.createErrorResponse(request.id, -32601, `Resource not found: ${uri}`);
     }
@@ -369,14 +369,15 @@ export class FilesystemMCPServer extends EventEmitter implements OliverOSMCPServ
   }
 
   // Tool Handlers
-  private async handleReadFile(args: Record<string, unknown>): Promise<any> {
+  private async handleReadFile(args: Record<string, unknown>): Promise<MCPToolResult> {
     const { path: filePath, encoding } = args;
     const fullPath = this.resolvePath(filePath as string);
     
     this._logger.info(`📖 Reading file: ${fullPath}`);
     
     try {
-      const content = await fs.readFile(fullPath, encoding as string || 'utf8' as any);
+      const encodingValue = (encoding as string) || 'utf8';
+      const content = await fs.readFile(fullPath, { encoding: encodingValue as 'utf8' | 'ascii' | 'base64' | 'hex' | 'latin1' | 'utf16le' });
       const stats = await fs.stat(fullPath);
       
       return {
@@ -398,7 +399,7 @@ export class FilesystemMCPServer extends EventEmitter implements OliverOSMCPServ
     }
   }
 
-  private async handleWriteFile(args: Record<string, unknown>): Promise<any> {
+  private async handleWriteFile(args: Record<string, unknown>): Promise<MCPToolResult> {
     const { path: filePath, content, encoding, create_dirs } = args;
     const fullPath = this.resolvePath(filePath as string);
     
@@ -409,7 +410,8 @@ export class FilesystemMCPServer extends EventEmitter implements OliverOSMCPServ
         await fs.ensureDir(path.dirname(fullPath));
       }
       
-      await fs.writeFile(fullPath, content as string, { encoding: encoding as string || 'utf8' } as any);
+      const encodingValue = (encoding as string) || 'utf8';
+      await fs.writeFile(fullPath, content as string, { encoding: encodingValue as 'utf8' | 'ascii' | 'base64' | 'hex' | 'latin1' | 'utf16le' });
       const stats = await fs.stat(fullPath);
       
       return {
@@ -430,7 +432,7 @@ export class FilesystemMCPServer extends EventEmitter implements OliverOSMCPServ
     }
   }
 
-  private async handleListDirectory(args: Record<string, unknown>): Promise<any> {
+  private async handleListDirectory(args: Record<string, unknown>): Promise<MCPToolResult> {
     const { path: dirPath, recursive, include_hidden, filter } = args;
     const fullPath = this.resolvePath(dirPath as string);
     
@@ -460,7 +462,7 @@ export class FilesystemMCPServer extends EventEmitter implements OliverOSMCPServ
     }
   }
 
-  private async handleCreateDirectory(args: Record<string, unknown>): Promise<any> {
+  private async handleCreateDirectory(args: Record<string, unknown>): Promise<MCPToolResult> {
     const { path: dirPath, recursive } = args;
     const fullPath = this.resolvePath(dirPath as string);
     
@@ -487,7 +489,7 @@ export class FilesystemMCPServer extends EventEmitter implements OliverOSMCPServ
     }
   }
 
-  private async handleDeleteFile(args: Record<string, unknown>): Promise<any> {
+  private async handleDeleteFile(args: Record<string, unknown>): Promise<MCPToolResult> {
     const { path: filePath, recursive } = args;
     const fullPath = this.resolvePath(filePath as string);
     
@@ -515,7 +517,7 @@ export class FilesystemMCPServer extends EventEmitter implements OliverOSMCPServ
     }
   }
 
-  private async handleMoveFile(args: Record<string, unknown>): Promise<any> {
+  private async handleMoveFile(args: Record<string, unknown>): Promise<MCPToolResult> {
     const { source, destination } = args;
     const sourcePath = this.resolvePath(source as string);
     const destPath = this.resolvePath(destination as string);
@@ -542,7 +544,7 @@ export class FilesystemMCPServer extends EventEmitter implements OliverOSMCPServ
     }
   }
 
-  private async handleCopyFile(args: Record<string, unknown>): Promise<any> {
+  private async handleCopyFile(args: Record<string, unknown>): Promise<MCPToolResult> {
     const { source, destination, recursive } = args;
     const sourcePath = this.resolvePath(source as string);
     const destPath = this.resolvePath(destination as string);
@@ -550,7 +552,7 @@ export class FilesystemMCPServer extends EventEmitter implements OliverOSMCPServ
     this._logger.info(`📋 Copying: ${sourcePath} -> ${destPath}`);
     
     try {
-      await fs.copy(sourcePath, destPath, { recursive: recursive as boolean || true } as any);
+      await fs.copy(sourcePath, destPath, { recursive: (recursive as boolean) || true });
       
       return {
         content: [{
@@ -570,7 +572,7 @@ export class FilesystemMCPServer extends EventEmitter implements OliverOSMCPServ
     }
   }
 
-  private async handleGetFileInfo(args: Record<string, unknown>): Promise<any> {
+  private async handleGetFileInfo(args: Record<string, unknown>): Promise<MCPToolResult> {
     const { path: filePath } = args;
     const fullPath = this.resolvePath(filePath as string);
     
@@ -603,7 +605,7 @@ export class FilesystemMCPServer extends EventEmitter implements OliverOSMCPServ
     }
   }
 
-  private async handleSearchFiles(args: Record<string, unknown>): Promise<any> {
+  private async handleSearchFiles(args: Record<string, unknown>): Promise<MCPToolResult> {
     const { pattern, directory, recursive, include_content } = args;
     const searchDir = this.resolvePath(directory as string || '.');
     
@@ -633,7 +635,7 @@ export class FilesystemMCPServer extends EventEmitter implements OliverOSMCPServ
     }
   }
 
-  private async handleWatchFile(args: Record<string, unknown>): Promise<any> {
+  private async handleWatchFile(args: Record<string, unknown>): Promise<MCPToolResult> {
     const { path: filePath, recursive, events } = args;
     const fullPath = this.resolvePath(filePath as string);
     
@@ -662,7 +664,7 @@ export class FilesystemMCPServer extends EventEmitter implements OliverOSMCPServ
     }
   }
 
-  private async handleGetProjectStructure(args: Record<string, unknown>): Promise<any> {
+  private async handleGetProjectStructure(args: Record<string, unknown>): Promise<MCPToolResult> {
     const { path: projectPath, max_depth, include_files, include_dirs } = args;
     const fullPath = this.resolvePath(projectPath as string || '.');
     
@@ -693,7 +695,7 @@ export class FilesystemMCPServer extends EventEmitter implements OliverOSMCPServ
   }
 
   // Resource Handlers
-  private async handleGetPackageJson(): Promise<any> {
+  private async handleGetPackageJson(): Promise<MCPResourceResult> {
     const packageJsonPath = path.join(this.basePath, 'package.json');
     
     try {
@@ -718,7 +720,7 @@ export class FilesystemMCPServer extends EventEmitter implements OliverOSMCPServ
     }
   }
 
-  private async handleGetReadme(): Promise<any> {
+  private async handleGetReadme(): Promise<MCPResourceResult> {
     const readmeFiles = ['README.md', 'README.txt', 'README', 'readme.md'];
     
     for (const readmeFile of readmeFiles) {
@@ -746,7 +748,7 @@ export class FilesystemMCPServer extends EventEmitter implements OliverOSMCPServ
     };
   }
 
-  private async handleGetProjectStructureResource(): Promise<any> {
+  private async handleGetProjectStructureResource(): Promise<MCPResourceResult> {
     const structure = await this.getProjectStructure(this.basePath, {
       maxDepth: 3,
       includeFiles: true,
@@ -907,7 +909,7 @@ export class FilesystemMCPServer extends EventEmitter implements OliverOSMCPServ
     return structure;
   }
 
-  private createErrorResult(message: string): any {
+  private createErrorResult(message: string): MCPToolResult {
     return {
       content: [{
         type: 'text',
