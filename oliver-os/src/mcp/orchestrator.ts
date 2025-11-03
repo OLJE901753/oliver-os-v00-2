@@ -8,7 +8,7 @@ import { Logger } from '../core/logger';
 import { OliverOSMCPServerImpl } from './server';
 import { GitHubMCPServer } from './servers/github';
 import { FilesystemMCPServer } from './servers/filesystem';
-import type { MCPRequest } from './types';
+import type { MCPRequest, MCPTool, MCPResponse } from './types';
 import { DatabaseMCPServer } from './servers/database';
 import { WebSearchMCPServer } from './servers/websearch';
 import { TerminalMCPServer } from './servers/terminal';
@@ -21,6 +21,37 @@ export interface MCPServerInfo {
   port: number;
   status: 'stopped' | 'starting' | 'running' | 'error';
   lastError?: string;
+}
+
+interface ServerStatus {
+  name: string;
+  port: number;
+  status: 'stopped' | 'starting' | 'running' | 'error';
+  lastError?: string;
+  uptime: string;
+}
+
+interface ServerHealth {
+  status: 'healthy' | 'unhealthy';
+  response_time?: string;
+  reason?: string;
+  last_check: string;
+}
+
+interface ToolsListResult {
+  result?: {
+    tools: Array<{ name: string; description: string; inputSchema: Record<string, unknown> }>;
+  };
+}
+
+interface SystemOverview {
+  orchestrator: {
+    status: string;
+    total_servers: number;
+    running_servers: number;
+  };
+  servers: Record<string, ServerStatus>;
+  health: Record<string, ServerHealth>;
 }
 
 export class MCPOrchestrator extends EventEmitter {
@@ -251,8 +282,8 @@ export class MCPOrchestrator extends EventEmitter {
     return Array.from(this.servers.values()).filter(s => s.status === 'running');
   }
 
-  getServerStatus(): Record<string, any> {
-    const status: Record<string, any> = {};
+  getServerStatus(): Record<string, ServerStatus> {
+    const status: Record<string, ServerStatus> = {};
     
     for (const [name, serverInfo] of this.servers.entries()) {
       status[name] = {
@@ -267,8 +298,8 @@ export class MCPOrchestrator extends EventEmitter {
     return status;
   }
 
-  async getServerHealth(): Promise<Record<string, any>> {
-    const health: Record<string, any> = {};
+  async getServerHealth(): Promise<Record<string, ServerHealth>> {
+    const health: Record<string, ServerHealth> = {};
     
     for (const [name, serverInfo] of this.servers.entries()) {
       try {
@@ -310,7 +341,7 @@ export class MCPOrchestrator extends EventEmitter {
     return health;
   }
 
-  async executeCommand(serverName: string, command: string, args: Record<string, unknown> = {}): Promise<any> {
+  async executeCommand(serverName: string, command: string, args: Record<string, unknown> = {}): Promise<MCPResponse> {
     const serverInfo = this.servers.get(serverName);
     if (!serverInfo) {
       throw new Error(`Server not found: ${serverName}`);
@@ -333,7 +364,7 @@ export class MCPOrchestrator extends EventEmitter {
     return await serverInfo.server.handleRequest(request);
   }
 
-  async getServerTools(serverName: string): Promise<any> {
+  async getServerTools(serverName: string): Promise<ToolsListResult> {
     const serverInfo = this.servers.get(serverName);
     if (!serverInfo) {
       throw new Error(`Server not found: ${serverName}`);
@@ -348,7 +379,7 @@ export class MCPOrchestrator extends EventEmitter {
     return await serverInfo.server.handleRequest(request);
   }
 
-  async getServerResources(serverName: string): Promise<any> {
+  async getServerResources(serverName: string): Promise<MCPResponse> {
     const serverInfo = this.servers.get(serverName);
     if (!serverInfo) {
       throw new Error(`Server not found: ${serverName}`);
@@ -364,8 +395,8 @@ export class MCPOrchestrator extends EventEmitter {
   }
 
   // Convenience methods for common operations
-  async searchAllServers(query: string): Promise<Record<string, any>> {
-    const results: Record<string, any> = {};
+  async searchAllServers(query: string): Promise<Record<string, MCPResponse>> {
+    const results: Record<string, MCPResponse> = {};
     
     for (const [name, serverInfo] of this.servers.entries()) {
       if (serverInfo.status === 'running') {
@@ -373,7 +404,7 @@ export class MCPOrchestrator extends EventEmitter {
           // Try to search using available tools
           const toolsResponse = await this.getServerTools(name);
           if (toolsResponse.result?.tools) {
-            const searchTools = toolsResponse.result.tools.filter((tool: any) => 
+            const searchTools = toolsResponse.result.tools.filter((tool: { name: string }) => 
               tool.name.includes('search') || tool.name.includes('find')
             );
             
@@ -392,7 +423,7 @@ export class MCPOrchestrator extends EventEmitter {
     return results;
   }
 
-  async getSystemOverview(): Promise<any> {
+  async getSystemOverview(): Promise<SystemOverview & { timestamp: string }> {
     const overview = {
       orchestrator: {
         status: this.isRunning ? 'running' : 'stopped',
