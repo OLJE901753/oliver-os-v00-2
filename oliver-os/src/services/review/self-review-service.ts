@@ -29,6 +29,23 @@ interface FunctionAnalysis extends CodeAnalysisResult {
   length: number;
 }
 
+interface HardcodedValueResult extends CodeAnalysisResult {
+  value: string;
+}
+
+interface ArchitecturalViolationResult extends CodeAnalysisResult {
+  description: string;
+  reasoning: string;
+}
+
+interface ReviewStats {
+  totalReviews: number;
+  averageScore: number;
+  totalSuggestions: number;
+  averageConfidence: number;
+  cachedReviews: number;
+}
+
 const execAsync = promisify(exec);
 
 export interface CodeReviewResult {
@@ -933,10 +950,10 @@ export class SelfReviewService extends EventEmitter {
     return vulnerabilities;
   }
 
-  private findHardcodedValues(fileContent: string): any[] {
+  private findHardcodedValues(fileContent: string): HardcodedValueResult[] {
     // Simplified implementation
     const lines = fileContent.split('\n');
-    const values: any[] = [];
+    const values: HardcodedValueResult[] = [];
     
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i];
@@ -952,10 +969,10 @@ export class SelfReviewService extends EventEmitter {
     return values;
   }
 
-  private findMissingErrorHandling(fileContent: string): any[] {
+  private findMissingErrorHandling(fileContent: string): CodeAnalysisResult[] {
     // Simplified implementation
     const lines = fileContent.split('\n');
-    const errors: any[] = [];
+    const errors: CodeAnalysisResult[] = [];
     
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i];
@@ -970,9 +987,9 @@ export class SelfReviewService extends EventEmitter {
     return errors;
   }
 
-  private findArchitecturalViolations(fileContent: string, context: ReviewContext): any[] {
+  private findArchitecturalViolations(fileContent: string, context: ReviewContext): ArchitecturalViolationResult[] {
     // Simplified implementation
-    const violations: any[] = [];
+    const violations: ArchitecturalViolationResult[] = [];
     
     // Check for direct database access in components
     if (fileContent && fileContent.includes('import') && fileContent.includes('database') && context.fileType === 'tsx') {
@@ -989,51 +1006,51 @@ export class SelfReviewService extends EventEmitter {
   /**
    * Suggestion generation methods
    */
-  private suggestFunctionRefactoring(_func: any): string {
+  private suggestFunctionRefactoring(_func: FunctionAnalysis): string {
     return `// Consider breaking this function into smaller functions:
 // 1. Extract validation logic
 // 2. Extract business logic
 // 3. Extract data transformation logic`;
   }
 
-  private suggestExpressionSimplification(_expr: any): string {
+  private suggestExpressionSimplification(_expr: CodeAnalysisResult): string {
     return `// Consider extracting complex expression to a separate variable or function
 const result = complexExpression();
 return result;`;
   }
 
-  private suggestLoopOptimization(_loop: any): string {
+  private suggestLoopOptimization(_loop: CodeAnalysisResult): string {
     return `// Consider using more efficient iteration methods:
 // - Use for...of for arrays
 // - Use Map/Set for lookups
 // - Use reduce() for aggregations`;
   }
 
-  private suggestMemoryLeakFix(_leak: any): string {
+  private suggestMemoryLeakFix(_leak: CodeAnalysisResult): string {
     return `// Add cleanup:
 // removeEventListener('event', handler);
 // or use AbortController for modern APIs`;
   }
 
-  private suggestSQLInjectionFix(_vuln: any): string {
+  private suggestSQLInjectionFix(_vuln: CodeAnalysisResult): string {
     return `// Use parameterized queries:
 // const query = 'SELECT * FROM users WHERE id = ?';
 // const result = await db.query(query, [userId]);`;
   }
 
-  private suggestXSSFix(_vuln: any): string {
+  private suggestXSSFix(_vuln: CodeAnalysisResult): string {
     return `// Sanitize input or use textContent instead:
 // element.textContent = userInput;
 // or use a sanitization library`;
   }
 
-  private suggestHardcodedValueFix(_value: any): string {
+  private suggestHardcodedValueFix(_value: HardcodedValueResult): string {
     return `// Move to configuration:
 // const config = getConfig();
 // const url = config.api.baseUrl;`;
   }
 
-  private suggestErrorHandlingFix(_error: any): string {
+  private suggestErrorHandlingFix(_error: CodeAnalysisResult): string {
     return `// Add proper error handling:
 // try {
 //   const result = await operation();
@@ -1043,7 +1060,7 @@ return result;`;
 // }`;
   }
 
-  private suggestArchitecturalFix(_violation: any): string {
+  private suggestArchitecturalFix(_violation: ArchitecturalViolationResult): string {
     return `// Follow architectural patterns:
 // - Use service layer for business logic
 // - Use repository pattern for data access
@@ -1124,14 +1141,16 @@ return result;`;
   /**
    * Get review statistics
    */
-  getReviewStats(): any {
+  getReviewStats(): ReviewStats {
     const reviews = Array.from(this.reviewCache.values());
+    const avgScore = reviews.length > 0 ? reviews.reduce((sum, review) => sum + review.score, 0) / reviews.length : 0;
+    const avgConfidence = reviews.length > 0 ? reviews.reduce((sum, review) => sum + review.confidence, 0) / reviews.length : 0;
     
     return {
       totalReviews: reviews.length,
-      averageScore: reviews.reduce((sum, review) => sum + review.score, 0) / reviews.length,
+      averageScore: avgScore,
       totalSuggestions: reviews.reduce((sum, review) => sum + review.suggestions.length, 0),
-      averageConfidence: reviews.reduce((sum, review) => sum + review.confidence, 0) / reviews.length,
+      averageConfidence: avgConfidence,
       cachedReviews: this.reviewCache.size
     };
   }
