@@ -56,7 +56,7 @@ export interface SchedulingStrategy {
   name: string;
   description: string;
   algorithm: 'priority-based' | 'deadline-based' | 'resource-based' | 'hybrid';
-  parameters: any;
+  parameters: Record<string, unknown>;
   performance: {
     efficiency: number;
     fairness: number;

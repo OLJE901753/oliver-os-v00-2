@@ -15,7 +15,7 @@ export interface Conflict {
   status: 'detected' | 'analyzing' | 'resolving' | 'resolved' | 'escalated' | 'failed';
   agents: string[];
   description: string;
-  context: any;
+  context: Record<string, unknown>;
   resolution: ConflictResolution;
   timestamp: string;
   resolvedAt?: string;

@@ -348,7 +348,7 @@ export interface IntegrationConfig {
   webhooks?: boolean;
   channel?: string;
   notifications?: boolean;
-  smtp?: any;
+  smtp?: Record<string, unknown>;
 }
 
 export interface MonitoringConfig {
