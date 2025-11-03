@@ -6,11 +6,11 @@
 import { EventEmitter } from 'node:events';
 import { Logger } from '../../core/logger';
 import { Octokit } from '@octokit/rest';
-import type { MCPTool, MCPResource, MCPRequest, MCPResponse, OliverOSMCPServer } from '../types';
+import type { MCPTool, MCPResource, MCPRequest, MCPResponse, OliverOSMCPServer, MCPServerConfig, MCPToolResult, MCPResourceResult } from '../types';
 
 export class GitHubMCPServer extends EventEmitter implements OliverOSMCPServer {
   private _logger: Logger;
-  public config: any;
+  public config: MCPServerConfig;
   private isRunning: boolean = false;
   private octokit: Octokit | null = null;
 
@@ -337,7 +337,7 @@ export class GitHubMCPServer extends EventEmitter implements OliverOSMCPServer {
   }
 
   private async handleResourcesList(request: MCPRequest): Promise<MCPResponse> {
-    const resources = this.config.resources.map((resource: any) => ({
+    const resources = this.config.resources.map((resource: MCPResource) => ({
       uri: resource.uri,
       name: resource.name,
       description: resource.description,
@@ -354,7 +354,7 @@ export class GitHubMCPServer extends EventEmitter implements OliverOSMCPServer {
   private async handleResourcesRead(request: MCPRequest): Promise<MCPResponse> {
     const { uri } = request.params as { uri: string };
     
-    const resource = this.config.resources.find((r: any) => r.uri === uri);
+    const resource = this.config.resources.find((r: MCPResource) => r.uri === uri);
     if (!resource) {
       return this.createErrorResponse(request.id, -32601, `Resource not found: ${uri}`);
     }
@@ -462,7 +462,7 @@ export class GitHubMCPServer extends EventEmitter implements OliverOSMCPServer {
     }
   }
   
-  private createMockReposResponse(owner: unknown, type: unknown, sort: unknown, per_page: unknown): any {
+  private createMockReposResponse(owner: unknown, type: unknown, sort: unknown, per_page: unknown): MCPToolResult {
     return {
       content: [{
         type: 'text',
@@ -493,7 +493,7 @@ export class GitHubMCPServer extends EventEmitter implements OliverOSMCPServer {
     };
   }
 
-  private async handleGetIssues(args: Record<string, unknown>): Promise<any> {
+  private async handleGetIssues(args: Record<string, unknown>): Promise<MCPToolResult> {
     const { owner, repo, state, labels, assignee, creator, per_page } = args;
     
     this._logger.info(`🐛 Getting issues for ${owner}/${repo}`);
@@ -560,7 +560,7 @@ export class GitHubMCPServer extends EventEmitter implements OliverOSMCPServer {
     }
   }
   
-  private createMockIssuesResponse(owner: unknown, repo: unknown, state: unknown, labels: unknown, assignee: unknown, creator: unknown, per_page: unknown): any {
+  private createMockIssuesResponse(owner: unknown, repo: unknown, state: unknown, labels: unknown, assignee: unknown, creator: unknown, per_page: unknown): MCPToolResult {
     return {
       content: [{
         type: 'text',
@@ -587,7 +587,7 @@ export class GitHubMCPServer extends EventEmitter implements OliverOSMCPServer {
     };
   }
 
-  private async handleCreateIssue(args: Record<string, unknown>): Promise<any> {
+  private async handleCreateIssue(args: Record<string, unknown>): Promise<MCPToolResult> {
     const { owner, repo, title, body, labels, assignees } = args;
     
     this._logger.info(`➕ Creating issue: ${title} in ${owner}/${repo}`);
@@ -656,7 +656,7 @@ export class GitHubMCPServer extends EventEmitter implements OliverOSMCPServer {
     }
   }
   
-  private createMockIssueResponse(owner: unknown, repo: unknown, title: unknown, body: unknown, labels: unknown, assignees: unknown): any {
+  private createMockIssueResponse(owner: unknown, repo: unknown, title: unknown, body: unknown, labels: unknown, assignees: unknown): MCPToolResult {
     return {
       content: [{
         type: 'text',
@@ -746,7 +746,7 @@ export class GitHubMCPServer extends EventEmitter implements OliverOSMCPServer {
     }
   }
   
-  private createMockPRsResponse(owner: unknown, repo: unknown, state: unknown, head: unknown, base: unknown, per_page: unknown): any {
+  private createMockPRsResponse(owner: unknown, repo: unknown, state: unknown, head: unknown, base: unknown, per_page: unknown): MCPToolResult {
     return {
       content: [{
         type: 'text',
@@ -845,7 +845,7 @@ export class GitHubMCPServer extends EventEmitter implements OliverOSMCPServer {
     }
   }
   
-  private createMockPRResponse(owner: unknown, repo: unknown, title: unknown, head: unknown, base: unknown, body: unknown, draft: unknown): any {
+  private createMockPRResponse(owner: unknown, repo: unknown, title: unknown, head: unknown, base: unknown, body: unknown, draft: unknown): MCPToolResult {
     return {
       content: [{
         type: 'text',
@@ -934,7 +934,7 @@ export class GitHubMCPServer extends EventEmitter implements OliverOSMCPServer {
     }
   }
   
-  private createMockCommitsResponse(owner: unknown, repo: unknown, sha: unknown, path: unknown, author: unknown, since: unknown, until: unknown, per_page: unknown): any {
+  private createMockCommitsResponse(owner: unknown, repo: unknown, sha: unknown, path: unknown, author: unknown, since: unknown, until: unknown, per_page: unknown): MCPToolResult {
     return {
       content: [{
         type: 'text',
@@ -1032,7 +1032,7 @@ export class GitHubMCPServer extends EventEmitter implements OliverOSMCPServer {
     }
   }
   
-  private createMockFileResponse(owner: unknown, repo: unknown, path: string, ref: unknown): any {
+  private createMockFileResponse(owner: unknown, repo: unknown, path: string, ref: unknown): MCPToolResult {
     return {
       content: [{
         type: 'text',
@@ -1109,7 +1109,7 @@ export class GitHubMCPServer extends EventEmitter implements OliverOSMCPServer {
     }
   }
   
-  private createMockSearchResponse(query: unknown, sort: unknown, order: unknown, per_page: unknown): any {
+  private createMockSearchResponse(query: unknown, sort: unknown, order: unknown, per_page: unknown): MCPToolResult {
     return {
       content: [{
         type: 'text',
@@ -1185,7 +1185,7 @@ export class GitHubMCPServer extends EventEmitter implements OliverOSMCPServer {
     }
   }
   
-  private createMockUserResponse(username: unknown): any {
+  private createMockUserResponse(username: unknown): MCPToolResult {
     return {
       content: [{
         type: 'text',
@@ -1271,7 +1271,7 @@ export class GitHubMCPServer extends EventEmitter implements OliverOSMCPServer {
     }
   }
   
-  private createMockWorkflowRunsResponse(owner: unknown, repo: unknown, workflow_id: unknown, status: unknown, conclusion: unknown, per_page: unknown): any {
+  private createMockWorkflowRunsResponse(owner: unknown, repo: unknown, workflow_id: unknown, status: unknown, conclusion: unknown, per_page: unknown): MCPToolResult {
     return {
       content: [{
         type: 'text',
@@ -1301,7 +1301,7 @@ export class GitHubMCPServer extends EventEmitter implements OliverOSMCPServer {
   }
 
   // Resource Handlers
-  private async handleGetTrendingRepos(): Promise<any> {
+  private async handleGetTrendingRepos(): Promise<MCPResourceResult> {
     if (!this.octokit) {
       return this.createMockTrendingResponse();
     }
@@ -1337,7 +1337,7 @@ export class GitHubMCPServer extends EventEmitter implements OliverOSMCPServer {
     }
   }
   
-  private createMockTrendingResponse(): any {
+  private createMockTrendingResponse(): MCPResourceResult {
     return {
       contents: [{
         uri: 'github://repos/trending',
@@ -1356,7 +1356,7 @@ export class GitHubMCPServer extends EventEmitter implements OliverOSMCPServer {
     };
   }
 
-  private async handleGetUserProfile(): Promise<any> {
+  private async handleGetUserProfile(): Promise<MCPResourceResult> {
     if (!this.octokit) {
       return this.createMockProfileResponse();
     }
@@ -1395,7 +1395,7 @@ export class GitHubMCPServer extends EventEmitter implements OliverOSMCPServer {
     }
   }
   
-  private createMockProfileResponse(): any {
+  private createMockProfileResponse(): MCPResourceResult {
     return {
       contents: [{
         uri: 'github://user/profile',
@@ -1415,7 +1415,7 @@ export class GitHubMCPServer extends EventEmitter implements OliverOSMCPServer {
     };
   }
 
-  private async handleGetNotifications(): Promise<any> {
+  private async handleGetNotifications(): Promise<MCPResourceResult> {
     if (!this.octokit) {
       return this.createMockNotificationsResponse();
     }
@@ -1457,7 +1457,7 @@ export class GitHubMCPServer extends EventEmitter implements OliverOSMCPServer {
     }
   }
   
-  private createMockNotificationsResponse(): any {
+  private createMockNotificationsResponse(): MCPResourceResult {
     return {
       contents: [{
         uri: 'github://notifications',
