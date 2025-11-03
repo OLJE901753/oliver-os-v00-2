@@ -5,11 +5,11 @@
 
 import { EventEmitter } from 'node:events';
 import { Logger } from '../../core/logger';
-import type { MCPTool, MCPResource, MCPRequest, MCPResponse, OliverOSMCPServer } from '../types';
+import type { MCPTool, MCPResource, MCPRequest, MCPResponse, OliverOSMCPServer, MCPServerConfig, MCPToolResult, MCPResourceResult } from '../types';
 
 export class WebSearchMCPServer extends EventEmitter implements OliverOSMCPServer {
   private _logger: Logger;
-  public config: any;
+  public config: MCPServerConfig;
   private isRunning: boolean = false;
   private apiKey: string;
 
@@ -20,7 +20,7 @@ export class WebSearchMCPServer extends EventEmitter implements OliverOSMCPServe
     this.config = this.createServerConfig();
   }
 
-  private createServerConfig() {
+  private createServerConfig(): MCPServerConfig {
     return {
       name: 'websearch-mcp-server',
       version: '1.0.0',
@@ -280,7 +280,7 @@ export class WebSearchMCPServer extends EventEmitter implements OliverOSMCPServe
   }
 
   private async handleToolsList(request: MCPRequest): Promise<MCPResponse> {
-    const tools = this.config.tools.map((tool: any) => ({
+    const tools = this.config.tools.map((tool: MCPTool) => ({
       name: tool.name,
       description: tool.description,
       inputSchema: tool.inputSchema
@@ -296,7 +296,7 @@ export class WebSearchMCPServer extends EventEmitter implements OliverOSMCPServe
   private async handleToolsCall(request: MCPRequest): Promise<MCPResponse> {
     const { name, arguments: args } = request.params as { name: string; arguments: Record<string, unknown> };
     
-    const tool = this.config.tools.find((t: any) => t.name === name);
+    const tool = this.config.tools.find((t: MCPTool) => t.name === name);
     if (!tool) {
       return this.createErrorResponse(request.id, -32601, `Tool not found: ${name}`);
     }
@@ -315,7 +315,7 @@ export class WebSearchMCPServer extends EventEmitter implements OliverOSMCPServe
   }
 
   private async handleResourcesList(request: MCPRequest): Promise<MCPResponse> {
-    const resources = this.config.resources.map((resource: any) => ({
+    const resources = this.config.resources.map((resource: MCPResource) => ({
       uri: resource.uri,
       name: resource.name,
       description: resource.description,
@@ -332,7 +332,7 @@ export class WebSearchMCPServer extends EventEmitter implements OliverOSMCPServe
   private async handleResourcesRead(request: MCPRequest): Promise<MCPResponse> {
     const { uri } = request.params as { uri: string };
     
-    const resource = this.config.resources.find((r: any) => r.uri === uri);
+    const resource = this.config.resources.find((r: MCPResource) => r.uri === uri);
     if (!resource) {
       return this.createErrorResponse(request.id, -32601, `Resource not found: ${uri}`);
     }
@@ -369,7 +369,7 @@ export class WebSearchMCPServer extends EventEmitter implements OliverOSMCPServe
   }
 
   // Tool Handlers
-  private async handleWebSearch(args: Record<string, unknown>): Promise<any> {
+  private async handleWebSearch(args: Record<string, unknown>): Promise<MCPToolResult> {
     const { query, num_results, language, region, safe_search, date_range } = args;
     
     this._logger.info(`🔍 Web searching: ${query}`);
@@ -399,7 +399,7 @@ export class WebSearchMCPServer extends EventEmitter implements OliverOSMCPServe
     };
   }
 
-  private async handleNewsSearch(args: Record<string, unknown>): Promise<any> {
+  private async handleNewsSearch(args: Record<string, unknown>): Promise<MCPToolResult> {
     const { query, num_results, language, region, sort_by, date_range } = args;
     
     this._logger.info(`📰 News searching: ${query}`);
@@ -431,7 +431,7 @@ export class WebSearchMCPServer extends EventEmitter implements OliverOSMCPServe
     };
   }
 
-  private async handleAcademicSearch(args: Record<string, unknown>): Promise<any> {
+  private async handleAcademicSearch(args: Record<string, unknown>): Promise<MCPToolResult> {
     const { query, num_results, year_from, year_to, sort_by } = args;
     
     this._logger.info(`🎓 Academic searching: ${query}`);
@@ -463,7 +463,7 @@ export class WebSearchMCPServer extends EventEmitter implements OliverOSMCPServe
     };
   }
 
-  private async handleGetPageContent(args: Record<string, unknown>): Promise<any> {
+  private async handleGetPageContent(args: Record<string, unknown>): Promise<MCPToolResult> {
     const { url, include_images, include_links } = args;
     // const { max_length: _maxLength } = args; // Unused parameter
     
@@ -498,7 +498,7 @@ export class WebSearchMCPServer extends EventEmitter implements OliverOSMCPServe
     };
   }
 
-  private async handleImageSearch(args: Record<string, unknown>): Promise<any> {
+  private async handleImageSearch(args: Record<string, unknown>): Promise<MCPToolResult> {
     const { query, num_results, size, color, type } = args;
     
     this._logger.info(`🖼️ Image searching: ${query}`);
@@ -530,7 +530,7 @@ export class WebSearchMCPServer extends EventEmitter implements OliverOSMCPServe
     };
   }
 
-  private async handleVideoSearch(args: Record<string, unknown>): Promise<any> {
+  private async handleVideoSearch(args: Record<string, unknown>): Promise<MCPToolResult> {
     const { query, num_results, duration, quality, sort_by } = args;
     
     this._logger.info(`🎥 Video searching: ${query}`);
@@ -562,7 +562,7 @@ export class WebSearchMCPServer extends EventEmitter implements OliverOSMCPServe
     };
   }
 
-  private async handleGetTrendingTopics(args: Record<string, unknown>): Promise<any> {
+  private async handleGetTrendingTopics(args: Record<string, unknown>): Promise<MCPToolResult> {
     const { region, category, num_results } = args;
     
     this._logger.info(`📈 Getting trending topics for region: ${region}`);
@@ -596,7 +596,7 @@ export class WebSearchMCPServer extends EventEmitter implements OliverOSMCPServe
     };
   }
 
-  private async handleSummarizeUrl(args: Record<string, unknown>): Promise<any> {
+  private async handleSummarizeUrl(args: Record<string, unknown>): Promise<MCPToolResult> {
     const { url, max_sentences, language } = args;
     
     this._logger.info(`📝 Summarizing URL: ${url}`);
@@ -623,7 +623,7 @@ export class WebSearchMCPServer extends EventEmitter implements OliverOSMCPServe
     };
   }
 
-  private async handleTranslateText(args: Record<string, unknown>): Promise<any> {
+  private async handleTranslateText(args: Record<string, unknown>): Promise<MCPToolResult> {
     const { text, from_language, to_language, format } = args;
     
     this._logger.info(`🌐 Translating text to ${to_language}`);
@@ -645,7 +645,7 @@ export class WebSearchMCPServer extends EventEmitter implements OliverOSMCPServe
     };
   }
 
-  private async handleGetWeather(args: Record<string, unknown>): Promise<any> {
+  private async handleGetWeather(args: Record<string, unknown>): Promise<MCPToolResult> {
     const { location, units, days } = args;
     
     this._logger.info(`🌤️ Getting weather for: ${location}`);
@@ -681,7 +681,7 @@ export class WebSearchMCPServer extends EventEmitter implements OliverOSMCPServe
   }
 
   // Resource Handlers
-  private async handleGetGlobalTrending(): Promise<any> {
+  private async handleGetGlobalTrending(): Promise<MCPResourceResult> {
     return {
       contents: [{
         uri: 'websearch://trending/global',
@@ -698,7 +698,7 @@ export class WebSearchMCPServer extends EventEmitter implements OliverOSMCPServe
     };
   }
 
-  private async handleGetNewsHeadlines(): Promise<any> {
+  private async handleGetNewsHeadlines(): Promise<MCPResourceResult> {
     return {
       contents: [{
         uri: 'websearch://news/headlines',
@@ -724,7 +724,7 @@ export class WebSearchMCPServer extends EventEmitter implements OliverOSMCPServe
     };
   }
 
-  private async handleGetAIResearch(): Promise<any> {
+  private async handleGetAIResearch(): Promise<MCPResourceResult> {
     return {
       contents: [{
         uri: 'websearch://research/ai',
