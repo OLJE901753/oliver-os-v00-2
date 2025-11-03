@@ -7,8 +7,9 @@
 import { EventEmitter } from 'node:events';
 import { Logger } from '../../core/logger';
 import { Config } from '../../core/config';
-import { InMemoryGraphStorage, type GraphStorage } from './graph-storage';
+import { InMemoryGraphStorage, type GraphStorage, type GraphStats } from './graph-storage';
 import { OpenAIEmbeddingsService, type EmbeddingsService } from './embeddings.service';
+import type { AutomaticLinkingEngine } from '../organizer/automatic-linking-engine';
 import type { KnowledgeNode, NodeCreateInput, NodeUpdateInput } from './node.types';
 import type { Relationship, RelationshipCreateInput, RelationshipUpdateInput } from './relationship.types';
 
@@ -18,7 +19,7 @@ export class KnowledgeGraphService extends EventEmitter {
   private embeddingsService: EmbeddingsService;
   private isInitialized: boolean = false;
   private automaticLinkingEnabled: boolean = false;
-  private automaticLinkingEngine: any = null; // Will be set if available
+  private automaticLinkingEngine: AutomaticLinkingEngine | null = null; // Will be set if available
 
   constructor(config: Config, enableAutomaticLinking: boolean = true) {
     super();
@@ -47,7 +48,7 @@ export class KnowledgeGraphService extends EventEmitter {
   /**
    * Set the automatic linking engine
    */
-  setAutomaticLinkingEngine(engine: any): void {
+  setAutomaticLinkingEngine(engine: AutomaticLinkingEngine): void {
     this.automaticLinkingEngine = engine;
     this.automaticLinkingEnabled = true;
     this._logger.info('✅ Automatic linking engine enabled');
@@ -274,7 +275,7 @@ export class KnowledgeGraphService extends EventEmitter {
   /**
    * Health check
    */
-  async healthCheck(): Promise<{ status: string; stats: any }> {
+  async healthCheck(): Promise<{ status: string; stats: GraphStats | null }> {
     try {
       const stats = await this.getGraphStats();
       return {
