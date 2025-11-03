@@ -24,6 +24,22 @@ export interface ChatMessage {
   createdAt: Date;
 }
 
+interface ChatSessionDBRow {
+  id: string;
+  user_id: string;
+  started_at: string;
+  last_message_at: string;
+}
+
+interface ChatMessageDBRow {
+  id: string;
+  session_id: string;
+  role: 'user' | 'assistant' | 'system';
+  content: string;
+  context_nodes: string;
+  created_at: string;
+}
+
 export class ChatHistoryStorage {
   private db: Database.Database;
   private dbPath: string;
@@ -97,7 +113,7 @@ export class ChatHistoryStorage {
   getSession(sessionId: string): ChatSession | null {
     const row = this.db.prepare(`
       SELECT * FROM chat_sessions WHERE id = ?
-    `).get(sessionId) as any;
+    `).get(sessionId) as ChatSessionDBRow | undefined;
 
     if (!row) {
       return null;
@@ -131,7 +147,7 @@ export class ChatHistoryStorage {
       WHERE user_id = ? 
       ORDER BY last_message_at DESC 
       LIMIT ?
-    `).all(userId, limit) as any[];
+    `).all(userId, limit) as ChatSessionDBRow[];
 
     return rows.map(row => ({
       id: row.id,
@@ -187,7 +203,7 @@ export class ChatHistoryStorage {
       WHERE session_id = ? 
       ORDER BY created_at ASC 
       LIMIT ?
-    `).all(sessionId, limit) as any[];
+    `).all(sessionId, limit) as ChatMessageDBRow[];
 
     return rows.map(row => ({
       id: row.id,
@@ -207,7 +223,7 @@ export class ChatHistoryStorage {
       SELECT * FROM chat_messages 
       ORDER BY created_at DESC 
       LIMIT ?
-    `).all(limit) as any[];
+    `).all(limit) as ChatMessageDBRow[];
 
     return rows.map(row => ({
       id: row.id,

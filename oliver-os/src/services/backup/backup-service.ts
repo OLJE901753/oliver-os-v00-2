@@ -192,15 +192,18 @@ export class BackupService {
         size,
         components
       };
-    } catch (error: any) {
-      this.logger.error('Backup failed', { error: error.message });
+    } catch (error: unknown) {
+      const errorMessage = error && typeof error === 'object' && 'message' in error
+        ? String(error.message)
+        : 'Unknown error';
+      this.logger.error('Backup failed', { error: errorMessage });
       return {
         success: false,
         backupPath,
         timestamp: new Date().toISOString(),
         size: 0,
         components,
-        error: error.message
+        error: errorMessage
       };
     }
   }
@@ -261,9 +264,12 @@ export class BackupService {
 
       this.logger.info('Restore completed successfully');
       return { success: true };
-    } catch (error: any) {
-      this.logger.error('Restore failed', { error: error.message });
-      return { success: false, error: error.message };
+    } catch (error: unknown) {
+      const errorMessage = error && typeof error === 'object' && 'message' in error
+        ? String(error.message)
+        : 'Unknown error';
+      this.logger.error('Restore failed', { error: errorMessage });
+      return { success: false, error: errorMessage };
     }
   }
 
