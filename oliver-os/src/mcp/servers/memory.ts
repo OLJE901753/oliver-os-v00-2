@@ -7,14 +7,25 @@ import { EventEmitter } from 'node:events';
 import * as fs from 'fs-extra';
 import * as path from 'path';
 import { Logger } from '../../core/logger';
-import type { MCPTool, MCPResource, MCPRequest, MCPResponse, OliverOSMCPServer } from '../types';
+import type { MCPTool, MCPResource, MCPRequest, MCPResponse, OliverOSMCPServer, MCPServerConfig, MCPToolResult, MCPResourceResult } from '../types';
+
+interface MemoryRecord {
+  key: string;
+  value: Record<string, unknown>;
+  ttl?: number;
+  tags?: string[];
+  priority?: string;
+  createdAt: string;
+  lastAccessed?: string;
+  accessCount?: number;
+}
 
 export class MemoryMCPServer extends EventEmitter implements OliverOSMCPServer {
   private _logger: Logger;
-  public config: any;
+  public config: MCPServerConfig;
   private isRunning: boolean = false;
   private memoryDir: string;
-  private memories: Map<string, any> = new Map();
+  private memories: Map<string, MemoryRecord> = new Map();
 
   constructor(memoryDir?: string) {
     super();
@@ -24,7 +35,7 @@ export class MemoryMCPServer extends EventEmitter implements OliverOSMCPServer {
     this.initializeMemory();
   }
 
-  private createServerConfig() {
+  private createServerConfig(): MCPServerConfig {
     return {
       name: 'memory-mcp-server',
       version: '1.0.0',
@@ -346,7 +357,7 @@ export class MemoryMCPServer extends EventEmitter implements OliverOSMCPServer {
   }
 
   private async handleResourcesList(request: MCPRequest): Promise<MCPResponse> {
-    const resources = this.config.resources.map((resource: any) => ({
+    const resources = this.config.resources.map((resource: MCPResource) => ({
       uri: resource.uri,
       name: resource.name,
       description: resource.description,
@@ -363,7 +374,7 @@ export class MemoryMCPServer extends EventEmitter implements OliverOSMCPServer {
   private async handleResourcesRead(request: MCPRequest): Promise<MCPResponse> {
     const { uri } = request.params as { uri: string };
     
-    const resource = this.config.resources.find((r: any) => r.uri === uri);
+    const resource = this.config.resources.find((r: MCPResource) => r.uri === uri);
     if (!resource) {
       return this.createErrorResponse(request.id, -32601, `Resource not found: ${uri}`);
     }
@@ -400,7 +411,7 @@ export class MemoryMCPServer extends EventEmitter implements OliverOSMCPServer {
   }
 
   // Tool Handlers
-  private async handleStoreMemory(args: Record<string, unknown>): Promise<any> {
+  private async handleStoreMemory(args: Record<string, unknown>): Promise<MCPToolResult> {
     const { key, value, ttl, tags, priority } = args;
     
     this._logger.info(`💾 Storing memory: ${key}`);
@@ -432,7 +443,7 @@ export class MemoryMCPServer extends EventEmitter implements OliverOSMCPServer {
     };
   }
 
-  private async handleRetrieveMemory(args: Record<string, unknown>): Promise<any> {
+  private async handleRetrieveMemory(args: Record<string, unknown>): Promise<MCPToolResult> {
     const { key, include_metadata } = args;
     
     this._logger.info(`🔍 Retrieving memory: ${key}`);
@@ -466,7 +477,7 @@ export class MemoryMCPServer extends EventEmitter implements OliverOSMCPServer {
     };
   }
 
-  private async handleSearchMemory(args: Record<string, unknown>): Promise<any> {
+  private async handleSearchMemory(args: Record<string, unknown>): Promise<MCPToolResult> {
     const { query, tags, limit, sort_by } = args;
     
     this._logger.info(`🔍 Searching memories: ${query}`);
@@ -513,7 +524,7 @@ export class MemoryMCPServer extends EventEmitter implements OliverOSMCPServer {
     };
   }
 
-  private async handleUpdateMemory(args: Record<string, unknown>): Promise<any> {
+  private async handleUpdateMemory(args: Record<string, unknown>): Promise<MCPToolResult> {
     const { key, value, merge, tags, priority } = args;
     
     this._logger.info(`✏️ Updating memory: ${key}`);
@@ -550,7 +561,7 @@ export class MemoryMCPServer extends EventEmitter implements OliverOSMCPServer {
     };
   }
 
-  private async handleDeleteMemory(args: Record<string, unknown>): Promise<any> {
+  private async handleDeleteMemory(args: Record<string, unknown>): Promise<MCPToolResult> {
     const { key, permanent } = args;
     
     this._logger.info(`🗑️ Deleting memory: ${key}`);
@@ -580,7 +591,7 @@ export class MemoryMCPServer extends EventEmitter implements OliverOSMCPServer {
     };
   }
 
-  private async handleListMemories(args: Record<string, unknown>): Promise<any> {
+  private async handleListMemories(args: Record<string, unknown>): Promise<MCPToolResult> {
     const { tags, priority, limit, offset, include_deleted } = args;
     
     this._logger.info(`📋 Listing memories`);
@@ -618,7 +629,7 @@ export class MemoryMCPServer extends EventEmitter implements OliverOSMCPServer {
     };
   }
 
-  private async handleExportMemory(args: Record<string, unknown>): Promise<any> {
+  private async handleExportMemory(args: Record<string, unknown>): Promise<MCPToolResult> {
     const { format, tags, include_metadata, output_path } = args;
     const exportFormat = (format as string) || 'json';
     
@@ -672,16 +683,16 @@ export class MemoryMCPServer extends EventEmitter implements OliverOSMCPServer {
     }
   }
 
-  private async handleImportMemory(args: Record<string, unknown>): Promise<any> {
+  private async handleImportMemory(args: Record<string, unknown>): Promise<MCPToolResult> {
     const { file_path, format, merge_mode } = args;
     
     this._logger.info(`📥 Importing memories from ${file_path}`);
     
     try {
-      let importedMemories: any[] = [];
+      let importedMemories: MemoryRecord[] = [];
       
       if (format === 'json') {
-        importedMemories = await fs.readJSON(file_path as string);
+        importedMemories = await fs.readJSON(file_path as string) as MemoryRecord[];
       } else {
         return this.createErrorResult(`Unsupported import format: ${format}`);
       }
@@ -732,7 +743,7 @@ export class MemoryMCPServer extends EventEmitter implements OliverOSMCPServer {
     }
   }
 
-  private async handleCleanupMemory(args: Record<string, unknown>): Promise<any> {
+  private async handleCleanupMemory(args: Record<string, unknown>): Promise<MCPToolResult> {
     const { max_age_days, priority_filter, dry_run } = args;
     
     this._logger.info(`🧹 Cleaning up memories (dry_run: ${dry_run})`);
@@ -774,7 +785,7 @@ export class MemoryMCPServer extends EventEmitter implements OliverOSMCPServer {
     };
   }
 
-  private async handleMemoryStats(_args: Record<string, unknown>): Promise<any> {
+  private async handleMemoryStats(_args: Record<string, unknown>): Promise<MCPToolResult> {
     // const { include_details: _includeDetails } = args; // Unused parameter
     
     this._logger.info(`📊 Getting memory statistics`);
@@ -815,7 +826,7 @@ export class MemoryMCPServer extends EventEmitter implements OliverOSMCPServer {
     };
   }
 
-  private getTagUsage(memories: any[]): Record<string, number> {
+  private getTagUsage(memories: MemoryRecord[]): Record<string, number> {
     const tagCount: Record<string, number> = {};
     for (const memory of memories) {
       for (const tag of memory.tags) {
@@ -826,7 +837,7 @@ export class MemoryMCPServer extends EventEmitter implements OliverOSMCPServer {
   }
 
   // Resource Handlers
-  private async handleGetAllMemories(): Promise<any> {
+  private async handleGetAllMemories(): Promise<MCPResourceResult> {
     return {
       contents: [{
         uri: 'memory://all',
@@ -836,7 +847,7 @@ export class MemoryMCPServer extends EventEmitter implements OliverOSMCPServer {
     };
   }
 
-  private async handleGetRecentMemories(): Promise<any> {
+  private async handleGetRecentMemories(): Promise<MCPResourceResult> {
     const recentMemories = Array.from(this.memories.values())
       .filter(m => !m.deleted)
       .sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime())
@@ -851,7 +862,7 @@ export class MemoryMCPServer extends EventEmitter implements OliverOSMCPServer {
     };
   }
 
-  private async handleGetMemoryTags(): Promise<any> {
+  private async handleGetMemoryTags(): Promise<MCPResourceResult> {
     const activeMemories = Array.from(this.memories.values()).filter(m => !m.deleted);
     const tagUsage = this.getTagUsage(activeMemories);
     
@@ -864,7 +875,7 @@ export class MemoryMCPServer extends EventEmitter implements OliverOSMCPServer {
     };
   }
 
-  private createErrorResult(message: string): any {
+  private createErrorResult(message: string): MCPToolResult {
     return {
       content: [{
         type: 'text',
