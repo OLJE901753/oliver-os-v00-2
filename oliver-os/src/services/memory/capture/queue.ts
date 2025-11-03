@@ -7,6 +7,11 @@
 import { EventEmitter } from 'node:events';
 import { Logger } from '../../../core/logger';
 import type { MemoryStorage, ProcessingQueueItem } from './storage';
+import Database from 'better-sqlite3';
+
+interface CountRow {
+  count: number;
+}
 
 export interface QueueProcessor {
   process(memoryId: string): Promise<void>;
@@ -144,7 +149,8 @@ export class MemoryQueue extends EventEmitter {
     completed: number;
     failed: number;
   } {
-    const db = (this.storage as any).db;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const db = (this.storage as any).db as Database.Database;
     
     const pendingStmt = db.prepare('SELECT COUNT(*) as count FROM processing_queue WHERE status = "pending"');
     const processingStmt = db.prepare('SELECT COUNT(*) as count FROM processing_queue WHERE status = "processing"');
@@ -152,10 +158,10 @@ export class MemoryQueue extends EventEmitter {
     const failedStmt = db.prepare('SELECT COUNT(*) as count FROM processing_queue WHERE status = "failed"');
 
     return {
-      pending: (pendingStmt.get() as any).count,
-      processing: (processingStmt.get() as any).count,
-      completed: (completedStmt.get() as any).count,
-      failed: (failedStmt.get() as any).count,
+      pending: (pendingStmt.get() as CountRow).count,
+      processing: (processingStmt.get() as CountRow).count,
+      completed: (completedStmt.get() as CountRow).count,
+      failed: (failedStmt.get() as CountRow).count,
     };
   }
 }

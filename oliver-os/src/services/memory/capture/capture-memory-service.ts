@@ -218,7 +218,7 @@ export class CaptureMemoryService extends EventEmitter implements QueueProcessor
   /**
    * Health check
    */
-  async healthCheck(): Promise<{ status: string; stats: any }> {
+  async healthCheck(): Promise<{ status: string; stats: { storage: ReturnType<MemoryStorage['getStats']>; queue: ReturnType<MemoryQueue['getStatus']> } | null }> {
     try {
       const stats = await this.getStats();
       return {
