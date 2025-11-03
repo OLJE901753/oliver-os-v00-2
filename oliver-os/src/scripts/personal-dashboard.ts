@@ -10,7 +10,7 @@ import path from 'path';
 interface LearningEvent {
   timestamp: string;
   event: string;
-  data: any;
+  data: unknown;
   context?: {
     currentStyle?: string;
     adaptations?: Array<{ pattern: string; confidence: number; timestamp: string }>;

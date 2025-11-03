@@ -8,6 +8,16 @@ config();
 
 const API_BASE = 'http://localhost:3000/api/assistant';
 
+interface ChatResponseData {
+  success: boolean;
+  data?: {
+    sessionId?: string;
+    message?: string;
+    response?: string;
+  };
+  error?: string;
+}
+
 async function testAssistant() {
   console.log('🧪 Testing AI Assistant Service\n');
 
@@ -22,7 +32,7 @@ async function testAssistant() {
       }),
     });
 
-    const chatData = await chatResponse.json() as any;
+    const chatData = await chatResponse.json() as ChatResponseData;
     console.log('✅ Chat Response:', JSON.stringify(chatData, null, 2));
     
     const sessionId = chatData.data?.sessionId;
