@@ -156,13 +156,10 @@ export class CodebuffService {
       });
 
       // Execute the task
-      // TODO: Update when CodebuffRunOptions interface is finalized
       const result = await this.client.run({
         agent: options.agent,
         prompt: options.prompt
-        // customToolDefinitions: options.customToolDefinitions as any, // Removed - not in type definition
-        // handleEvent: ((_event: any) => { ... }) // Removed - not in type definition
-      } as any);
+      });
 
       // Document the results
       const documentation = await this.documentResults(result, options);
@@ -347,7 +344,7 @@ export class CodebuffService {
     };
   }
 
-  private async documentResults(result: any, options: CodebuffRunOptions): Promise<Record<string, unknown>> {
+  private async documentResults(result: CodebuffResult, options: CodebuffRunOptions): Promise<Record<string, unknown>> {
     // Document everything
     return {
       agent: options.agent,
