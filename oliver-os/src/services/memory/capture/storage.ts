@@ -33,6 +33,39 @@ export interface ProcessingQueueItem {
   createdAt: Date;
 }
 
+interface MemoryDBRow {
+  id: string;
+  raw_content: string;
+  type: string;
+  timestamp: string;
+  status: string;
+  metadata: string;
+  audio_url?: string;
+  transcript?: string;
+  duration_seconds?: number;
+  created_at: string;
+  updated_at: string;
+}
+
+interface QueueItemDBRow {
+  id: string;
+  memory_id: string;
+  status: string;
+  attempts: number;
+  error?: string;
+  created_at: string;
+}
+
+interface CountRow {
+  count: number;
+}
+
+interface StatusTypeRow {
+  status?: string;
+  type?: string;
+  count: number;
+}
+
 export class MemoryStorage {
   private db: Database.Database;
   private logger: Logger;
@@ -166,7 +199,7 @@ export class MemoryStorage {
    */
   getMemory(id: string): MemoryRecord | null {
     const stmt = this.db.prepare('SELECT * FROM memories WHERE id = ?');
-    const row = stmt.get(id) as any;
+    const row = stmt.get(id) as MemoryDBRow | undefined;
 
     if (!row) {
       return null;
@@ -194,7 +227,7 @@ export class MemoryStorage {
    */
   updateMemory(id: string, updates: Partial<MemoryRecord>): boolean {
     const fields: string[] = [];
-    const values: any[] = [];
+    const values: unknown[] = [];
 
     if (updates.status !== undefined) {
       fields.push('status = ?');
@@ -244,8 +277,8 @@ export class MemoryStorage {
       LIMIT ?
     `);
 
-    const rows = stmt.all(limit) as any[];
-    return rows.map(row => this.rowToMemory(row));
+    const rows = stmt.all(limit) as MemoryDBRow[];
+    return rows.map((row: MemoryDBRow) => this.rowToMemory(row));
   }
 
   /**
@@ -258,8 +291,8 @@ export class MemoryStorage {
       ORDER BY timestamp DESC
     `);
 
-    const rows = stmt.all(status) as any[];
-    return rows.map(row => this.rowToMemory(row));
+    const rows = stmt.all(status) as MemoryDBRow[];
+    return rows.map((row: MemoryDBRow) => this.rowToMemory(row));
   }
 
   /**
@@ -267,7 +300,7 @@ export class MemoryStorage {
    */
   getTimeline(startDate?: Date, endDate?: Date): MemoryRecord[] {
     let query = 'SELECT * FROM memories WHERE 1=1';
-    const params: any[] = [];
+    const params: unknown[] = [];
 
     if (startDate) {
       query += ' AND timestamp >= ?';
@@ -281,8 +314,8 @@ export class MemoryStorage {
     query += ' ORDER BY timestamp DESC';
 
     const stmt = this.db.prepare(query);
-    const rows = stmt.all(...params) as any[];
-    return rows.map(row => this.rowToMemory(row));
+    const rows = stmt.all(...params) as MemoryDBRow[];
+    return rows.map((row: MemoryDBRow) => this.rowToMemory(row));
   }
 
   /**
@@ -313,7 +346,7 @@ export class MemoryStorage {
       LIMIT ?
     `);
 
-    const rows = stmt.all(limit) as any[];
+    const rows = stmt.all(limit) as QueueItemDBRow[];
     return rows.map(this.rowToQueueItem);
   }
 
@@ -336,7 +369,7 @@ export class MemoryStorage {
    */
   getQueueItemByMemoryId(memoryId: string): ProcessingQueueItem | null {
     const stmt = this.db.prepare('SELECT * FROM processing_queue WHERE memory_id = ? ORDER BY created_at DESC LIMIT 1');
-    const row = stmt.get(memoryId) as any;
+    const row = stmt.get(memoryId) as QueueItemDBRow | undefined;
 
     return row ? this.rowToQueueItem(row) : null;
   }
@@ -344,7 +377,7 @@ export class MemoryStorage {
   /**
    * Convert database row to MemoryRecord
    */
-  private rowToMemory(row: any): MemoryRecord {
+  private rowToMemory(row: MemoryDBRow): MemoryRecord {
     return {
       id: row.id,
       rawContent: row.raw_content,
@@ -361,7 +394,7 @@ export class MemoryStorage {
   /**
    * Convert database row to ProcessingQueueItem
    */
-  private rowToQueueItem(row: any): ProcessingQueueItem {
+  private rowToQueueItem(row: QueueItemDBRow): ProcessingQueueItem {
     return {
       id: row.id,
       memoryId: row.memory_id,
@@ -390,17 +423,17 @@ export class MemoryStorage {
     pendingQueueItems: number;
   } {
     const totalStmt = this.db.prepare('SELECT COUNT(*) as count FROM memories');
-    const totalMemories = (totalStmt.get() as any).count;
+    const totalMemories = (totalStmt.get() as CountRow).count;
 
     const statusStmt = this.db.prepare(`
       SELECT status, COUNT(*) as count 
       FROM memories 
       GROUP BY status
     `);
-    const statusRows = statusStmt.all() as any[];
+    const statusRows = statusStmt.all() as StatusTypeRow[];
     const byStatus: Record<string, number> = {};
     for (const row of statusRows) {
-      byStatus[row.status] = row.count;
+      if (row.status) byStatus[row.status] = row.count;
     }
 
     const typeStmt = this.db.prepare(`
@@ -408,14 +441,14 @@ export class MemoryStorage {
       FROM memories 
       GROUP BY type
     `);
-    const typeRows = typeStmt.all() as any[];
+    const typeRows = typeStmt.all() as StatusTypeRow[];
     const byType: Record<string, number> = {};
     for (const row of typeRows) {
-      byType[row.type] = row.count;
+      if (row.type) byType[row.type] = row.count;
     }
 
     const pendingStmt = this.db.prepare('SELECT COUNT(*) as count FROM processing_queue WHERE status = "pending"');
-    const pendingQueueItems = (pendingStmt.get() as any).count;
+    const pendingQueueItems = (pendingStmt.get() as CountRow).count;
 
     return {
       totalMemories,
