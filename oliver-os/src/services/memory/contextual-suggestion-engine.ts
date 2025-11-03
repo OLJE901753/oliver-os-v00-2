@@ -7,7 +7,7 @@
 import { EventEmitter } from 'node:events';
 import { Logger } from '../../core/logger';
 import { Config } from '../../core/config';
-import { MemoryService } from './memory-service';
+import { MemoryService, type CodePattern, type ArchitectureDecision } from './memory-service';
 import { LearningService } from './learning-service';
 import fs from 'fs-extra';
 
@@ -30,10 +30,10 @@ export interface SuggestionContext {
   fileType: string;
   projectStructure: string[];
   recentChanges: string[];
-  userPreferences: any;
+  userPreferences: Record<string, unknown>;
   codingPatterns: string[];
   architectureDecisions: string[];
-  namingConventions: any;
+  namingConventions: Record<string, unknown>;
 }
 
 export class ContextualSuggestionEngine extends EventEmitter {
@@ -74,19 +74,19 @@ export class ContextualSuggestionEngine extends EventEmitter {
    * Load context history from memory
    */
   private async loadContextHistory(): Promise<void> {
-    const memory = this._memoryService as any;
-    const sessions = memory.memory?.projectHistory?.sessions || [];
+    const memory = this._memoryService.getMemory();
+    const sessions = memory.projectHistory?.sessions || [];
     
     for (const session of sessions) {
       const context: SuggestionContext = {
-        currentFile: session.filesModified?.[0] || 'unknown',
-        fileType: this.getFileType(session.filesModified?.[0] || ''),
+        currentFile: 'unknown',
+        fileType: 'unknown',
         projectStructure: session.patternsUsed || [],
         recentChanges: session.patternsUsed || [],
-        userPreferences: memory.memory?.codePatterns?.userPreferences || {},
+        userPreferences: memory.codePatterns?.userPreferences || {},
         codingPatterns: session.patternsUsed || [],
         architectureDecisions: session.decisionsMade || [],
-        namingConventions: memory.memory?.namingConventions || {}
+        namingConventions: memory.namingConventions || {}
       };
       
       this.contextHistory.set(session.id, context);
@@ -115,7 +115,7 @@ export class ContextualSuggestionEngine extends EventEmitter {
    */
   private getCommonContexts(): SuggestionContext[] {
     const contexts: SuggestionContext[] = [];
-    const memory = this._memoryService as any;
+    const memory = this._memoryService.getMemory();
     
     // Common file types
     const commonFileTypes = ['tsx', 'ts', 'js', 'jsx', 'py'];
@@ -126,10 +126,10 @@ export class ContextualSuggestionEngine extends EventEmitter {
         fileType,
         projectStructure: ['src', 'components', 'services'],
         recentChanges: [],
-        userPreferences: memory.memory?.codePatterns?.userPreferences || {},
+        userPreferences: memory.codePatterns?.userPreferences || {},
         codingPatterns: [],
-        architectureDecisions: memory.memory?.architecture?.decisions?.map((d: any) => d.id) || [],
-        namingConventions: memory.memory?.namingConventions || {}
+        architectureDecisions: memory.architecture?.decisions?.map((d) => d.id) || [],
+        namingConventions: memory.namingConventions || {}
       });
     }
     
@@ -189,8 +189,8 @@ export class ContextualSuggestionEngine extends EventEmitter {
    */
   private async generateCodeGenerationSuggestions(context: SuggestionContext): Promise<ContextualSuggestion[]> {
     const suggestions: ContextualSuggestion[] = [];
-    const memory = this._memoryService as any;
-    const patterns = memory.memory?.codePatterns?.frequentlyUsed || [];
+    const memory = this._memoryService.getMemory();
+    const patterns = memory.codePatterns?.frequentlyUsed || [];
     
     for (const pattern of patterns) {
       if (pattern.successRate > 0.8 && this.isRelevantForFileType(pattern, context.fileType)) {
@@ -218,8 +218,8 @@ export class ContextualSuggestionEngine extends EventEmitter {
    */
   private async generateRefactoringSuggestions(context: SuggestionContext): Promise<ContextualSuggestion[]> {
     const suggestions: ContextualSuggestion[] = [];
-    const memory = this._memoryService as any;
-    const patterns = memory.memory?.codePatterns?.frequentlyUsed || [];
+    const memory = this._memoryService.getMemory();
+    const patterns = memory.codePatterns?.frequentlyUsed || [];
     
     for (const pattern of patterns) {
       if (pattern.successRate > 0.9 && pattern.frequency > 5) {
@@ -247,8 +247,8 @@ export class ContextualSuggestionEngine extends EventEmitter {
    */
   private async generateOptimizationSuggestions(context: SuggestionContext): Promise<ContextualSuggestion[]> {
     const suggestions: ContextualSuggestion[] = [];
-    const memory = this._memoryService as any;
-    const patterns = memory.memory?.codePatterns?.frequentlyUsed || [];
+    const memory = this._memoryService.getMemory();
+    const patterns = memory.codePatterns?.frequentlyUsed || [];
     
     for (const pattern of patterns) {
       if (pattern.frequency > 10 && pattern.successRate > 0.85) {
@@ -276,8 +276,8 @@ export class ContextualSuggestionEngine extends EventEmitter {
    */
   private async generateArchitectureSuggestions(context: SuggestionContext): Promise<ContextualSuggestion[]> {
     const suggestions: ContextualSuggestion[] = [];
-    const memory = this._memoryService as any;
-    const decisions = memory.memory?.architecture?.decisions || [];
+    const memory = this._memoryService.getMemory();
+    const decisions = memory.architecture?.decisions || [];
     
     for (const decision of decisions) {
       if (decision.impact === 'high') {
@@ -380,7 +380,7 @@ export class ContextualSuggestionEngine extends EventEmitter {
   /**
    * Check if pattern is relevant for file type
    */
-  private isRelevantForFileType(pattern: any, fileType: string): boolean {
+  private isRelevantForFileType(pattern: CodePattern, fileType: string): boolean {
     const relevantPatterns = {
       'tsx': ['react-component', 'typescript-interface', 'event-handler'],
       'ts': ['service-class', 'error-handling', 'async-function'],
@@ -397,27 +397,27 @@ export class ContextualSuggestionEngine extends EventEmitter {
   /**
    * Get alternative patterns
    */
-  private getAlternativePatterns(pattern: any): string[] {
-    const memory = this._memoryService as any;
-    const patterns = memory.memory?.codePatterns?.frequentlyUsed || [];
+  private getAlternativePatterns(pattern: CodePattern): string[] {
+    const memory = this._memoryService.getMemory();
+    const patterns = memory.codePatterns?.frequentlyUsed || [];
     
     return patterns
-      .filter((p: any) => p.id !== pattern.id && p.successRate > 0.7)
+      .filter((p) => p.id !== pattern.id && p.successRate > 0.7)
       .slice(0, 3)
-      .map((p: any) => p.pattern);
+      .map((p) => p.pattern);
   }
 
   /**
    * Get alternative architecture decisions
    */
-  private getAlternativeArchitectureDecisions(decision: any): string[] {
-    const memory = this._memoryService as any;
-    const decisions = memory.memory?.architecture?.decisions || [];
+  private getAlternativeArchitectureDecisions(decision: ArchitectureDecision): string[] {
+    const memory = this._memoryService.getMemory();
+    const decisions = memory.architecture?.decisions || [];
     
     return decisions
-      .filter((d: any) => d.id !== decision.id && d.impact === 'high')
+      .filter((d) => d.id !== decision.id && d.impact === 'high')
       .slice(0, 3)
-      .map((d: any) => d.decision);
+      .map((d) => d.decision);
   }
 
   /**
@@ -446,7 +446,7 @@ export class ContextualSuggestionEngine extends EventEmitter {
   /**
    * Get pattern impact
    */
-  private getPatternImpact(pattern: any): 'low' | 'medium' | 'high' {
+  private getPatternImpact(pattern: CodePattern): 'low' | 'medium' | 'high' {
     if (pattern.frequency > 15) return 'high';
     if (pattern.frequency > 8) return 'medium';
     return 'low';
@@ -455,7 +455,7 @@ export class ContextualSuggestionEngine extends EventEmitter {
   /**
    * Get pattern effort
    */
-  private getPatternEffort(pattern: any): 'low' | 'medium' | 'high' {
+  private getPatternEffort(pattern: CodePattern): 'low' | 'medium' | 'high' {
     if (pattern.successRate > 0.9) return 'low';
     if (pattern.successRate > 0.8) return 'medium';
     return 'high';
@@ -500,7 +500,12 @@ export class ContextualSuggestionEngine extends EventEmitter {
   /**
    * Get suggestion statistics
    */
-  getSuggestionStats(): any {
+  getSuggestionStats(): {
+    totalSuggestions: number;
+    cachedContexts: number;
+    contextHistorySize: number;
+    learningStats: unknown;
+  } {
     return {
       totalSuggestions: Array.from(this.suggestionCache.values()).reduce((sum, suggestions) => sum + suggestions.length, 0),
       cachedContexts: this.suggestionCache.size,
@@ -657,7 +662,12 @@ export class ContextualSuggestionEngine extends EventEmitter {
   /**
    * Get current context information
    */
-  getContext(): any {
+  getContext(): {
+    files: string[];
+    relationships: Array<{ source: string; target: string; type: string; strength: number }>;
+    patterns: CodePattern[];
+    preferences: Record<string, unknown>;
+  } {
     return {
       files: Array.from(this.contextHistory.keys()),
       relationships: this.buildFileRelationships(),
@@ -669,7 +679,7 @@ export class ContextualSuggestionEngine extends EventEmitter {
   /**
    * Build file relationships
    */
-  private buildFileRelationships(): any[] {
+  private buildFileRelationships(): Array<{ source: string; target: string; type: string; strength: number }> {
     const relationships = [];
     const files = Array.from(this.contextHistory.keys());
     
@@ -690,7 +700,7 @@ export class ContextualSuggestionEngine extends EventEmitter {
   /**
    * Get active patterns
    */
-  private getActivePatterns(): any[] {
+  private getActivePatterns(): CodePattern[] {
     const memory = this._memoryService.getMemory();
     return memory.codePatterns.frequentlyUsed.slice(0, 5); // Return top 5 patterns
   }
