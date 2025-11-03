@@ -50,7 +50,7 @@ const logger = new Logger('Server');
  * Create and configure Express server
  * Supports both traditional and DI-based initialization
  */
-export function createServer(config: Config, serviceManager?: any, prisma?: any): express.Application {
+export function createServer(config: Config, serviceManager?: unknown, prisma?: unknown): express.Application {
   const app = express();
   
   // Initialize security manager
@@ -61,7 +61,7 @@ export function createServer(config: Config, serviceManager?: any, prisma?: any)
   app.use(helmet(securityConfig.helmet));
   // Ensure CORP allows favicon and similar resources
   // @ts-ignore - helmet namespace typing
-  app.use((helmet as any).crossOriginResourcePolicy({ policy: 'cross-origin' }));
+  app.use((helmet as unknown as { crossOriginResourcePolicy: (options: { policy: string }) => unknown }).crossOriginResourcePolicy({ policy: 'cross-origin' }));
 
   // Global CORP header to prevent OpaqueResponseBlocking for simple GET assets
   app.use((_, res, next) => {
@@ -191,12 +191,15 @@ export function createServer(config: Config, serviceManager?: any, prisma?: any)
       
       logger.info(`Python agent decision logged: ${decision.type}`);
       res.json({ success: true, message: 'Decision logged' });
-    } catch (e: any) {
+    } catch (e: unknown) {
       logger.error('Failed to log Python decision:', e);
+      const errorMessage = e && typeof e === 'object' && 'message' in e
+        ? String(e.message)
+        : 'Unknown error';
       res.status(500).json({ 
         success: false,
         error: 'Failed to log decision', 
-        details: e?.message || 'Unknown error'
+        details: errorMessage
       });
     }
   });
@@ -228,13 +231,19 @@ export function createServer(config: Config, serviceManager?: any, prisma?: any)
       
       logger.info(`Loaded ${events.length} learning events`);
       res.json({ success: true, events });
-    } catch (e: any) {
+    } catch (e: unknown) {
       logger.error('Failed to read learning events:', e);
+      const errorMessage = e && typeof e === 'object' && 'message' in e
+        ? String(e.message)
+        : 'Unknown error';
+      const errorStack = e && typeof e === 'object' && 'stack' in e
+        ? String(e.stack)
+        : undefined;
       res.status(500).json({ 
         success: false,
         error: 'Failed to read learning events', 
-        details: e?.message || 'Unknown error',
-        stack: process.env['NODE_ENV'] === 'development' ? e?.stack : undefined
+        details: errorMessage,
+        stack: process.env['NODE_ENV'] === 'development' ? errorStack : undefined
       });
     }
   });
@@ -253,8 +262,11 @@ export function createServer(config: Config, serviceManager?: any, prisma?: any)
       const lines = text.trim().split(/\r?\n/).slice(-200);
       const items = lines.map(l => { try { return JSON.parse(l) } catch { return null } }).filter(Boolean);
       res.json({ success: true, items });
-    } catch (e: any) {
-      res.status(500).json({ error: 'Failed to read traces', details: e?.message || 'Unknown error' });
+    } catch (e: unknown) {
+      const errorMessage = e && typeof e === 'object' && 'message' in e
+        ? String(e.message)
+        : 'Unknown error';
+      res.status(500).json({ error: 'Failed to read traces', details: errorMessage });
     }
   });
   app.use('/api/health', healthRouter);
@@ -603,7 +615,7 @@ export function createServer(config: Config, serviceManager?: any, prisma?: any)
 /**
  * Create HTTP server with WebSocket support
  */
-export function createHttpServerWithWebSocket(config: Config, serviceManager?: any, prisma?: any): { app: express.Application; httpServer: HTTPServer; wsManager: WebSocketManager } {
+export function createHttpServerWithWebSocket(config: Config, serviceManager?: unknown, prisma?: unknown): { app: express.Application; httpServer: HTTPServer; wsManager: WebSocketManager } {
   const app = createServer(config, serviceManager, prisma);
   const httpServer = createHttpServer(app);
   

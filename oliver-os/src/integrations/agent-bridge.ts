@@ -23,7 +23,7 @@ export class AgentBridgeService {
    * Returns the latest request when available
    */
   async watchForPythonMessages(
-    callback: (request: any) => void | Promise<void>
+    callback: (request: Record<string, unknown>) => void | Promise<void>
   ): Promise<void> {
     const cursorRequestFile = join(process.cwd(), 'cursor-request.json');
     let lastModified = 0;
@@ -52,11 +52,13 @@ export class AgentBridgeService {
         
         // Poll every 2 seconds
         await new Promise(resolve => setTimeout(resolve, 2000));
-      } catch (error: any) {
-        if (error.code === 'ENOENT') {
+      } catch (error: unknown) {
+        if (error && typeof error === 'object' && 'code' in error && error.code === 'ENOENT') {
           // File doesn't exist yet, that's OK
-        } else {
+        } else if (error && typeof error === 'object' && 'message' in error) {
           this.logger.warn(`Error watching for messages: ${error.message}`);
+        } else {
+          this.logger.warn('Error watching for messages: Unknown error');
         }
         await new Promise(resolve => setTimeout(resolve, 5000));
       }
@@ -74,9 +76,9 @@ export class AgentBridgeService {
   ): Promise<void> {
     const message: AgentMessage = {
       id: `msg-${Date.now()}`,
-      type: messageType as any,
-      sender: sender as any,
-      recipient: (recipient || 'all') as any,
+      type: messageType as AgentMessage['type'],
+      sender: sender as AgentMessage['sender'],
+      recipient: (recipient || 'all') as AgentMessage['recipient'],
       content,
       timestamp: new Date().toISOString(),
       priority: 'normal'
@@ -94,8 +96,11 @@ export class AgentBridgeService {
       await fs.appendFile(messageFile, `${messageJson}\n`);
       
       this.logger.info(`✅ Message stored: ${message.id}`);
-    } catch (error: any) {
-      this.logger.error(`Failed to store message: ${error.message}`);
+    } catch (error: unknown) {
+      const errorMessage = error && typeof error === 'object' && 'message' in error
+        ? String(error.message)
+        : 'Unknown error';
+      this.logger.error(`Failed to store message: ${errorMessage}`);
       throw error;
     }
   }
@@ -103,7 +108,7 @@ export class AgentBridgeService {
   /**
    * Get latest request from Python agent
    */
-  async getLatestRequest(): Promise<any | null> {
+  async getLatestRequest(): Promise<Record<string, unknown> | null> {
     try {
       const cursorRequestFile = join(process.cwd(), 'cursor-request.json');
       
@@ -122,7 +127,7 @@ export class AgentBridgeService {
   /**
    * Get Python agent context for Cursor
    */
-  async getPythonAgentContext(): Promise<any> {
+  async getPythonAgentContext(): Promise<Record<string, unknown> | null> {
     try {
       const agentMemoryFile = join(
         process.cwd(), 
@@ -138,8 +143,11 @@ export class AgentBridgeService {
       
       const data = await readFile(agentMemoryFile, 'utf-8');
       return JSON.parse(data);
-    } catch (error: any) {
-      this.logger.warn(`Could not load agent memory: ${error.message}`);
+    } catch (error: unknown) {
+      const errorMessage = error && typeof error === 'object' && 'message' in error
+        ? String(error.message)
+        : 'Unknown error';
+      this.logger.warn(`Could not load agent memory: ${errorMessage}`);
       return null;
     }
   }
@@ -162,8 +170,11 @@ export class AgentBridgeService {
         
         this.logger.info('Request marked as processed');
       }
-    } catch (error: any) {
-      this.logger.warn(`Could not mark request as processed: ${error.message}`);
+    } catch (error: unknown) {
+      const errorMessage = error && typeof error === 'object' && 'message' in error
+        ? String(error.message)
+        : 'Unknown error';
+      this.logger.warn(`Could not mark request as processed: ${errorMessage}`);
     }
   }
   

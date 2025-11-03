@@ -74,10 +74,10 @@ async function initialize(): Promise<void> {
       // Open browser automatically
       import('child_process').then(({ exec }) => {
         const url = `http://localhost:${port}`;
-        exec(`start firefox ${url}`, (error: any) => {
+        exec(`start firefox ${url}`, (error: unknown) => {
           if (error) {
             // Fallback to default browser if Firefox is not available
-            exec(`start ${url}`, (fallbackError: any) => {
+            exec(`start ${url}`, (fallbackError: unknown) => {
               if (fallbackError) {
                 logger.info(`🌐 Server running at ${url}`);
               }

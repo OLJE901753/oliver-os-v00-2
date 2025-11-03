@@ -20,7 +20,7 @@ export interface RouteRequest {
     requirements: string[];
     estimated_duration?: number;
     dependencies?: string[];
-    metadata?: Record<string, any>;
+    metadata?: Record<string, unknown>;
   };
   auto?: boolean;
   target?: string;
@@ -48,13 +48,13 @@ export class UnifiedAgentRouter {
   private config: Config;
   private monster?: MasterOrchestrator;
   private initialized: boolean = false;
-  protected serviceManager?: any;
-  private recentDecisions: Array<{ ts: string; sender: string; message: string; destination: string; intent: any; decision?: any; retrieved?: any[] }>= [];
+  protected serviceManager?: unknown;
+  private recentDecisions: Array<{ ts: string; sender: string; message: string; destination: string; intent: RouteResult['intent']; decision?: RouteResult['decision']; retrieved?: unknown[] }>= [];
   private readonly maxDecisions = 100;
   private pending: Map<string, { request: RouteRequest; destination: string }>= new Map();
 
 
-  constructor(config: Config, serviceManager?: any) {
+  constructor(config: Config, serviceManager?: unknown) {
     this.config = config;
     this.logger = new Logger('UnifiedAgentRouter');
     this.serviceManager = serviceManager;
@@ -252,7 +252,7 @@ export class UnifiedAgentRouter {
     };
   }
 
-  public getRecentDecisions(): Array<{ ts: string; sender: string; message: string; destination: string; intent: any; decision?: any; retrieved?: any[] }>{
+  public getRecentDecisions(): Array<{ ts: string; sender: string; message: string; destination: string; intent: RouteResult['intent']; decision?: RouteResult['decision']; retrieved?: unknown[] }>{
     return this.recentDecisions.slice(-this.maxDecisions);
   }
 
@@ -264,8 +264,8 @@ export class UnifiedAgentRouter {
       destination: res.destination,
       intent: res.intent,
       decision: res.decision,
-      retrieved: Array.isArray((req.translated as any)?.metadata?.retrieved)
-        ? (req.translated as any).metadata.retrieved
+      retrieved: Array.isArray(req.translated?.metadata?.retrieved)
+        ? req.translated.metadata.retrieved
         : []
     };
     this.recentDecisions.push(item);
@@ -286,8 +286,8 @@ export class UnifiedAgentRouter {
     return it;
   }
 
-  public getPending(): Array<{ id: string; sender: string; message: string; destination: string; intent: any }>{
-    const items: Array<{ id: string; sender: string; message: string; destination: string; intent: any }>= [];
+  public getPending(): Array<{ id: string; sender: string; message: string; destination: string; intent: RouteResult['intent'] }>{
+    const items: Array<{ id: string; sender: string; message: string; destination: string; intent: RouteResult['intent'] }>= [];
     for (const [id, { request, destination }] of this.pending.entries()) {
       items.push({
         id,
@@ -392,7 +392,7 @@ function decideReason(_taskType: string, _priority: string, rules: string[]): st
 }
 
 
-function isRisky(message: string, translated?: any): boolean {
+function isRisky(message: string, translated?: RouteRequest['translated']): boolean {
   const text = `${message} ${(translated?.description || '')}`.toLowerCase();
   const keywords = [
     'drop database', 'truncate table', 'delete from ', 'rm -rf', 'format c:', 'shutdown -h', 'wipe', 'erase all', 'destroy', 'disable firewall'
