@@ -17,38 +17,64 @@ import { Config } from '../core/config';
 // } from '../../bmad-global/dist/types/bmad';
 
 // Mock types for now - will be replaced with actual BMAD integration
-type WorkflowContext = any;
-type ProjectAnalysis = any;
-type ExecutionResult = any;
-type BMADConfig = any;
+type WorkflowContext = unknown;
+type ProjectAnalysis = unknown;
+type ExecutionResult = unknown;
+type BMADConfig = unknown;
+
+interface BMADExecution {
+  id: string;
+  status: string;
+  startTime: string;
+  endTime?: string;
+  progress: number;
+}
+
+interface BMADRecommendation {
+  type: string;
+  title: string;
+  description: string;
+}
+
+interface BMADReport {
+  timestamp: string;
+  oliverOSMetrics: {
+    thoughtProcessingScore: number;
+    collaborationScore: number;
+    aiIntegrationScore: number;
+    realTimeScore: number;
+  };
+  recommendations: BMADRecommendation[];
+  nextSteps: string[];
+}
 
 export interface OliverOSBMADIntegration {
   initialize(): Promise<void>;
   analyzeProject(): Promise<ProjectAnalysis>;
   executeWorkflow(workflowId: string, context?: Partial<WorkflowContext>): Promise<ExecutionResult>;
   generateReport(format: 'html' | 'json' | 'markdown', outputPath?: string): Promise<void>;
-  getSystemStatus(): Promise<any>;
+  getSystemStatus(): Promise<unknown>;
   updateConfiguration(updates: Partial<BMADConfig>): Promise<void>;
 }
 
 // Mock classes for now - will be replaced with actual BMAD integration
 class EnhancedBMADCLI {
-  async init(_mode?: string, _config?: any): Promise<void> { return; }
-  async execute(): Promise<any> { return {}; }
+  async init(_mode?: string, _config?: unknown): Promise<void> { return; }
+  async execute(): Promise<unknown> { return {}; }
 }
 
 class BMADWorkflowEngine {
-  constructor(_config?: any) {}
-  async executeWorkflow(): Promise<any> { return {}; }
-  async execute(): Promise<any> { return {}; }
-  getAllExecutions(): any[] { return []; }
-  registerWorkflowStep(_step: any): void { }
+  constructor(_config?: unknown) {}
+  async executeWorkflow(): Promise<unknown> { return {}; }
+  async execute(): Promise<unknown> { return {}; }
+  getAllExecutions(): BMADExecution[] { return []; }
+  registerWorkflowStep(_step: unknown): void { }
 }
 
 class IntelligentCodeAnalyzer {
-  constructor(_config?: any) {}
-  async analyzeProject(_path?: string): Promise<any> { return {}; }
-  async analyze(): Promise<any> { return {}; }
+  constructor(_config?: unknown) {}
+  async analyzeProject(_path?: string): Promise<unknown> { return {}; }
+  async analyze(): Promise<unknown> { return {}; }
 }
 
 export class OliverOSBMADService implements OliverOSBMADIntegration {
@@ -196,7 +222,7 @@ export class OliverOSBMADService implements OliverOSBMADIntegration {
   /**
    * Get BMAD system status for Oliver-OS
    */
-  async getSystemStatus(): Promise<any> {
+  async getSystemStatus(): Promise<unknown> {
     try {
       const executions = this.workflowEngine.getAllExecutions();
       const recentExecutions = executions.slice(-5);
@@ -204,7 +230,7 @@ export class OliverOSBMADService implements OliverOSBMADIntegration {
       return {
         initialized: this.isInitialized,
         totalExecutions: executions.length,
-        recentExecutions: recentExecutions.map((exec: any) => ({
+        recentExecutions: recentExecutions.map((exec: BMADExecution) => ({
           id: exec.id,
           status: exec.status,
           startTime: exec.startTime,
@@ -383,7 +409,7 @@ export class OliverOSBMADService implements OliverOSBMADIntegration {
         aiIntegrationScore: this.calculateAIIntegrationScore(),
         realTimeScore: this.calculateRealTimePerformance()
       },
-      recommendations: analysis.recommendations.filter((rec: any) => 
+      recommendations: analysis.recommendations.filter((rec: BMADRecommendation) => 
         rec.type === 'architecture' || rec.type === 'performance'
       ),
       nextSteps: [
@@ -443,7 +469,7 @@ export class OliverOSBMADService implements OliverOSBMADIntegration {
   /**
    * Assess system health for Oliver-OS
    */
-  private assessSystemHealth(): any {
+  private assessSystemHealth(): Record<string, unknown> {
     return {
       status: 'healthy',
       metrics: {
@@ -481,7 +507,7 @@ export class OliverOSBMADService implements OliverOSBMADIntegration {
     return 88; // Placeholder
   }
 
-  private async generateHTMLReport(report: any, outputPath: string): Promise<void> {
+  private async generateHTMLReport(report: BMADReport, outputPath: string): Promise<void> {
     // Implementation would generate HTML report
     const fs = require('fs-extra');
     const html = `
@@ -514,7 +540,7 @@ export class OliverOSBMADService implements OliverOSBMADIntegration {
     await fs.writeFile(outputPath, html);
   }
 
-  private async generateMarkdownReport(report: any, outputPath: string): Promise<void> {
+  private async generateMarkdownReport(report: BMADReport, outputPath: string): Promise<void> {
     // Implementation would generate Markdown report
     const fs = require('fs-extra');
     const markdown = `
@@ -531,7 +557,7 @@ Generated: ${report.timestamp}
 
 ## Recommendations
 
-${report.recommendations.map((rec: any) => `- **${rec.title}**: ${rec.description}`).join('\n')}
+${report.recommendations.map((rec: BMADRecommendation) => `- **${rec.title}**: ${rec.description}`).join('\n')}
 
 ## Next Steps
 
