@@ -456,21 +456,18 @@ export class EnhancedCodebuffService extends EventEmitter {
     _plan: Record<string, unknown>, 
     _events: CodebuffEvent[], 
     _artifacts: Artifact[]
-  ): Promise<any> {
+  ): Promise<CodebuffResult> {
     // Execute the task with full orchestration capabilities
-    // TODO: Update when CodebuffRunOptions interface is finalized
     const result = await this.client.run({
       agent: options.agent,
       prompt: options.prompt
-      // customToolDefinitions: options.customToolDefinitions as any, // Removed - not in type definition
-      // handleEvent: ((_event: any) => { ... }) // Removed - not in type definition
-    } as any);
+    });
 
     return result;
   }
 
   private async documentOrchestratedResults(
-    result: any, 
+    result: CodebuffResult, 
     options: CodebuffRunOptions, 
     artifacts: Artifact[]
   ): Promise<Record<string, unknown>> {
@@ -545,14 +542,14 @@ export class EnhancedCodebuffService extends EventEmitter {
   // Event Bus Implementation
   private createEventBus(): EventBus {
     return {
-      emit: (event: string, data: any) => {
+      emit: (event: string, data: unknown) => {
         this.emit(event, data);
         this._logger.debug(`📡 Event emitted: ${event}`, data);
       },
-      on: (event: string, handler: (data: any) => void) => {
+      on: (event: string, handler: (data: unknown) => void) => {
         this.on(event, handler);
       },
-      off: (event: string, handler: (data: any) => void) => {
+      off: (event: string, handler: (data: unknown) => void) => {
         this.off(event, handler);
       }
     };
