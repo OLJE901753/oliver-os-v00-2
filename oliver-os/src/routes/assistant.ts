@@ -29,7 +29,7 @@ export function createAssistantRoutes(assistantService: AssistantService): IRout
         });
       }
 
-      const userId = (req as any).user?.id || 'default';
+      const userId = req.user?.id || 'default';
 
       const chatRequest: ChatRequest = { message };
       if (sessionId !== undefined) chatRequest.sessionId = sessionId;
@@ -115,7 +115,7 @@ export function createAssistantRoutes(assistantService: AssistantService): IRout
    */
   router.get('/sessions', async (req: Request, res: Response) => {
     try {
-      const userId = ((req as any).user || {})['id'] || 'default';
+      const userId = req.user?.id || 'default';
       const limit = parseInt(req.query['limit'] as string) || 50;
 
       const sessions = assistantService.getSessions(userId, limit);

@@ -5,14 +5,16 @@
 
 import { Router, type Request, type Response } from 'express';
 import { Logger } from '../core/logger';
+import { WebSocketManager } from '../core/websocket-manager';
+import type { ConnectedClient, ThoughtSession } from '../types/websocket-types';
 
 const logger = new Logger('WebSocketRoutes');
 const router: Router = Router();
 
 // Store WebSocket manager reference (will be set by the server)
-let wsManager: any = null;
+let wsManager: WebSocketManager | null = null;
 
-export function setWebSocketManager(manager: any): void {
+export function setWebSocketManager(manager: WebSocketManager): void {
   wsManager = manager;
 }
 
@@ -54,7 +56,7 @@ router.get('/clients', (_req: Request, res: Response) => {
 
     const clients = wsManager.getConnectedClients();
     return res.json({
-      clients: clients.map((client: any) => ({
+      clients: clients.map((client: ConnectedClient) => ({
         id: client.id,
         user_id: client.user_id,
         last_seen: client.last_seen,
@@ -86,7 +88,7 @@ router.get('/sessions', (_req: Request, res: Response) => {
 
     const sessions = wsManager.getThoughtSessions();
     return res.json({
-      sessions: sessions.map((session: any) => ({
+      sessions: sessions.map((session: ThoughtSession) => ({
         client_id: session.client_id,
         thought_count: session.thoughts.length,
         created_at: session.created_at,
