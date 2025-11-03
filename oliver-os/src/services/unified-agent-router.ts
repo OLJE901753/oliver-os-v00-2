@@ -167,7 +167,7 @@ export class UnifiedAgentRouter {
         description: translated?.description || message,
         context: {
           originalMessage: message,
-          translated: translated,
+          translated,
           sender: 'python-agent'
         },
         requirements: translated?.requirements || ['general'],
@@ -233,7 +233,7 @@ export class UnifiedAgentRouter {
     else if (rulesMatched.includes('intent:documentation')) destination = 'cursor';
     else destination = 'monster-mode';
 
-    const reason = decideReason(taskType, pri, rulesMatched) + `; policyDestination=${destination}`;
+    const reason = `${decideReason(taskType, pri, rulesMatched)}; policyDestination=${destination}`;
 
     // Execute destination
     if (destination === 'codebuff') {
@@ -304,7 +304,7 @@ export class UnifiedAgentRouter {
     try {
       const logDir = path.join(process.cwd(), 'logs');
       await fs.ensureDir(logDir);
-      const line = JSON.stringify({ ts: new Date().toISOString(), action, req, res }) + '\n';
+      const line = `${JSON.stringify({ ts: new Date().toISOString(), action, req, res })}\n`;
       await fs.appendFile(path.join(logDir, 'audit.log'), line, 'utf-8');
     } catch (_) { /* ignore */ }
   }
@@ -342,7 +342,7 @@ export class UnifiedAgentRouter {
         translated,
         timestamp: new Date().toISOString()
       };
-      const outPath = process.cwd() + '/cursor-request.json';
+      const outPath = `${process.cwd()}/cursor-request.json`;
       await fs.writeJson(outPath, payload, { spaces: 2 });
       this.logger.info(`📝 Cursor request written at ${outPath}`);
       const routeResult: RouteResult = {

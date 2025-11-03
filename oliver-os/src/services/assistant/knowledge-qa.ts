@@ -131,10 +131,10 @@ export class KnowledgeQA {
     let excerpt = content.substring(start, end);
 
     if (start > 0) {
-      excerpt = '...' + excerpt;
+      excerpt = `...${excerpt}`;
     }
     if (end < content.length) {
-      excerpt = excerpt + '...';
+      excerpt = `${excerpt}...`;
     }
 
     return excerpt;

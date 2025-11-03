@@ -595,7 +595,7 @@ export class LearningService extends EventEmitter {
       const logFile = path.join(logsDir, 'learning-events.jsonl');
       
       // Write to JSONL file (one JSON object per line)
-      fs.appendFileSync(logFile, JSON.stringify(logEntry) + '\n');
+      fs.appendFileSync(logFile, `${JSON.stringify(logEntry)}\n`);
       
       // Also console for immediate feedback
       console.log('🧠 LEARNING:', event, JSON.stringify(data, null, 2));

@@ -849,8 +849,8 @@ Format as markdown with clear sections:`;
       // Analyze workflow, processes, or codebase for inefficiencies
       const targetPath = ((agent.metadata || {})['targetPath'] as string) || process.cwd();
       
-      let inefficiencies: Array<{ type: string; description: string; impact: string; location?: string }> = [];
-      let improvements: string[] = [];
+      const inefficiencies: Array<{ type: string; description: string; impact: string; location?: string }> = [];
+      const improvements: string[] = [];
       
       // Analyze package.json scripts for redundancy
       const packageJsonPath = path.join(targetPath, 'package.json');
@@ -979,8 +979,8 @@ Format as JSON:
         efficiencyGained: `${efficiencyGained}%`,
         metrics: {
           totalInefficiencies: inefficiencies.length,
-          highImpact: highImpact,
-          mediumImpact: mediumImpact,
+          highImpact,
+          mediumImpact,
           lowImpact: inefficiencies.filter(i => i.impact === 'low').length
         }
       };

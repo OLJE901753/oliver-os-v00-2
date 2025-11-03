@@ -444,7 +444,7 @@ export class DatabaseMCPServer extends EventEmitter implements OliverOSMCPServer
             type: 'text',
             text: JSON.stringify({
               query: query as string,
-              results: results,
+              results,
               count: Array.isArray(results) ? results.length : 1,
               execution_time: '15ms'
             }, null, 2)

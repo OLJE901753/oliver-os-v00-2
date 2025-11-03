@@ -187,7 +187,7 @@ export function createServer(config: Config, serviceManager?: any, prisma?: any)
         }
       };
       
-      await fsModule.appendFile(file, JSON.stringify(logEntry) + '\n', 'utf-8');
+      await fsModule.appendFile(file, `${JSON.stringify(logEntry)}\n`, 'utf-8');
       
       logger.info(`Python agent decision logged: ${decision.type}`);
       res.json({ success: true, message: 'Decision logged' });

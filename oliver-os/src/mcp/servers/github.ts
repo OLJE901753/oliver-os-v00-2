@@ -1017,7 +1017,7 @@ export class GitHubMCPServer extends EventEmitter implements OliverOSMCPServer {
                 path: fileData.path,
                 sha: fileData.sha,
                 size: fileData.size,
-                content: content,
+                content,
                 encoding: 'utf-8',
                 html_url: fileData.html_url,
                 download_url: fileData.download_url

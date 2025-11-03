@@ -91,7 +91,7 @@ export class AgentBridgeService {
     try {
       const fs = await import('fs').then(m => m.promises);
       await fs.mkdir(join(process.cwd(), 'temp'), { recursive: true });
-      await fs.appendFile(messageFile, messageJson + '\n');
+      await fs.appendFile(messageFile, `${messageJson}\n`);
       
       this.logger.info(`✅ Message stored: ${message.id}`);
     } catch (error: any) {
@@ -156,7 +156,7 @@ export class AgentBridgeService {
         await import('fs').then(m => 
           m.promises.rename(
             cursorRequestFile,
-            cursorRequestFile + `.processed.${Date.now()}`
+            `${cursorRequestFile}.processed.${Date.now()}`
           )
         );
         
