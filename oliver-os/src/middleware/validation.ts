@@ -52,13 +52,13 @@ export const requestSchemas = {
   createThought: z.object({
     content: z.string().min(1, 'Thought content cannot be empty').max(10000, 'Thought content too long'),
     type: z.enum(['text', 'voice', 'image']).optional(),
-    metadata: z.record(z.string(), z.any()).optional(),
+    metadata: z.record(z.string(), z.unknown()).optional(),
   }),
   
   createCollaborationSession: z.object({
     name: commonSchemas.nonEmptyString,
     description: commonSchemas.optionalString,
-    settings: z.record(z.string(), z.any()).optional(),
+    settings: z.record(z.string(), z.unknown()).optional(),
   }),
 };
 
@@ -111,13 +111,14 @@ export class ValidationMiddleware {
   /**
    * Sanitize request body
    */
-  private sanitizeRequestBody(data: any): void {
+  private sanitizeRequestBody(data: unknown): void {
     if (typeof data === 'object' && data !== null) {
       for (const key in data) {
-        if (typeof data[key] === 'string') {
-          data[key] = this.securityManager.sanitizeInput(data[key]);
-        } else if (typeof data[key] === 'object') {
-          this.sanitizeRequestBody(data[key]);
+        const value = (data as Record<string, unknown>)[key];
+        if (typeof value === 'string') {
+          (data as Record<string, unknown>)[key] = this.securityManager.sanitizeInput(value);
+        } else if (typeof value === 'object') {
+          this.sanitizeRequestBody(value);
         }
       }
     }
@@ -189,12 +190,13 @@ export class ValidationMiddleware {
    */
   validateFileUpload = (maxSize: number = 10 * 1024 * 1024, allowedTypes: string[] = ['image/jpeg', 'image/png', 'image/gif']) => {
     return (req: Request, res: Response, next: NextFunction): void => {
-      if (!(req as any).file) {
+      const file = (req as { file?: { size: number; mimetype: string } }).file;
+      if (!file) {
         next();
         return;
       }
 
-      const { size, mimetype } = (req as any).file;
+      const { size, mimetype } = file;
 
       if (size > maxSize) {
         res.status(400).json({

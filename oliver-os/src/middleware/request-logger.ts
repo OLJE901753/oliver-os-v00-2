@@ -25,7 +25,7 @@ export function requestLogger(req: Request, res: Response, next: NextFunction): 
 
   // Override res.end to log response
   const originalEnd = res.end;
-  res.end = function(chunk?: any, encoding?: any, _cb?: any): any {
+  res.end = function(chunk?: string | Buffer, encoding?: BufferEncoding, _cb?: () => void): Response {
     const responseTime = Date.now() - startTime;
     
     logger.info('Response sent', {
@@ -38,7 +38,7 @@ export function requestLogger(req: Request, res: Response, next: NextFunction): 
     });
 
     // Call original end method
-    originalEnd.call(this, chunk, encoding);
+    return originalEnd.call(this, chunk, encoding);
   };
 
   next();

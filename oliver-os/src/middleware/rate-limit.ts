@@ -102,6 +102,7 @@ export const userRateLimit = rateLimit({
       return req.user.id;
     }
     // For IP-based rate limiting, use proper IPv6 handling
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return ipKeyGenerator(req as any);
   },
   message: {

@@ -13,6 +13,20 @@ export interface AppError extends Error {
   isOperational?: boolean;
 }
 
+interface ErrorResponseData {
+  message: string;
+  statusCode: number;
+  timestamp: string;
+  path: string;
+  method: string;
+  stack?: string;
+  details?: unknown;
+}
+
+interface ErrorResponse {
+  error: ErrorResponseData;
+}
+
 export function errorHandler(
   error: AppError,
   req: Request,
@@ -32,7 +46,7 @@ export function errorHandler(
   const isOperational = error.isOperational || false;
 
   // Prepare error response
-  const errorResponse: { error: any } = {
+  const errorResponse: ErrorResponse = {
     error: {
       message: isOperational ? error.message : 'Internal Server Error',
       statusCode,
@@ -44,8 +58,8 @@ export function errorHandler(
 
   // Add stack trace in development
   if (process.env['NODE_ENV'] === 'development') {
-    (errorResponse.error as any).stack = error.stack || undefined;
-    (errorResponse.error as any).details = error;
+    errorResponse.error.stack = error.stack || undefined;
+    errorResponse.error.details = error;
   }
 
   res.status(statusCode).json(errorResponse);
