@@ -360,7 +360,9 @@ export class BMADTools {
   }
 
   private async performMapping(target: string, mapType: string, includeExternal: boolean, _format: string): Promise<Record<string, unknown>> {
-    const baseMapping = {
+    type MappingWithExternal = Record<string, unknown> & { externalDependencies?: Array<{ name: string; type: string; version: string }> };
+    
+    const baseMapping: MappingWithExternal = {
       target,
       mapType,
       components: [
@@ -377,7 +379,7 @@ export class BMADTools {
     };
 
     if (includeExternal) {
-      (baseMapping as any).externalDependencies = [
+      baseMapping.externalDependencies = [
         { name: 'react', type: 'library', version: '18.2.0' },
         { name: 'express', type: 'framework', version: '4.18.2' },
         { name: 'postgresql', type: 'database', version: '14.0' }

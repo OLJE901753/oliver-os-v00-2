@@ -6,6 +6,7 @@
 import { EventEmitter } from 'node:events';
 import { Logger } from '../core/logger';
 import type { MCPRequest, MCPResponse } from './types';
+import { WebSocket } from 'ws';
 
 export interface MCPTransport {
   start(): Promise<void>;
@@ -118,7 +119,7 @@ export class WebSocketTransport extends EventEmitter implements MCPTransport {
   private _logger: Logger;
   private isRunning: boolean = false;
   // private _requestHandler?: (request: MCPRequest) => Promise<MCPResponse>; // Unused - will be implemented in future
-  private ws?: any; // WebSocket instance
+  private ws?: WebSocket; // WebSocket instance
 
   constructor(private port: number = 3001) {
     super();
