@@ -10,17 +10,52 @@ import { Logger } from '../core/logger';
 
 const logger = new Logger('CursorContextReader');
 
+interface AgentMemory {
+  patterns?: Array<Record<string, unknown>>;
+  preferences?: Record<string, unknown>;
+}
+
+interface CursorMemory {
+  recentFiles?: string[];
+  history?: Array<Record<string, unknown>>;
+}
+
+interface CombinedContext {
+  knowledge?: Array<Record<string, unknown>>;
+  memories?: Array<Record<string, unknown>>;
+}
+
+interface ThinkingStyle {
+  pattern?: string;
+  frequency?: number;
+}
+
+interface CodingPhilosophy {
+  principles?: string[];
+  approach?: string;
+}
+
+interface CognitiveProfile {
+  learningStyle?: string;
+  processingStyle?: string;
+}
+
+interface CodingPreferences {
+  codingStyle?: Record<string, unknown>;
+  patterns?: string[];
+}
+
 export interface CursorRequest {
   message: string;
-  agent_memory: any;
-  cursor_memory: any;
-  combined_context: any;
+  agent_memory: AgentMemory;
+  cursor_memory: CursorMemory;
+  combined_context: CombinedContext;
   timestamp: string;
   user_patterns: {
-    thinking_style: any[];
-    coding_philosophy: any;
-    cognitive_profile: any;
-    coding_preferences: any;
+    thinking_style: ThinkingStyle[];
+    coding_philosophy: CodingPhilosophy;
+    cognitive_profile: CognitiveProfile;
+    coding_preferences: CodingPreferences;
   };
 }
 
@@ -40,9 +75,10 @@ export async function readLatestRequest(): Promise<CursorRequest | null> {
     
     logger.info('📖 Read cursor request from Python agent');
     return request;
-  } catch (error: any) {
-    if (error.code !== 'ENOENT') {
-      logger.warn(`Could not read cursor request: ${error.message}`);
+  } catch (error: unknown) {
+    if (error && typeof error === 'object' && 'code' in error && error.code !== 'ENOENT') {
+      const errorMessage = 'message' in error ? String(error.message) : 'Unknown error';
+      logger.warn(`Could not read cursor request: ${errorMessage}`);
     }
     return null;
   }
@@ -51,7 +87,7 @@ export async function readLatestRequest(): Promise<CursorRequest | null> {
 /**
  * Get agent memory for Cursor context
  */
-export async function getAgentMemory(): Promise<any> {
+export async function getAgentMemory(): Promise<AgentMemory | null> {
   try {
     const file = join(process.cwd(), 'ai-services', 'memory', 'agent-memory.json');
     
@@ -61,9 +97,10 @@ export async function getAgentMemory(): Promise<any> {
     }
     
     const data = await readFile(file, 'utf-8');
-    return JSON.parse(data);
-  } catch (error: any) {
-    logger.warn(`Could not load agent memory: ${error.message}`);
+    return JSON.parse(data) as AgentMemory;
+  } catch (error: unknown) {
+    const errorMessage = error && typeof error === 'object' && 'message' in error ? String(error.message) : 'Unknown error';
+    logger.warn(`Could not load agent memory: ${errorMessage}`);
     return null;
   }
 }
@@ -113,7 +150,13 @@ export async function getCombinedContextSummary(): Promise<string> {
 /**
  * Get full enriched context for Cursor
  */
-export async function getFullContext(): Promise<any> {
+interface FullContext {
+  agent_memory: AgentMemory | null;
+  message: string | null;
+  timestamp: string;
+}
+
+export async function getFullContext(): Promise<CursorRequest | FullContext> {
   const request = await readLatestRequest();
   
   if (!request) {
