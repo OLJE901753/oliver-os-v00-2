@@ -7,6 +7,7 @@
 import { EventEmitter } from 'node:events';
 import { Logger } from '../../core/logger';
 import { Config } from '../../core/config';
+import type { Task, AgentStatus } from './master-orchestrator';
 
 export interface Conflict {
   id: string;
@@ -89,6 +90,41 @@ export interface ConflictPattern {
   lastSeen: string;
 }
 
+export interface ResourceRequirements {
+  cpu: number;
+  memory: number;
+  time: number;
+}
+
+export interface ResolutionStrategyConfig {
+  id: string;
+  name: string;
+  description: string;
+  algorithm: 'priority-based' | 'resource-based' | 'time-based' | 'quality-based' | 'hybrid';
+  parameters: Record<string, unknown>;
+  successRate: number;
+}
+
+export interface ConflictAnalysis {
+  severity: Conflict['severity'];
+  complexity: 'low' | 'medium' | 'high';
+  impact: 'low' | 'medium' | 'high';
+  urgency: 'low' | 'medium' | 'high';
+  resources: ResourceRequirements;
+  alternatives: string[];
+}
+
+export interface ConflictResolutionStats {
+  totalConflicts: number;
+  resolvedConflicts: number;
+  successRate: number;
+  byType: Record<string, number>;
+  byIssue: Record<string, number>;
+  resolutionStrategies: ResolutionStrategyConfig[];
+  conflictPatterns: ConflictPattern[];
+  lastConflict?: Conflict;
+}
+
 export class ConflictResolutionService extends EventEmitter {
   private _logger: Logger;
   // private _config!: Config; // Unused for now
@@ -96,7 +132,7 @@ export class ConflictResolutionService extends EventEmitter {
   private conflicts: Map<string, Conflict>;
   private conflictHistory: Map<string, Conflict[]>;
   private conflictPatterns: Map<string, ConflictPattern>;
-  private resolutionStrategies: Map<string, (conflict: Conflict) => Promise<ConflictResolution>>;
+  private resolutionStrategies: Map<string, ResolutionStrategyConfig>;
 
   constructor(_config: Config) {
     super();
@@ -384,7 +420,8 @@ export class ConflictResolutionService extends EventEmitter {
     const conflicts: Conflict[] = [];
 
     // Check for conflicting priorities
-    const priorityTasks = context.taskQueue?.filter((task: any) => task.priority === 'critical') || [];
+    const taskQueue = context.taskQueue as unknown as Array<Task & Record<string, unknown>> | undefined;
+    const priorityTasks = taskQueue?.filter((task) => task.priority === 'critical') || [];
     
     if (priorityTasks.length > 1) {
       conflicts.push({
@@ -392,7 +429,7 @@ export class ConflictResolutionService extends EventEmitter {
         type: 'priority',
         severity: 'high',
         status: 'detected',
-        agents: priorityTasks.map((task: any) => task.assignedAgent),
+        agents: priorityTasks.map((task) => task.assignedAgent),
         description: 'Multiple critical priority tasks detected',
         context: { priorityTasks },
         resolution: this.createEmptyResolution(),
@@ -462,7 +499,8 @@ export class ConflictResolutionService extends EventEmitter {
     const conflicts: Conflict[] = [];
 
     // Check for quality conflicts between agents
-    const qualityAgents = Array.from(context.agentStatuses?.values() || []).filter((agent: any) => 
+    const agentStatuses = context.agentStatuses as unknown as Map<string, AgentStatus> | undefined;
+    const qualityAgents = Array.from(agentStatuses?.values() || []).filter((agent) => 
       agent.capabilities.includes('quality-analysis') || 
       agent.capabilities.includes('quality-checking')
     );
@@ -473,7 +511,7 @@ export class ConflictResolutionService extends EventEmitter {
         type: 'quality',
         severity: 'medium',
         status: 'detected',
-        agents: qualityAgents.map((agent: any) => agent.id),
+        agents: qualityAgents.map((agent) => agent.id),
         description: 'Multiple quality agents may have conflicting assessments',
         context: { qualityAgents },
         resolution: this.createEmptyResolution(),
@@ -491,7 +529,8 @@ export class ConflictResolutionService extends EventEmitter {
     const conflicts: Conflict[] = [];
 
     // Check for deadline conflicts
-    const tasksWithDeadlines = context.taskQueue?.filter((task: any) => task.deadline) || [];
+    const taskQueue = context.taskQueue as unknown as Array<Task & Record<string, unknown>> | undefined;
+    const tasksWithDeadlines = taskQueue?.filter((task) => task['deadline']) || [];
     const now = new Date();
 
     for (const task of tasksWithDeadlines) {
@@ -524,8 +563,9 @@ export class ConflictResolutionService extends EventEmitter {
     const conflicts: Conflict[] = [];
 
     // Check for architecture conflicts
-    const architectureTasks = context.taskQueue?.filter((task: any) => 
-      task.type === 'architecture' || task.requirements?.includes('architecture')
+    const taskQueue = context.taskQueue as unknown as Array<Task & Record<string, unknown>> | undefined;
+    const architectureTasks = taskQueue?.filter((task) => 
+      task.type === 'architecture' || (task.requirements && Array.isArray(task.requirements) && task.requirements.includes('architecture'))
     ) || [];
 
     if (architectureTasks.length > 1) {
@@ -534,7 +574,7 @@ export class ConflictResolutionService extends EventEmitter {
         type: 'architecture',
         severity: 'high',
         status: 'detected',
-        agents: architectureTasks.map((task: any) => task.assignedAgent),
+        agents: architectureTasks.map((task) => task.assignedAgent),
         description: 'Multiple architecture tasks may conflict',
         context: { architectureTasks },
         resolution: this.createEmptyResolution(),
@@ -564,6 +604,9 @@ export class ConflictResolutionService extends EventEmitter {
 
       // Select resolution strategy
       const strategy = this.selectResolutionStrategy(conflict, analysis);
+      if (!strategy) {
+        throw new Error('No resolution strategy available');
+      }
 
       // Execute resolution
       const resolution = await this.executeResolution(conflict, strategy);
@@ -600,14 +643,7 @@ export class ConflictResolutionService extends EventEmitter {
   /**
    * Analyze conflict
    */
-  private async analyzeConflict(conflict: Conflict): Promise<{
-    severity: Conflict['severity'];
-    complexity: 'low' | 'medium' | 'high';
-    impact: unknown;
-    urgency: unknown;
-    resources: unknown;
-    alternatives: unknown;
-  }> {
+  private async analyzeConflict(conflict: Conflict): Promise<ConflictAnalysis> {
     const analysis = {
       severity: conflict.severity,
       complexity: this.assessConflictComplexity(conflict),
@@ -661,7 +697,7 @@ export class ConflictResolutionService extends EventEmitter {
   /**
    * Assess resource requirements
    */
-  private assessResourceRequirements(_conflict: Conflict): any {
+  private assessResourceRequirements(_conflict: Conflict): ResourceRequirements {
     return {
       cpu: 1,
       memory: 1,
@@ -714,7 +750,7 @@ export class ConflictResolutionService extends EventEmitter {
   /**
    * Select resolution strategy
    */
-  private selectResolutionStrategy(conflict: Conflict, _analysis: any): any {
+  private selectResolutionStrategy(conflict: Conflict, _analysis: ConflictAnalysis): ResolutionStrategyConfig | undefined {
     // Use pattern matching if available
     const pattern = this.findMatchingPattern(conflict);
     if (pattern && pattern.successRate > 0.8) {
@@ -751,7 +787,7 @@ export class ConflictResolutionService extends EventEmitter {
   /**
    * Execute resolution
    */
-  private async executeResolution(conflict: Conflict, strategy: any): Promise<ConflictResolution> {
+  private async executeResolution(conflict: Conflict, strategy: ResolutionStrategyConfig): Promise<ConflictResolution> {
     const resolution: ConflictResolution = {
       id: this.generateResolutionId(),
       strategy: 'automatic',
@@ -914,25 +950,26 @@ export class ConflictResolutionService extends EventEmitter {
   /**
    * Get conflict resolution statistics
    */
-  getConflictResolutionStats(): any {
+  getConflictResolutionStats(): ConflictResolutionStats {
     const conflicts = Array.from(this.conflicts.values());
     const resolvedConflicts = conflicts.filter(conflict => conflict.status === 'resolved');
+    const totalConflicts = conflicts.length;
     
     return {
-      totalConflicts: conflicts.length,
+      totalConflicts,
       resolvedConflicts: resolvedConflicts.length,
-      successRate: resolvedConflicts.length / conflicts.length,
+      successRate: totalConflicts > 0 ? resolvedConflicts.length / totalConflicts : 0,
       byType: conflicts.reduce((acc, conflict) => {
         acc[conflict.type] = (acc[conflict.type] || 0) + 1;
         return acc;
-      }, {} as any),
+      }, {} as Record<string, number>),
       byIssue: conflicts.reduce((acc, conflict) => {
         acc[conflict.severity] = (acc[conflict.severity] || 0) + 1;
         return acc;
-      }, {} as any),
+      }, {} as Record<string, number>),
       resolutionStrategies: Array.from(this.resolutionStrategies.values()),
       conflictPatterns: Array.from(this.conflictPatterns.values()),
-      lastConflict: conflicts[conflicts.length - 1]
+      lastConflict: conflicts.length > 0 ? conflicts[conflicts.length - 1] : undefined
     };
   }
 

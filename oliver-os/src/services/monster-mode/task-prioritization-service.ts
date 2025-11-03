@@ -65,6 +65,24 @@ export interface SchedulingStrategy {
   };
 }
 
+export interface TaskWithPriority {
+  task: Task & Record<string, unknown>;
+  priority: TaskPriority;
+}
+
+export interface TaskPrioritizationStats {
+  totalPriorities: number;
+  byPriority: Record<string, number>;
+  averageScore: number;
+  topFactors: Array<{
+    name: string;
+    count: number;
+    averageValue: number;
+  }>;
+  schedulingStrategies: SchedulingStrategy[];
+  lastPriority?: TaskPriority;
+}
+
 export class TaskPrioritizationService extends EventEmitter {
   private _logger: Logger;
   // private _config: Config; // Unused for now
@@ -490,7 +508,11 @@ export class TaskPrioritizationService extends EventEmitter {
 
     // Check for blocking dependencies
     if (task.dependencies && task.dependencies.length > 0) {
-      const blockingDeps = task.dependencies.filter((dep: any) => dep.blocking);
+      // Handle case where dependencies might be strings or objects with blocking property
+      const deps = task.dependencies as unknown[];
+      const blockingDeps = deps.filter((dep): dep is Record<string, unknown> => 
+        typeof dep === 'object' && dep !== null && 'blocking' in dep && Boolean((dep as Record<string, unknown>).blocking)
+      );
       dependencies = blockingDeps.length / task.dependencies.length;
     }
 
@@ -511,7 +533,7 @@ export class TaskPrioritizationService extends EventEmitter {
   /**
    * Calculate resources factor
    */
-  private calculateResourcesFactor(task: any, context: any): PriorityFactor {
+  private calculateResourcesFactor(task: Task & Record<string, unknown>, context: Record<string, unknown>): PriorityFactor {
     let resources = 0.5; // Base resource availability
 
     // Check resource requirements
@@ -540,7 +562,7 @@ export class TaskPrioritizationService extends EventEmitter {
   /**
    * Calculate quality factor
    */
-  private calculateQualityFactor(task: any, _context: any): PriorityFactor {
+  private calculateQualityFactor(task: Task & Record<string, unknown>, _context: Record<string, unknown>): PriorityFactor {
     let quality = 0.5; // Base quality
 
     // Check quality requirements
@@ -580,7 +602,7 @@ export class TaskPrioritizationService extends EventEmitter {
   /**
    * Calculate deadline factor
    */
-  private calculateDeadlineFactor(task: any, _context: any): PriorityFactor {
+  private calculateDeadlineFactor(task: Task & Record<string, unknown>, _context: Record<string, unknown>): PriorityFactor {
     let deadline = 0;
 
     if (task.deadline) {
@@ -609,7 +631,7 @@ export class TaskPrioritizationService extends EventEmitter {
   /**
    * Calculate impact factor
    */
-  private calculateImpactFactor(task: any, _context: any): PriorityFactor {
+  private calculateImpactFactor(task: Task & Record<string, unknown>, _context: Record<string, unknown>): PriorityFactor {
     let impact = 0.5; // Base impact
 
     // Check system impact
@@ -691,7 +713,7 @@ export class TaskPrioritizationService extends EventEmitter {
   /**
    * Schedule tasks
    */
-  async scheduleTasks(tasks: any[], strategy: string = 'hybrid'): Promise<any[]> {
+  async scheduleTasks(tasks: (Task & Record<string, unknown>)[], strategy: string = 'hybrid'): Promise<TaskWithPriority[]> {
     this._logger.info(`📅 Scheduling ${tasks.length} tasks using ${strategy} strategy`);
     
     try {
@@ -724,7 +746,7 @@ export class TaskPrioritizationService extends EventEmitter {
   /**
    * Sort tasks by strategy
    */
-  private sortTasksByStrategy(taskPriorities: any[], strategy: SchedulingStrategy): any[] {
+  private sortTasksByStrategy(taskPriorities: TaskWithPriority[], strategy: SchedulingStrategy): TaskWithPriority[] {
     switch (strategy.algorithm) {
       case 'priority-based':
         return taskPriorities.sort((a, b) => b.priority.score - a.priority.score);
@@ -758,30 +780,36 @@ export class TaskPrioritizationService extends EventEmitter {
   /**
    * Calculate hybrid score
    */
-  private calculateHybridScore(taskPriority: any, parameters: any): number {
-    const priorityScore = taskPriority.priority.score * parameters.priorityWeight;
+  private calculateHybridScore(taskPriority: TaskWithPriority, parameters: Record<string, unknown>): number {
+    const priorityWeight = (parameters['priorityWeight'] as number) || 0;
+    const deadlineWeight = (parameters['deadlineWeight'] as number) || 0;
+    const resourceWeight = (parameters['resourceWeight'] as number) || 0;
+    
+    const priorityScore = taskPriority.priority.score * priorityWeight;
     
     let deadlineScore = 0;
-    if (taskPriority.task.deadline) {
-      const deadline = new Date(taskPriority.task.deadline);
+    const deadline = taskPriority.task['deadline'] as string | undefined;
+    if (deadline) {
+      const deadlineDate = new Date(deadline);
       const now = new Date();
-      const timeDiff = deadline.getTime() - now.getTime();
+      const timeDiff = deadlineDate.getTime() - now.getTime();
       deadlineScore = Math.max(0, 1 - (timeDiff / (1000 * 60 * 60 * 24 * 7))); // 1 week normalization
     }
     
     let resourceScore = 0;
-    if (taskPriority.task.resourceRequirements) {
-      const resourceCount = Object.keys(taskPriority.task.resourceRequirements).length;
+    const resourceRequirements = taskPriority.task['resourceRequirements'] as Record<string, unknown> | undefined;
+    if (resourceRequirements) {
+      const resourceCount = Object.keys(resourceRequirements).length;
       resourceScore = Math.max(0, 1 - (resourceCount / 10)); // Normalize to 10 resources
     }
     
-    return priorityScore + (deadlineScore * parameters.deadlineWeight) + (resourceScore * parameters.resourceWeight);
+    return priorityScore + (deadlineScore * deadlineWeight) + (resourceScore * resourceWeight);
   }
 
   /**
    * Get task prioritization statistics
    */
-  getTaskPrioritizationStats(): any {
+  getTaskPrioritizationStats(): TaskPrioritizationStats {
     const priorities = Array.from(this.taskPriorities.values());
     
     return {
@@ -789,18 +817,22 @@ export class TaskPrioritizationService extends EventEmitter {
       byPriority: priorities.reduce((acc, priority) => {
         acc[priority.priority] = (acc[priority.priority] || 0) + 1;
         return acc;
-      }, {} as any),
-      averageScore: priorities.reduce((sum, priority) => sum + priority.score, 0) / priorities.length,
+      }, {} as Record<string, number>),
+      averageScore: priorities.length > 0 ? priorities.reduce((sum, priority) => sum + priority.score, 0) / priorities.length : 0,
       topFactors: this.getTopFactors(priorities),
       schedulingStrategies: Array.from(this.schedulingStrategies.values()),
-      lastPriority: priorities[priorities.length - 1]
+      lastPriority: priorities.length > 0 ? priorities[priorities.length - 1] : undefined
     };
   }
 
   /**
    * Get top factors
    */
-  private getTopFactors(priorities: TaskPriority[]): any[] {
+  private getTopFactors(priorities: TaskPriority[]): Array<{
+    name: string;
+    count: number;
+    averageValue: number;
+  }> {
     const factorCounts = new Map<string, number>();
     const factorValues = new Map<string, number[]>();
     
