@@ -8,7 +8,7 @@ import { Logger } from '../core/logger';
 import { OliverOSMCPServerImpl } from './server';
 import { GitHubMCPServer } from './servers/github';
 import { FilesystemMCPServer } from './servers/filesystem';
-import type { MCPRequest, MCPTool, MCPResponse } from './types';
+import type { MCPRequest, MCPResponse } from './types';
 import { DatabaseMCPServer } from './servers/database';
 import { WebSearchMCPServer } from './servers/websearch';
 import { TerminalMCPServer } from './servers/terminal';
