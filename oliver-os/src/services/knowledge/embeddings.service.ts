@@ -13,6 +13,20 @@ export interface EmbeddingsService {
   calculateSimilarity(embedding1: number[], embedding2: number[]): number;
 }
 
+interface OpenAIEmbeddingResponse {
+  data: Array<{
+    embedding: number[];
+    index: number;
+    object: string;
+  }>;
+  model: string;
+  object: string;
+  usage: {
+    prompt_tokens: number;
+    total_tokens: number;
+  };
+}
+
 export class OpenAIEmbeddingsService implements EmbeddingsService {
   private logger: Logger;
   private apiKey: string | null;
@@ -55,7 +69,7 @@ export class OpenAIEmbeddingsService implements EmbeddingsService {
         throw new Error(`OpenAI API error: ${JSON.stringify(error)}`);
       }
 
-      const data = await response.json() as any;
+      const data = await response.json() as OpenAIEmbeddingResponse;
       const embedding = data.data[0]?.embedding;
 
       if (!embedding || !Array.isArray(embedding)) {
