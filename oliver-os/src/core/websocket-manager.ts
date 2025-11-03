@@ -470,7 +470,7 @@ export class WebSocketManager {
     
     // Forward monitoring events to all connected clients
     if (this.monitoringService) {
-      (this.monitoringService as any).on('dashboard:data', (data: DashboardData) => {
+      this.monitoringService.on('dashboard:data', (data: DashboardData) => {
         this._logger.info('📊 Broadcasting dashboard data to clients', { 
           clientCount: this.connectedClients.size,
           dataKeys: Object.keys(data)
@@ -482,7 +482,7 @@ export class WebSocketManager {
         });
       });
       
-      (this.monitoringService as any).on('metrics:update', (data: MetricsData) => {
+      this.monitoringService.on('metrics:update', (data: MetricsData) => {
         this.broadcast('metrics:update', {
           type: 'metrics_update',
           data,
@@ -490,7 +490,7 @@ export class WebSocketManager {
         });
       });
       
-      (this.monitoringService as any).on('alerts:new', (data: AlertData) => {
+      this.monitoringService.on('alerts:new', (data: AlertData) => {
         this.broadcast('alerts:new', {
           type: 'alert_new',
           data,
@@ -498,7 +498,7 @@ export class WebSocketManager {
         });
       });
       
-      (this.monitoringService as any).on('alerts:update', (data: AlertData) => {
+      this.monitoringService.on('alerts:update', (data: AlertData) => {
         this.broadcast('alerts:update', {
           type: 'alert_update',
           data,
@@ -506,7 +506,7 @@ export class WebSocketManager {
         });
       });
       
-      (this.monitoringService as any).on('health:update', (data: HealthStatus) => {
+      this.monitoringService.on('health:update', (data: HealthStatus) => {
         this.broadcast('health:update', {
           type: 'health_update',
           data,
@@ -514,7 +514,7 @@ export class WebSocketManager {
         });
       });
       
-      (this.monitoringService as any).on('performance:update', (data: PerformanceData) => {
+      this.monitoringService.on('performance:update', (data: PerformanceData) => {
         this.broadcast('performance:update', {
           type: 'performance_update',
           data,
@@ -522,7 +522,7 @@ export class WebSocketManager {
         });
       });
       
-      (this.monitoringService as any).on('tests:update', (data: TestData) => {
+      this.monitoringService.on('tests:update', (data: TestData) => {
         this.broadcast('tests:update', {
           type: 'tests_update',
           data,
@@ -530,7 +530,7 @@ export class WebSocketManager {
         });
       });
       
-      (this.monitoringService as any).on('quality-gates:update', (data: QualityGateData) => {
+      this.monitoringService.on('quality-gates:update', (data: QualityGateData) => {
         this.broadcast('quality-gates:update', {
           type: 'quality_gates_update',
           data,
