@@ -8,6 +8,21 @@ import { Logger } from './logger';
 
 const logger = new Logger('Security');
 
+interface ContentSecurityPolicy {
+  directives: {
+    defaultSrc?: string[];
+    styleSrc?: string[];
+    scriptSrc?: string[];
+    imgSrc?: string[];
+    connectSrc?: string[];
+    fontSrc?: string[];
+    objectSrc?: string[];
+    mediaSrc?: string[];
+    frameSrc?: string[];
+    upgradeInsecureRequests?: unknown[];
+  };
+}
+
 export interface SecurityConfig {
   jwt: {
     secret: string;
@@ -34,7 +49,7 @@ export interface SecurityConfig {
     credentials: boolean;
   };
   helmet: {
-    contentSecurityPolicy: any;
+    contentSecurityPolicy: ContentSecurityPolicy;
   };
   password: {
     minLength: number;
@@ -209,14 +224,14 @@ export class SecurityManager {
   /**
    * Log security event
    */
-  logSecurityEvent(event: string, details: any): void {
+  logSecurityEvent(event: string, details: Record<string, unknown>): void {
     logger.warn(`Security Event: ${event}`, details);
   }
 
   /**
    * Check for suspicious activity
    */
-  checkSuspiciousActivity(req: any): boolean {
+  checkSuspiciousActivity(req: { get: (header: string) => string | undefined }): boolean {
     const userAgent = req.get('User-Agent') || '';
     const suspiciousPatterns = [
       /sqlmap/i,
