@@ -7,6 +7,7 @@
 import { EventEmitter } from 'node:events';
 import { Logger } from '../../core/logger';
 import { Config } from '../../core/config';
+import type { Task } from './master-orchestrator';
 
 export interface TaskPriority {
   id: string;
@@ -240,7 +241,7 @@ export class TaskPrioritizationService extends EventEmitter {
   /**
    * Calculate task priority
    */
-  async calculateTaskPriority(task: any, context: any): Promise<TaskPriority> {
+  async calculateTaskPriority(task: Task & Record<string, unknown>, context: Record<string, unknown>): Promise<TaskPriority> {
     this._logger.info(`🎯 Calculating priority for task: ${task.id}`);
     
     try {
@@ -345,7 +346,7 @@ export class TaskPrioritizationService extends EventEmitter {
   /**
    * Calculate urgency factor
    */
-  private calculateUrgencyFactor(task: any, _context: any): PriorityFactor {
+  private calculateUrgencyFactor(task: Task & Record<string, unknown>, _context: Record<string, unknown>): PriorityFactor {
     let urgency = 0;
 
     // Check for immediate deadlines
@@ -384,7 +385,7 @@ export class TaskPrioritizationService extends EventEmitter {
   /**
    * Calculate importance factor
    */
-  private calculateImportanceFactor(task: any, _context: any): PriorityFactor {
+  private calculateImportanceFactor(task: Task & Record<string, unknown>, _context: Record<string, unknown>): PriorityFactor {
     let importance = 0.5; // Base importance
 
     // Check task type
@@ -447,7 +448,7 @@ export class TaskPrioritizationService extends EventEmitter {
   /**
    * Calculate complexity factor
    */
-  private calculateComplexityFactor(task: any, _context: any): PriorityFactor {
+  private calculateComplexityFactor(task: Task & Record<string, unknown>, _context: Record<string, unknown>): PriorityFactor {
     let complexity = 0.5; // Base complexity
 
     // Check estimated duration
@@ -484,7 +485,7 @@ export class TaskPrioritizationService extends EventEmitter {
   /**
    * Calculate dependencies factor
    */
-  private calculateDependenciesFactor(task: any, _context: any): PriorityFactor {
+  private calculateDependenciesFactor(task: Task & Record<string, unknown>, _context: Record<string, unknown>): PriorityFactor {
     let dependencies = 0;
 
     // Check for blocking dependencies

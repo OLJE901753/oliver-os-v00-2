@@ -39,9 +39,9 @@ export interface ResolutionAction {
   id: string;
   type: 'reassign' | 'reschedule' | 'modify' | 'cancel' | 'escalate' | 'negotiate';
   target: string;
-  parameters: any;
+  parameters: Record<string, unknown>;
   status: 'pending' | 'executing' | 'completed' | 'failed';
-  result?: any;
+  result?: unknown;
   error?: string;
 }
 
@@ -82,7 +82,7 @@ export interface ConflictConfig {
 export interface ConflictPattern {
   id: string;
   type: string;
-  pattern: any;
+  pattern: Record<string, unknown>;
   frequency: number;
   successRate: number;
   resolutionStrategy: string;
@@ -96,7 +96,7 @@ export class ConflictResolutionService extends EventEmitter {
   private conflicts: Map<string, Conflict>;
   private conflictHistory: Map<string, Conflict[]>;
   private conflictPatterns: Map<string, ConflictPattern>;
-  private resolutionStrategies: Map<string, any>;
+  private resolutionStrategies: Map<string, (conflict: Conflict) => Promise<ConflictResolution>>;
 
   constructor(_config: Config) {
     super();
@@ -291,7 +291,7 @@ export class ConflictResolutionService extends EventEmitter {
   /**
    * Detect conflicts
    */
-  async detectConflicts(context: any): Promise<Conflict[]> {
+  async detectConflicts(context: Record<string, unknown>): Promise<Conflict[]> {
     this._logger.info('🔍 Detecting conflicts...');
     
     try {
@@ -339,7 +339,7 @@ export class ConflictResolutionService extends EventEmitter {
   /**
    * Detect resource conflicts
    */
-  private async detectResourceConflicts(context: any): Promise<Conflict[]> {
+  private async detectResourceConflicts(context: Record<string, unknown>): Promise<Conflict[]> {
     const conflicts: Conflict[] = [];
 
     // Check for resource competition
@@ -380,7 +380,7 @@ export class ConflictResolutionService extends EventEmitter {
   /**
    * Detect priority conflicts
    */
-  private async detectPriorityConflicts(context: any): Promise<Conflict[]> {
+  private async detectPriorityConflicts(context: Record<string, unknown>): Promise<Conflict[]> {
     const conflicts: Conflict[] = [];
 
     // Check for conflicting priorities
@@ -406,7 +406,7 @@ export class ConflictResolutionService extends EventEmitter {
   /**
    * Detect dependency conflicts
    */
-  private async detectDependencyConflicts(context: any): Promise<Conflict[]> {
+  private async detectDependencyConflicts(context: Record<string, unknown>): Promise<Conflict[]> {
     const conflicts: Conflict[] = [];
 
     // Check for circular dependencies
@@ -458,7 +458,7 @@ export class ConflictResolutionService extends EventEmitter {
   /**
    * Detect quality conflicts
    */
-  private async detectQualityConflicts(context: any): Promise<Conflict[]> {
+  private async detectQualityConflicts(context: Record<string, unknown>): Promise<Conflict[]> {
     const conflicts: Conflict[] = [];
 
     // Check for quality conflicts between agents
@@ -487,7 +487,7 @@ export class ConflictResolutionService extends EventEmitter {
   /**
    * Detect deadline conflicts
    */
-  private async detectDeadlineConflicts(context: any): Promise<Conflict[]> {
+  private async detectDeadlineConflicts(context: Record<string, unknown>): Promise<Conflict[]> {
     const conflicts: Conflict[] = [];
 
     // Check for deadline conflicts
@@ -520,7 +520,7 @@ export class ConflictResolutionService extends EventEmitter {
   /**
    * Detect architecture conflicts
    */
-  private async detectArchitectureConflicts(context: any): Promise<Conflict[]> {
+  private async detectArchitectureConflicts(context: Record<string, unknown>): Promise<Conflict[]> {
     const conflicts: Conflict[] = [];
 
     // Check for architecture conflicts
@@ -600,7 +600,14 @@ export class ConflictResolutionService extends EventEmitter {
   /**
    * Analyze conflict
    */
-  private async analyzeConflict(conflict: Conflict): Promise<any> {
+  private async analyzeConflict(conflict: Conflict): Promise<{
+    severity: Conflict['severity'];
+    complexity: 'low' | 'medium' | 'high';
+    impact: unknown;
+    urgency: unknown;
+    resources: unknown;
+    alternatives: unknown;
+  }> {
     const analysis = {
       severity: conflict.severity,
       complexity: this.assessConflictComplexity(conflict),
