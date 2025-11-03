@@ -7,7 +7,7 @@ import { EventEmitter } from 'node:events';
 import { Logger } from '../../core/logger';
 import { DatabaseService } from '../../services/database';
 import { PrismaClient } from '@prisma/client';
-import type { MCPTool, MCPResource, MCPRequest, MCPResponse, OliverOSMCPServer, MCPServerConfig, MCPToolResult } from '../types';
+import type { MCPTool, MCPResource, MCPRequest, MCPResponse, OliverOSMCPServer, MCPServerConfig, MCPToolResult, MCPResourceResult } from '../types';
 
 export class DatabaseMCPServer extends EventEmitter implements OliverOSMCPServer {
   private _logger: Logger;
@@ -426,7 +426,7 @@ export class DatabaseMCPServer extends EventEmitter implements OliverOSMCPServer
   }
 
   // Tool Handlers
-  private async handleQuery(args: Record<string, unknown>): Promise<any> {
+  private async handleQuery(args: Record<string, unknown>): Promise<MCPToolResult> {
     const { query, table, operation, data, where, limit, offset } = args;
     
     this._logger.info(`🔍 Executing database query: ${query || `${operation} on ${table}`}`);
@@ -564,7 +564,7 @@ export class DatabaseMCPServer extends EventEmitter implements OliverOSMCPServer
     };
   }
 
-  private async handleGetTables(args: Record<string, unknown>): Promise<any> {
+  private async handleGetTables(args: Record<string, unknown>): Promise<MCPToolResult> {
     const { schema, include_views } = args;
     
     this._logger.info(`📋 Getting tables from schema: ${schema}`);
@@ -603,7 +603,7 @@ export class DatabaseMCPServer extends EventEmitter implements OliverOSMCPServer
     };
   }
 
-  private async handleGetTableSchema(args: Record<string, unknown>): Promise<any> {
+  private async handleGetTableSchema(args: Record<string, unknown>): Promise<MCPToolResult> {
     const { table, schema } = args;
     
     this._logger.info(`📊 Getting schema for table: ${table}`);
@@ -652,7 +652,7 @@ export class DatabaseMCPServer extends EventEmitter implements OliverOSMCPServer
     };
   }
 
-  private async handleInsertRecord(args: Record<string, unknown>): Promise<any> {
+  private async handleInsertRecord(args: Record<string, unknown>): Promise<MCPToolResult> {
     const { table, data, returning } = args;
     
     this._logger.info(`➕ Inserting record into table: ${table}`);
@@ -675,7 +675,7 @@ export class DatabaseMCPServer extends EventEmitter implements OliverOSMCPServer
     };
   }
 
-  private async handleUpdateRecord(args: Record<string, unknown>): Promise<any> {
+  private async handleUpdateRecord(args: Record<string, unknown>): Promise<MCPToolResult> {
     const { table, data, where, returning } = args;
     
     this._logger.info(`✏️ Updating records in table: ${table}`);
@@ -702,7 +702,7 @@ export class DatabaseMCPServer extends EventEmitter implements OliverOSMCPServer
     };
   }
 
-  private async handleDeleteRecord(args: Record<string, unknown>): Promise<any> {
+  private async handleDeleteRecord(args: Record<string, unknown>): Promise<MCPToolResult> {
     const { table, where, returning } = args;
     
     this._logger.info(`🗑️ Deleting records from table: ${table}`);
@@ -727,7 +727,7 @@ export class DatabaseMCPServer extends EventEmitter implements OliverOSMCPServer
     };
   }
 
-  private async handleGetUserData(args: Record<string, unknown>): Promise<any> {
+  private async handleGetUserData(args: Record<string, unknown>): Promise<MCPToolResult> {
     const { user_id, table, limit, order_by, order_direction } = args;
     
     this._logger.info(`👤 Getting user data for user: ${user_id} from table: ${table}`);
@@ -755,7 +755,7 @@ export class DatabaseMCPServer extends EventEmitter implements OliverOSMCPServer
     };
   }
 
-  private async handleCreateThought(args: Record<string, unknown>): Promise<any> {
+  private async handleCreateThought(args: Record<string, unknown>): Promise<MCPToolResult> {
     const { user_id, content, workspace_id, metadata, tags } = args;
     
     this._logger.info(`💭 Creating thought for user: ${user_id}`);
@@ -780,7 +780,7 @@ export class DatabaseMCPServer extends EventEmitter implements OliverOSMCPServer
     };
   }
 
-  private async handleGetThoughts(args: Record<string, unknown>): Promise<any> {
+  private async handleGetThoughts(args: Record<string, unknown>): Promise<MCPToolResult> {
     const { user_id, workspace_id, limit, offset, tags, search } = args;
     
     this._logger.info(`💭 Getting thoughts for user: ${user_id}`);
@@ -811,7 +811,7 @@ export class DatabaseMCPServer extends EventEmitter implements OliverOSMCPServer
     };
   }
 
-  private async handleCreateWorkspace(args: Record<string, unknown>): Promise<any> {
+  private async handleCreateWorkspace(args: Record<string, unknown>): Promise<MCPToolResult> {
     const { name, description, creator_id, settings, is_public } = args;
     
     this._logger.info(`🏗️ Creating workspace: ${name}`);
@@ -836,7 +836,7 @@ export class DatabaseMCPServer extends EventEmitter implements OliverOSMCPServer
     };
   }
 
-  private async handleGetWorkspaces(args: Record<string, unknown>): Promise<any> {
+  private async handleGetWorkspaces(args: Record<string, unknown>): Promise<MCPToolResult> {
     const { user_id, include_public, limit } = args;
     
     this._logger.info(`🏗️ Getting workspaces for user: ${user_id}`);
@@ -865,7 +865,7 @@ export class DatabaseMCPServer extends EventEmitter implements OliverOSMCPServer
     };
   }
 
-  private async handleJoinWorkspace(args: Record<string, unknown>): Promise<any> {
+  private async handleJoinWorkspace(args: Record<string, unknown>): Promise<MCPToolResult> {
     const { user_id, workspace_id, role } = args;
     
     this._logger.info(`👥 User ${user_id} joining workspace ${workspace_id} as ${role}`);
@@ -886,7 +886,7 @@ export class DatabaseMCPServer extends EventEmitter implements OliverOSMCPServer
     };
   }
 
-  private async handleGetAnalytics(args: Record<string, unknown>): Promise<any> {
+  private async handleGetAnalytics(args: Record<string, unknown>): Promise<MCPToolResult> {
     const { user_id, metric, period, start_date, end_date } = args;
     
     this._logger.info(`📊 Getting analytics for user: ${user_id}, metric: ${metric}`);
@@ -915,7 +915,7 @@ export class DatabaseMCPServer extends EventEmitter implements OliverOSMCPServer
   }
 
   // Resource Handlers
-  private async handleGetPublicSchema(): Promise<any> {
+  private async handleGetPublicSchema(): Promise<MCPResourceResult> {
     return {
       contents: [{
         uri: 'database://schema/public',
@@ -941,7 +941,7 @@ export class DatabaseMCPServer extends EventEmitter implements OliverOSMCPServer
     };
   }
 
-  private async handleGetDatabaseStats(): Promise<any> {
+  private async handleGetDatabaseStats(): Promise<MCPResourceResult> {
     return {
       contents: [{
         uri: 'database://stats/overview',
@@ -958,7 +958,7 @@ export class DatabaseMCPServer extends EventEmitter implements OliverOSMCPServer
     };
   }
 
-  private async handleGetOliverOSTables(): Promise<any> {
+  private async handleGetOliverOSTables(): Promise<MCPResourceResult> {
     return {
       contents: [{
         uri: 'database://tables/oliver-os',
