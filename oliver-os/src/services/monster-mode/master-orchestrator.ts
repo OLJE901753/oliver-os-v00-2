@@ -49,16 +49,16 @@ export interface Task {
   status: 'pending' | 'running' | 'completed' | 'failed' | 'cancelled';
   assignedAgent: string;
   description: string;
-  context: any;
+  context: Record<string, unknown>;
   requirements: string[];
   dependencies: string[];
   estimatedDuration: number;
   actualDuration?: number;
   startTime?: string;
   endTime?: string;
-  result?: any;
+  result?: unknown;
   error?: string;
-  metadata: any;
+  metadata: Record<string, unknown>;
 }
 
 export interface AgentStatus {
@@ -97,8 +97,8 @@ export interface WorkflowOptimization {
   status: 'pending' | 'applied' | 'rejected';
   timestamp: string;
   metrics: {
-    before: any;
-    after: any;
+    before: Record<string, unknown>;
+    after: Record<string, unknown>;
     improvement: number;
   };
 }
@@ -119,7 +119,7 @@ export class MasterOrchestrator extends EventEmitter {
   private _logger: Logger;
   private _config: Config;
   private monsterModeConfig!: MonsterModeConfig;
-  private agents: Map<string, any>;
+  private agents: Map<string, unknown>;
   private agentStatuses: Map<string, AgentStatus>;
   private taskQueue: Task[];
   private activeTasks: Map<string, Task>;
@@ -557,7 +557,7 @@ export class MasterOrchestrator extends EventEmitter {
   /**
    * Execute code generation task
    */
-  private async executeCodeGenerationTask(_task: Task, _agent: any): Promise<any> {
+  private async executeCodeGenerationTask(_task: Task, _agent: unknown): Promise<unknown> {
     // Implementation depends on the specific agent
     // This is a simplified example
     return { generated: true, content: 'Generated code' };
@@ -566,7 +566,7 @@ export class MasterOrchestrator extends EventEmitter {
   /**
    * Execute review task
    */
-  private async executeReviewTask(task: Task, agent: any): Promise<any> {
+  private async executeReviewTask(task: Task, agent: unknown): Promise<unknown> {
     if (agent.reviewFile) {
       return await agent.reviewFile(task.context.filePath);
     }
@@ -576,7 +576,7 @@ export class MasterOrchestrator extends EventEmitter {
   /**
    * Execute quality check task
    */
-  private async executeQualityCheckTask(_task: Task, agent: any): Promise<any> {
+  private async executeQualityCheckTask(_task: Task, agent: unknown): Promise<unknown> {
     if (agent.runQualityGate) {
       return await agent.runQualityGate();
     }
@@ -586,7 +586,7 @@ export class MasterOrchestrator extends EventEmitter {
   /**
    * Execute documentation task
    */
-  private async executeDocumentationTask(_task: Task, agent: any): Promise<any> {
+  private async executeDocumentationTask(_task: Task, agent: unknown): Promise<unknown> {
     if (agent.documentCurrentChanges) {
       return await agent.documentCurrentChanges();
     }
@@ -596,7 +596,7 @@ export class MasterOrchestrator extends EventEmitter {
   /**
    * Execute optimization task
    */
-  private async executeOptimizationTask(_task: Task, _agent: any): Promise<any> {
+  private async executeOptimizationTask(_task: Task, _agent: unknown): Promise<unknown> {
     // Implementation for optimization tasks
     return { optimized: true, improvement: 0.1 };
   }
@@ -604,7 +604,7 @@ export class MasterOrchestrator extends EventEmitter {
   /**
    * Execute architecture task
    */
-  private async executeArchitectureTask(_task: Task, _agent: any): Promise<any> {
+  private async executeArchitectureTask(_task: Task, _agent: unknown): Promise<unknown> {
     // Implementation for architecture tasks
     return { architecture: true, improvements: [] };
   }
@@ -898,7 +898,7 @@ export class MasterOrchestrator extends EventEmitter {
   /**
    * Analyze performance
    */
-  private analyzePerformance(): any {
+  private analyzePerformance(): Record<string, unknown> {
     const metrics = {
       taskThroughput: this.completedTasks.size,
       averageTaskDuration: 0,
@@ -926,7 +926,7 @@ export class MasterOrchestrator extends EventEmitter {
   /**
    * Generate optimizations
    */
-  private generateOptimizations(metrics: any): WorkflowOptimization[] {
+  private generateOptimizations(metrics: Record<string, unknown>): WorkflowOptimization[] {
     const optimizations: WorkflowOptimization[] = [];
 
     // Performance optimizations
@@ -1151,7 +1151,7 @@ export class MasterOrchestrator extends EventEmitter {
   /**
    * Get Monster Mode status
    */
-  getMonsterModeStatus(): any {
+  getMonsterModeStatus(): Record<string, unknown> {
     return {
       enabled: this.monsterModeConfig.enabled,
       mode: this.monsterModeConfig.mode,
