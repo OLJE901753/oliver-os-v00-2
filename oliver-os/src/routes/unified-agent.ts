@@ -66,11 +66,14 @@ export function createUnifiedAgentRoutes(config: Config, serviceManager?: Servic
         success: true,
         ...result
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('Route error:', error);
+      const errorMessage = error && typeof error === 'object' && 'message' in error
+        ? String(error.message)
+        : 'Unknown error';
       res.status(500).json({
         error: 'Failed to route message',
-        details: error?.message || 'Unknown error'
+        details: errorMessage
       });
     }
   });
@@ -83,11 +86,14 @@ export function createUnifiedAgentRoutes(config: Config, serviceManager?: Servic
         success: true,
         ...status
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('Status error:', error);
+      const errorMessage = error && typeof error === 'object' && 'message' in error
+        ? String(error.message)
+        : 'Unknown error';
       res.status(500).json({
         error: 'Failed to get router status',
-        details: error?.message || 'Unknown error'
+        details: errorMessage
       });
     }
   });
@@ -97,9 +103,12 @@ export function createUnifiedAgentRoutes(config: Config, serviceManager?: Servic
       const router_instance = getUnifiedRouter(config, serviceManager);
       const items = router_instance.getRecentDecisions();
       res.json({ success: true, items });
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('Decisions error:', error);
-      res.status(500).json({ error: 'Failed to get recent decisions', details: error?.message || 'Unknown error' });
+      const errorMessage = error && typeof error === 'object' && 'message' in error
+        ? String(error.message)
+        : 'Unknown error';
+      res.status(500).json({ error: 'Failed to get recent decisions', details: errorMessage });
     }
   });
 
@@ -112,9 +121,12 @@ export function createUnifiedAgentRoutes(config: Config, serviceManager?: Servic
       const result = await router_instance.route({ sender: 'inspector', message, translated, auto: true });
       delete result.taskId; // not actually submitted
       res.json({ success: true, decision: result.decision, intent: result.intent, destination: result.destination });
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('Inspect error:', error);
-      res.status(500).json({ error: 'Failed to inspect routing', details: error?.message || 'Unknown error' });
+      const errorMessage = error && typeof error === 'object' && 'message' in error
+        ? String(error.message)
+        : 'Unknown error';
+      res.status(500).json({ error: 'Failed to inspect routing', details: errorMessage });
     }
   });
 
@@ -124,34 +136,40 @@ export function createUnifiedAgentRoutes(config: Config, serviceManager?: Servic
       if (!id) { res.status(400).json({ error: 'id is required' }); return; }
       const router_instance = getUnifiedRouter(config, serviceManager);
       // @ts-ignore - access method exists
-      const item = (router_instance as any).consumePending(id);
+      const item = (router_instance as unknown as { consumePending: (id: string) => { request: RouteRequest; destination: string } | undefined }).consumePending(id);
       if (!item) { res.status(404).json({ error: 'pending id not found' }); return; }
 
-      const { request, destination } = item as any;
+      const { request, destination } = item;
       let result;
       if (destination === 'codebuff' || request.translated?.type?.includes('research')) {
         // execute via auto-mode policy
-        result = await (router_instance as any).routeAutoMode(request.message, request.translated);
+        result = await (router_instance as unknown as { routeAutoMode: (msg: string, trans?: RouteRequest['translated']) => Promise<unknown> }).routeAutoMode(request.message, request.translated);
       } else if (destination === 'cursor') {
-        result = await (router_instance as any).routeToCursor(request.message, request.translated, { reason: 'Confirmed by user', rulesMatched: ['safety:confirmed'] });
+        result = await (router_instance as unknown as { routeToCursor: (msg: string, trans?: RouteRequest['translated'], ctx?: { reason: string; rulesMatched: string[] }) => Promise<unknown> }).routeToCursor(request.message, request.translated, { reason: 'Confirmed by user', rulesMatched: ['safety:confirmed'] });
       } else {
-        result = await (router_instance as any).routeToMonsterMode(request.message, request.translated, { reason: 'Confirmed by user', rulesMatched: ['safety:confirmed'] });
+        result = await (router_instance as unknown as { routeToMonsterMode: (msg: string, trans?: RouteRequest['translated'], ctx?: { reason: string; rulesMatched: string[] }) => Promise<unknown> }).routeToMonsterMode(request.message, request.translated, { reason: 'Confirmed by user', rulesMatched: ['safety:confirmed'] });
       }
-      res.json({ success: true, ...result });
-    } catch (error: any) {
+      res.json({ success: true, ...result as Record<string, unknown> });
+    } catch (error: unknown) {
       logger.error('Confirm error:', error);
-      res.status(500).json({ error: 'Failed to confirm pending action', details: error?.message || 'Unknown error' });
+      const errorMessage = error && typeof error === 'object' && 'message' in error
+        ? String(error.message)
+        : 'Unknown error';
+      res.status(500).json({ error: 'Failed to confirm pending action', details: errorMessage });
     }
   });
 
   router.get('/pending', async (_req: Request, res: Response): Promise<void> => {
     try {
-      const router_instance = getUnifiedRouter(config, serviceManager) as any;
+      const router_instance = getUnifiedRouter(config, serviceManager) as unknown as { getPending: () => Array<{ id: string; sender: string; message: string; destination: string; intent: unknown }> };
       const items = router_instance.getPending();
       res.json({ success: true, items });
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('Pending error:', error);
-      res.status(500).json({ error: 'Failed to get pending items', details: error?.message || 'Unknown error' });
+      const errorMessage = error && typeof error === 'object' && 'message' in error
+        ? String(error.message)
+        : 'Unknown error';
+      res.status(500).json({ error: 'Failed to get pending items', details: errorMessage });
     }
   });
 
