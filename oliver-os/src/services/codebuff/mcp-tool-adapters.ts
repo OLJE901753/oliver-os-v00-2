@@ -328,7 +328,7 @@ export class DatabaseMCPAdapter implements MCPToolAdapter {
       switch (toolName) {
         case 'query_database': {
           const query = args['query'] as string;
-          const parameters = args['parameters'] as any[] || [];
+          const parameters = (args['parameters'] as unknown[]) || [];
           // Note: This is a simplified implementation
           // In production, you'd want proper SQL query execution
           return { message: 'Query execution not fully implemented', query, parameters };
@@ -353,7 +353,7 @@ export class DatabaseMCPAdapter implements MCPToolAdapter {
 
         case 'create_table': {
           const createTableName = args['tableName'] as string;
-          const columns = args['columns'] as any[];
+          const columns = args['columns'] as unknown[];
           return { 
             success: true, 
             message: `Table ${createTableName} creation not fully implemented`,
@@ -628,7 +628,7 @@ export class MemoryMCPAdapter implements MCPToolAdapter {
   private _logger: Logger;
   public serverName = 'memory';
   public tools: CustomToolDefinition[];
-  private memoryStore: Map<string, any> = new Map();
+  private memoryStore: Map<string, unknown> = new Map();
 
   constructor() {
     this._logger = new Logger('MemoryMCPAdapter');
