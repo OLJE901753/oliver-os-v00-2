@@ -6,11 +6,12 @@
 import { getService, resolveService, ServiceIds } from './index';
 import type { KnowledgeGraphService } from '../../services/knowledge/knowledge-graph-service';
 import type { AssistantService } from '../../services/assistant/assistant-service';
+import type { Request, Response } from 'express';
 
 /**
  * Example: Using DI in a route handler
  */
-export async function exampleRouteHandler(_req: any, res: any) {
+export async function exampleRouteHandler(_req: Request, res: Response) {
   try {
     // Get service from DI container (synchronous - for already initialized singletons)
     const knowledgeGraph = getService<KnowledgeGraphService>(ServiceIds.KNOWLEDGE_GRAPH_SERVICE);

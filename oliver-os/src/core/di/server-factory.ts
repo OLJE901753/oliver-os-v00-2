@@ -8,6 +8,11 @@ import { container, bootstrapContainer, initializeServices, ServiceIds } from '.
 import { Config } from '../config';
 import { createServer as createExpressServer } from '../server';
 import { Logger } from '../logger';
+import type { DIContainer } from './index';
+
+interface ExpressAppWithContainer extends express.Application {
+  container?: DIContainer;
+}
 
 /**
  * Create server with DI container
@@ -44,7 +49,7 @@ export async function createServerWithDI(): Promise<express.Application> {
     const app = createExpressServer(config, undefined, prisma);
     
     // Make container available on app for route handlers
-    (app as any).container = container;
+    (app as ExpressAppWithContainer).container = container;
     
     logger.info('✅ Server created with DI container');
     
