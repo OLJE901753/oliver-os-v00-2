@@ -12,6 +12,26 @@ export interface SearchResult extends MemoryRecord {
   excerpt: string;
 }
 
+interface MemoryDBRow {
+  id: string;
+  raw_content: string;
+  type: string;
+  timestamp: string;
+  status: string;
+  metadata: string;
+  audio_url?: string;
+  transcript?: string;
+  duration_seconds?: number;
+  created_at: string;
+  updated_at: string;
+  relevance?: number;
+}
+
+interface ExcerptRow {
+  excerpt: string;
+  id: string;
+}
+
 export class MemorySearch {
   private storage: MemoryStorage;
   private logger: Logger;
@@ -25,6 +45,7 @@ export class MemorySearch {
    * Full-text search across memories
    */
   search(query: string, limit: number = 50): SearchResult[] {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const db = (this.storage as any).db;
     
     if (!db) {
@@ -45,7 +66,7 @@ export class MemorySearch {
         LIMIT ?
       `);
 
-      const rows = searchStmt.all(query, limit) as any[];
+      const rows = searchStmt.all(query, limit) as MemoryDBRow[];
 
       // Get excerpts using snippet() function
       const excerptStmt = db.prepare(`
@@ -57,7 +78,7 @@ export class MemorySearch {
       `);
 
       const excerptMap = new Map<string, string>();
-      const excerptRows = excerptStmt.all(query) as any[];
+      const excerptRows = excerptStmt.all(query) as ExcerptRow[];
       for (const row of excerptRows) {
         excerptMap.set(row.id, row.excerpt);
       }
@@ -86,6 +107,7 @@ export class MemorySearch {
    * Fallback search using LIKE (if FTS5 fails)
    */
   private fallbackSearch(query: string, limit: number): SearchResult[] {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const db = (this.storage as any).db;
     const searchTerm = `%${query}%`;
 
@@ -96,9 +118,9 @@ export class MemorySearch {
       LIMIT ?
     `);
 
-    const rows = stmt.all(searchTerm, searchTerm, limit) as any[];
+    const rows = stmt.all(searchTerm, searchTerm, limit) as MemoryDBRow[];
     
-    return rows.map((row: any) => {
+    return rows.map((row: MemoryDBRow) => {
       const memory = this.rowToMemory(row);
       const content = memory.transcript || memory.rawContent;
       const index = content.toLowerCase().indexOf(query.toLowerCase());
@@ -129,6 +151,7 @@ export class MemorySearch {
     },
     limit: number = 50
   ): SearchResult[] {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const db = (this.storage as any).db;
 
     try {
@@ -141,7 +164,7 @@ export class MemorySearch {
         WHERE memories_fts MATCH ?
       `;
 
-      const params: any[] = [query];
+      const params: unknown[] = [query];
 
       if (filters.type) {
         sql += ' AND m.type = ?';
@@ -167,7 +190,7 @@ export class MemorySearch {
       params.push(limit);
 
       const stmt = db.prepare(sql);
-      const rows = stmt.all(...params) as any[];
+      const rows = stmt.all(...params) as MemoryDBRow[];
 
       // Get excerpts
       const excerptStmt = db.prepare(`
@@ -179,12 +202,12 @@ export class MemorySearch {
       `);
 
       const excerptMap = new Map<string, string>();
-      const excerptRows = excerptStmt.all(query) as any[];
+      const excerptRows = excerptStmt.all(query) as ExcerptRow[];
       for (const row of excerptRows) {
         excerptMap.set(row.id, row.excerpt);
       }
 
-      return rows.map((row: any) => {
+      return rows.map((row: MemoryDBRow) => {
         const memory = this.rowToMemory(row);
         return {
           ...memory,
@@ -201,7 +224,7 @@ export class MemorySearch {
   /**
    * Convert database row to MemoryRecord
    */
-  private rowToMemory(row: any): MemoryRecord {
+  private rowToMemory(row: MemoryDBRow): MemoryRecord {
     return {
       id: row.id,
       rawContent: row.raw_content,
