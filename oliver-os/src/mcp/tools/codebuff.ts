@@ -6,11 +6,12 @@
 
 import { CodebuffService } from '../../services/codebuff/codebuff-service';
 import { Logger } from '../../core/logger';
-import type { MCPTool } from '../types';
+import type { MCPTool, MCPToolResult } from '../types';
 import type { 
   CodebuffRunOptions, 
   AgentSpawnRequest, 
   WorkflowDefinition,
+  WorkflowStep,
   AgentStatus 
 } from '../../services/codebuff/types';
 
@@ -181,7 +182,7 @@ export class CodebuffMCPTools {
 
   // Tool Handlers
 
-  private async handleRunTask(args: Record<string, unknown>): Promise<any> {
+  private async handleRunTask(args: Record<string, unknown>): Promise<MCPToolResult> {
     try {
       const { agent, prompt, timeout, retries } = args;
       
@@ -226,7 +227,7 @@ export class CodebuffMCPTools {
     }
   }
 
-  private async handleSpawnAgent(args: Record<string, unknown>): Promise<any> {
+  private async handleSpawnAgent(args: Record<string, unknown>): Promise<MCPToolResult> {
     try {
       const { agentType, capabilities, config, priority } = args;
       
@@ -265,7 +266,7 @@ export class CodebuffMCPTools {
     }
   }
 
-  private async handleGetAgentStatus(args: Record<string, unknown>): Promise<any> {
+  private async handleGetAgentStatus(args: Record<string, unknown>): Promise<MCPToolResult> {
     try {
       const agentId = args['agentId'] as string;
       
@@ -295,7 +296,7 @@ export class CodebuffMCPTools {
     }
   }
 
-  private async handleCreateWorkflow(args: Record<string, unknown>): Promise<any> {
+  private async handleCreateWorkflow(args: Record<string, unknown>): Promise<MCPToolResult> {
     try {
       const { id, name, description, steps } = args;
       
@@ -305,7 +306,7 @@ export class CodebuffMCPTools {
         id: id as string,
         name: name as string,
         description: description as string,
-        steps: steps as any[],
+        steps: steps as WorkflowStep[],
         agents: [],
         status: 'idle',
         metadata: {},
@@ -340,7 +341,7 @@ export class CodebuffMCPTools {
     }
   }
 
-  private async handleExecuteWorkflow(args: Record<string, unknown>): Promise<any> {
+  private async handleExecuteWorkflow(args: Record<string, unknown>): Promise<MCPToolResult> {
     try {
       const workflowId = args['workflowId'] as string;
       
@@ -375,7 +376,7 @@ export class CodebuffMCPTools {
     }
   }
 
-  private async handleGetAgentDefinitions(_args: Record<string, unknown>): Promise<any> {
+  private async handleGetAgentDefinitions(_args: Record<string, unknown>): Promise<MCPToolResult> {
     try {
       const definitions = this._codebuffService.getAgentDefinitions();
       
@@ -403,7 +404,7 @@ export class CodebuffMCPTools {
     }
   }
 
-  private async handleGetWorkflows(_args: Record<string, unknown>): Promise<any> {
+  private async handleGetWorkflows(_args: Record<string, unknown>): Promise<MCPToolResult> {
     try {
       const workflows = this._codebuffService.getWorkflows();
       
@@ -431,7 +432,7 @@ export class CodebuffMCPTools {
     }
   }
 
-  private async handleTerminateAgent(args: Record<string, unknown>): Promise<any> {
+  private async handleTerminateAgent(args: Record<string, unknown>): Promise<MCPToolResult> {
     try {
       const agentId = args['agentId'] as string;
       
