@@ -8,6 +8,7 @@ import { Router, type IRouter } from 'express';
 import type { Request, Response } from 'express';
 import { Logger } from '../core/logger';
 import type { CaptureMemoryService } from '../services/memory/capture/capture-memory-service';
+import type { MemoryStatus } from '../services/memory/capture/storage';
 
 const logger = new Logger('MemoryCaptureAPI');
 
@@ -182,7 +183,7 @@ export function createMemoryCaptureRoutes(memoryService: CaptureMemoryService): 
         });
       }
 
-      const memories = await memoryService.getMemoriesByStatus(status as any);
+      const memories = await memoryService.getMemoriesByStatus(status as MemoryStatus);
 
       return res.json({
         status,
