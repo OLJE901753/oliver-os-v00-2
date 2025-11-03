@@ -81,7 +81,7 @@ export class DatabaseService {
     email: string;
     name: string;
     avatarUrl?: string;
-    preferences?: any;
+    preferences?: unknown;
   }) {
     return this.prisma.user.create({
       data: {
@@ -108,7 +108,7 @@ export class DatabaseService {
     userId: string;
     content: string;
     type?: string;
-    metadata?: any;
+    metadata?: unknown;
   }) {
     return this.prisma.thought.create({
       data: {
@@ -149,7 +149,7 @@ export class DatabaseService {
   async createKnowledgeNode(data: {
     label: string;
     type: string;
-    properties?: any;
+    properties?: unknown;
   }) {
     return this.prisma.knowledgeNode.create({
       data: {
@@ -163,7 +163,7 @@ export class DatabaseService {
     sourceId: string;
     targetId: string;
     relationshipType: string;
-    properties?: any;
+    properties?: unknown;
     weight?: number;
   }) {
     return this.prisma.knowledgeRelationship.create({
@@ -180,7 +180,7 @@ export class DatabaseService {
     name: string;
     description?: string;
     createdBy: string;
-    settings?: any;
+    settings?: unknown;
   }) {
     return this.prisma.collaborationSession.create({
       data: {
@@ -222,7 +222,7 @@ export class DatabaseService {
     sessionId: string;
     userId: string;
     eventType: string;
-    eventData: any;
+    eventData: unknown;
   }) {
     return this.prisma.realtimeEvent.create({
       data
@@ -242,8 +242,8 @@ export class DatabaseService {
     thoughtId: string;
     processingType: string;
     modelName?: string;
-    inputData?: any;
-    outputData?: any;
+    inputData?: unknown;
+    outputData?: unknown;
     confidence?: number;
     processingTimeMs?: number;
   }) {
@@ -260,7 +260,7 @@ export class DatabaseService {
     transcription?: string;
     language?: string;
     durationSeconds?: number;
-    metadata?: any;
+    metadata?: unknown;
   }) {
     return this.prisma.voiceRecording.create({
       data: {
@@ -276,8 +276,8 @@ export class DatabaseService {
     userId: string;
     name: string;
     visualizationType: string;
-    data: any;
-    settings?: any;
+    data: unknown;
+    settings?: unknown;
     isShared?: boolean;
   }) {
     return this.prisma.mindVisualization.create({
