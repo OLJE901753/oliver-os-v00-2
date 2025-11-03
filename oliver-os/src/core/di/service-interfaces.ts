@@ -4,6 +4,9 @@
  */
 
 import type { EventEmitter } from 'node:events';
+import type { KnowledgeNode, NodeCreateInput, RelationshipCreateInput } from '../../services/knowledge/node.types';
+import type { Relationship } from '../../services/knowledge/relationship.types';
+import type { MemoryRecord, MemoryCaptureInput } from '../../services/memory/capture/capture-memory-service';
 
 // Base service interface
 export interface IService extends EventEmitter {
@@ -20,23 +23,23 @@ export interface ILLMProvider {
 
 // Knowledge Graph interface
 export interface IKnowledgeGraphService extends IService {
-  createNode(data: any): Promise<any>;
-  createRelationship(data: any): Promise<any>;
-  searchNodes(query: string, limit?: number): Promise<any[]>;
+  createNode(data: NodeCreateInput): Promise<KnowledgeNode>;
+  createRelationship(data: RelationshipCreateInput): Promise<Relationship>;
+  searchNodes(query: string, limit?: number): Promise<KnowledgeNode[]>;
 }
 
 // Memory Capture interface
 export interface IMemoryCaptureService extends IService {
-  captureMemory(data: any): Promise<any>;
-  getMemory(id: string): Promise<any>;
-  searchMemories(query: string, limit?: number): Promise<any[]>;
+  captureMemory(data: MemoryCaptureInput): Promise<MemoryRecord>;
+  getMemory(id: string): Promise<MemoryRecord | null>;
+  searchMemories(query: string, limit?: number): Promise<MemoryRecord[]>;
 }
 
 // Agent Manager interface
 export interface IAgentManager extends IService {
-  spawnAgent(request: any): Promise<any>;
-  getAgents(): any[];
-  getSpawnedAgents(): any[];
+  spawnAgent(request: unknown): Promise<unknown>;
+  getAgents(): unknown[];
+  getSpawnedAgents(): unknown[];
 }
 
 // Configuration interface
@@ -48,9 +51,9 @@ export interface IConfig {
 
 // Logger interface
 export interface ILogger {
-  info(message: string, ...args: any[]): void;
-  warn(message: string, ...args: any[]): void;
-  error(message: string, ...args: any[]): void;
-  debug(message: string, ...args: any[]): void;
+  info(message: string, ...args: unknown[]): void;
+  warn(message: string, ...args: unknown[]): void;
+  error(message: string, ...args: unknown[]): void;
+  debug(message: string, ...args: unknown[]): void;
 }
 
