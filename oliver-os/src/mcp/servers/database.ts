@@ -7,11 +7,11 @@ import { EventEmitter } from 'node:events';
 import { Logger } from '../../core/logger';
 import { DatabaseService } from '../../services/database';
 import { PrismaClient } from '@prisma/client';
-import type { MCPTool, MCPResource, MCPRequest, MCPResponse, OliverOSMCPServer } from '../types';
+import type { MCPTool, MCPResource, MCPRequest, MCPResponse, OliverOSMCPServer, MCPServerConfig, MCPToolResult } from '../types';
 
 export class DatabaseMCPServer extends EventEmitter implements OliverOSMCPServer {
   private _logger: Logger;
-  public config: any;
+  public config: MCPServerConfig;
   private isRunning: boolean = false;
   private supabaseUrl: string;
   private databaseService: DatabaseService | null = null;
@@ -372,7 +372,7 @@ export class DatabaseMCPServer extends EventEmitter implements OliverOSMCPServer
   }
 
   private async handleResourcesList(request: MCPRequest): Promise<MCPResponse> {
-    const resources = this.config.resources.map((resource: any) => ({
+    const resources = this.config.resources.map((resource: MCPResource) => ({
       uri: resource.uri,
       name: resource.name,
       description: resource.description,
@@ -389,7 +389,7 @@ export class DatabaseMCPServer extends EventEmitter implements OliverOSMCPServer
   private async handleResourcesRead(request: MCPRequest): Promise<MCPResponse> {
     const { uri } = request.params as { uri: string };
     
-    const resource = this.config.resources.find((r: any) => r.uri === uri);
+    const resource = this.config.resources.find((r: MCPResource) => r.uri === uri);
     if (!resource) {
       return this.createErrorResponse(request.id, -32601, `Resource not found: ${uri}`);
     }
@@ -460,11 +460,15 @@ export class DatabaseMCPServer extends EventEmitter implements OliverOSMCPServer
       const tableName = table as string;
       const op = operation as string;
       
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       let results: any;
       
       switch (op.toLowerCase()) {
         case 'select':
+          // Dynamic table access requires type assertion
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           results = await (this.prisma as any)[tableName].findMany({
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             where: where as any || {},
             take: limit as number || undefined,
             skip: offset as number || undefined
@@ -474,7 +478,9 @@ export class DatabaseMCPServer extends EventEmitter implements OliverOSMCPServer
           if (!data) {
             throw new Error('Data required for insert operation');
           }
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           results = await (this.prisma as any)[tableName].create({
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             data: data as any
           });
           break;
@@ -482,8 +488,11 @@ export class DatabaseMCPServer extends EventEmitter implements OliverOSMCPServer
           if (!data || !where) {
             throw new Error('Data and where required for update operation');
           }
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           results = await (this.prisma as any)[tableName].updateMany({
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             where: where as any,
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             data: data as any
           });
           break;
@@ -491,7 +500,9 @@ export class DatabaseMCPServer extends EventEmitter implements OliverOSMCPServer
           if (!where) {
             throw new Error('Where required for delete operation');
           }
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           results = await (this.prisma as any)[tableName].deleteMany({
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             where: where as any
           });
           break;
@@ -531,7 +542,7 @@ export class DatabaseMCPServer extends EventEmitter implements OliverOSMCPServer
     }
   }
   
-  private createMockQueryResponse(query: unknown, table: unknown, operation: unknown, data: unknown, where: unknown, limit: unknown, offset: unknown): any {
+  private createMockQueryResponse(query: unknown, table: unknown, operation: unknown, data: unknown, where: unknown, limit: unknown, offset: unknown): MCPToolResult {
     return {
       content: [{
         type: 'text',
