@@ -50,36 +50,36 @@ declare module 'langchain' {
 }
 
 declare module 'bull' {
-  export interface Job {
+  export interface Job<T = unknown> {
     id: string;
-    data: any;
-    opts: any;
+    data: T;
+    opts: Record<string, unknown>;
     progress(): Promise<number>;
     progress(value: number): Promise<void>;
-    finished(): Promise<any>;
+    finished(): Promise<T>;
     failed(): Promise<Error>;
     retry(): Promise<void>;
     remove(): Promise<void>;
   }
 
-  export interface Queue {
-    add(name: string, data: any, opts?: any): Promise<Job>;
-    process(name: string, processor: (job: Job) => Promise<any>): void;
-    on(event: string, listener: (...args: any[]) => void): void;
+  export interface Queue<T = unknown> {
+    add(name: string, data: T, opts?: Record<string, unknown>): Promise<Job<T>>;
+    process(name: string, processor: (job: Job<T>) => Promise<T>): void;
+    on(event: string, listener: (...args: unknown[]) => void): void;
     close(): Promise<void>;
   }
 
   export class Queue {
-    constructor(name: string, redis?: any);
+    constructor(name: string, redis?: unknown);
   }
 }
 
 declare module 'ws' {
   export class WebSocket {
     constructor(url: string, protocols?: string | string[]);
-    send(data: any): void;
+    send(data: string | ArrayBufferLike | Blob | ArrayBufferView): void;
     close(code?: number, reason?: string): void;
-    on(event: string, listener: (...args: any[]) => void): void;
+    on(event: string, listener: (...args: unknown[]) => void): void;
     readyState: number;
   }
 }
