@@ -14,7 +14,9 @@ import type {
   MCPResource, 
   MCPRequest, 
   MCPResponse,
-  OliverOSMCPServer 
+  OliverOSMCPServer,
+  MCPToolResult,
+  MCPResourceResult 
 } from './types';
 
 export class OliverOSMCPServerImpl extends EventEmitter implements OliverOSMCPServer {
@@ -317,7 +319,7 @@ export class OliverOSMCPServerImpl extends EventEmitter implements OliverOSMCPSe
   }
 
   // Tool Handlers
-  private async handleGetSystemStatus(args: Record<string, unknown>): Promise<any> {
+  private async handleGetSystemStatus(args: Record<string, unknown>): Promise<MCPToolResult> {
     const includeDetails = args['includeDetails'] as boolean || false;
     
     return {
@@ -339,7 +341,7 @@ export class OliverOSMCPServerImpl extends EventEmitter implements OliverOSMCPSe
     };
   }
 
-  private async handleProcessThought(args: Record<string, unknown>): Promise<any> {
+  private async handleProcessThought(args: Record<string, unknown>): Promise<MCPToolResult> {
     const { thought, userId, context } = args;
     
     // This would integrate with your actual thought processing service
@@ -358,7 +360,7 @@ export class OliverOSMCPServerImpl extends EventEmitter implements OliverOSMCPSe
     };
   }
 
-  private async handleGetAgentStatus(args: Record<string, unknown>): Promise<any> {
+  private async handleGetAgentStatus(args: Record<string, unknown>): Promise<MCPToolResult> {
     const agentId = args['agentId'] as string;
     
     return {
@@ -374,7 +376,7 @@ export class OliverOSMCPServerImpl extends EventEmitter implements OliverOSMCPSe
     };
   }
 
-  private async handleSpawnAgent(args: Record<string, unknown>): Promise<any> {
+  private async handleSpawnAgent(args: Record<string, unknown>): Promise<MCPToolResult> {
     const { agentType, capabilities, config } = args;
     
     this._logger.info(`🤖 Spawning agent of type: ${agentType}`);
@@ -394,7 +396,7 @@ export class OliverOSMCPServerImpl extends EventEmitter implements OliverOSMCPSe
     };
   }
 
-  private async handleGetCollaborationData(args: Record<string, unknown>): Promise<any> {
+  private async handleGetCollaborationData(args: Record<string, unknown>): Promise<MCPToolResult> {
     const workspaceId = args['workspaceId'] as string;
     
     return {
@@ -410,7 +412,7 @@ export class OliverOSMCPServerImpl extends EventEmitter implements OliverOSMCPSe
     };
   }
 
-  private async handleExecuteBmadCommand(args: Record<string, unknown>): Promise<any> {
+  private async handleExecuteBmadCommand(args: Record<string, unknown>): Promise<MCPToolResult> {
     const { command, target, options } = args;
     
     this._logger.info(`🔧 Executing BMAD command: ${command} on ${target}`);
@@ -430,7 +432,7 @@ export class OliverOSMCPServerImpl extends EventEmitter implements OliverOSMCPSe
   }
 
   // Resource Handlers
-  private async handleGetArchitecture(): Promise<any> {
+  private async handleGetArchitecture(): Promise<MCPResourceResult> {
     return {
       contents: [{
         uri: 'oliver-os://system/architecture',
@@ -444,7 +446,7 @@ export class OliverOSMCPServerImpl extends EventEmitter implements OliverOSMCPSe
     };
   }
 
-  private async handleGetSystemLogs(): Promise<any> {
+  private async handleGetSystemLogs(): Promise<MCPResourceResult> {
     return {
       contents: [{
         uri: 'oliver-os://logs/system',
@@ -454,7 +456,7 @@ export class OliverOSMCPServerImpl extends EventEmitter implements OliverOSMCPSe
     };
   }
 
-  private async handleGetCurrentConfig(): Promise<any> {
+  private async handleGetCurrentConfig(): Promise<MCPResourceResult> {
     return {
       contents: [{
         uri: 'oliver-os://config/current',
