@@ -36,15 +36,29 @@ export interface LearningContext {
   currentFile: string;
   projectStructure: string[];
   recentChanges: string[];
-  userPreferences: any;
+  userPreferences: Record<string, unknown>;
   codingPatterns: string[];
+}
+
+interface SuggestionHistoryEntry {
+  accepted: boolean;
+  feedback?: string;
+  timestamp: string;
+}
+
+interface LearningStats {
+  totalPatterns: number;
+  averageConfidence: number;
+  averageSuccessRate: number;
+  totalSuggestions: number;
+  learningProgress: number;
 }
 
 export class LearningService extends EventEmitter {
   private _logger: Logger;
   private memoryService!: MemoryService;
   private learningPatterns: Map<string, LearningPattern>;
-  private suggestionHistory: Map<string, any[]>;
+  private suggestionHistory: Map<string, SuggestionHistoryEntry[]>;
   private currentCodingStyle: string = 'default';
   private recentAdaptations: Array<{ pattern: string; confidence: number; timestamp: string }> = [];
 
@@ -87,8 +101,8 @@ export class LearningService extends EventEmitter {
    * Load learning patterns from memory
    */
   private async loadLearningPatterns(): Promise<void> {
-    const memory = this.memoryService as any;
-    const patterns = memory.memory?.codePatterns?.frequentlyUsed || [];
+    const memory = this.memoryService.getMemory();
+    const patterns = memory.codePatterns.frequentlyUsed || [];
     
     for (const pattern of patterns) {
       const confidence = pattern.successRate * 0.8 + (pattern.frequency / 100) * 0.2;
@@ -120,8 +134,8 @@ export class LearningService extends EventEmitter {
    * Analyze project history for patterns
    */
   private async analyzeProjectHistory(): Promise<void> {
-    const memory = this.memoryService as any;
-    const sessions = memory.memory?.projectHistory?.sessions || [];
+    const memory = this.memoryService.getMemory();
+    const sessions = memory.projectHistory.sessions || [];
     
     for (const session of sessions) {
       // Analyze patterns used in session
@@ -419,7 +433,7 @@ export class LearningService extends EventEmitter {
   /**
    * Get learning statistics
    */
-  getLearningStats(): any {
+  getLearningStats(): LearningStats {
     const patterns = Array.from(this.learningPatterns.values());
     
     return {
@@ -578,7 +592,7 @@ export class LearningService extends EventEmitter {
    * Log learning events for visibility and debugging
    * This is GOLD for solo dev - you need to SEE what it's learning
    */
-  private logLearningEvent(event: string, data: any): void {
+  private logLearningEvent(event: string, data: Record<string, unknown>): void {
     const logEntry = {
       timestamp: new Date().toISOString(),
       event,
