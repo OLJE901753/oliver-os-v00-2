@@ -347,10 +347,10 @@ Generate the complete code implementation:`;
         try {
           const eslintCmd = `npx eslint "${filePath}" --format json --no-error-on-unmatched-pattern`;
           const { stdout } = await execAsync(eslintCmd, { timeout: 30000 });
-          const eslintResults = JSON.parse(stdout);
+          const eslintResults = JSON.parse(stdout) as Array<{ messages: Array<{ line: number; column: number; message: string; severity: number; ruleId?: string }> }>;
           
-          eslintIssues = eslintResults.flatMap((file: any) => 
-            file.messages.map((msg: any) => ({
+          eslintIssues = eslintResults.flatMap((file) => 
+            file.messages.map((msg) => ({
               line: msg.line,
               column: msg.column,
               message: msg.message,

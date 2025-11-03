@@ -37,11 +37,12 @@ router.post('/create', async (_req: Request, res: Response) => {
         error: result.error
       });
     }
-  } catch (error: any) {
-    logger.error('Backup creation failed', { error: error.message });
+  } catch (error: unknown) {
+    const errorMessage = error && typeof error === 'object' && 'message' in error ? String(error.message) : 'Unknown error';
+    logger.error('Backup creation failed', { error: errorMessage });
     return res.status(500).json({
       success: false,
-      error: error.message
+      error: errorMessage
     });
   }
 });
@@ -62,11 +63,12 @@ router.get('/list', async (_req: Request, res: Response) => {
         sizeMB: (b.size / 1024 / 1024).toFixed(2)
       }))
     });
-  } catch (error: any) {
-    logger.error('Failed to list backups', { error: error.message });
+  } catch (error: unknown) {
+    const errorMessage = error && typeof error === 'object' && 'message' in error ? String(error.message) : 'Unknown error';
+    logger.error('Failed to list backups', { error: errorMessage });
     res.status(500).json({
       success: false,
-      error: error.message
+      error: errorMessage
     });
   }
 });
@@ -101,11 +103,12 @@ router.post('/restore', async (req: Request, res: Response) => {
         error: result.error
       });
     }
-  } catch (error: any) {
-    logger.error('Backup restore failed', { error: error.message });
+  } catch (error: unknown) {
+    const errorMessage = error && typeof error === 'object' && 'message' in error ? String(error.message) : 'Unknown error';
+    logger.error('Backup restore failed', { error: errorMessage });
     return res.status(500).json({
       success: false,
-      error: error.message
+      error: errorMessage
     });
   }
 });

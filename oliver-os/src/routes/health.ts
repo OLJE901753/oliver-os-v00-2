@@ -59,12 +59,12 @@ async function checkService(
       latency,
       lastCheck: new Date().toISOString()
     };
-  } catch (error: any) {
+  } catch (error: unknown) {
     return {
       name,
       status: 'unhealthy',
       latency: Date.now() - startTime,
-      error: error.message || 'Unknown error',
+      error: error && typeof error === 'object' && 'message' in error ? String(error.message) : 'Unknown error',
       lastCheck: new Date().toISOString()
     };
   }
@@ -232,11 +232,12 @@ router.get('/ready', async (_req: Request, res: Response) => {
         checks: results
       });
     }
-  } catch (error: any) {
-    logger.error('Readiness check failed', { error: error.message });
+  } catch (error: unknown) {
+    const errorMessage = error && typeof error === 'object' && 'message' in error ? String(error.message) : 'Unknown error';
+    logger.error('Readiness check failed', { error: errorMessage });
     res.status(503).json({ 
       status: 'not ready', 
-      error: error.message,
+      error: errorMessage,
       timestamp: new Date().toISOString()
     });
   }
