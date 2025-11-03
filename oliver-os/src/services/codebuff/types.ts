@@ -79,9 +79,9 @@ export interface CodebuffClientConfig {
 }
 
 export interface EventBus {
-  emit: (event: string, data: any) => void;
-  on: (event: string, handler: (data: any) => void) => void;
-  off: (event: string, handler: (data: any) => void) => void;
+  emit: (event: string, data: unknown) => void;
+  on: (event: string, handler: (data: unknown) => void) => void;
+  off: (event: string, handler: (data: unknown) => void) => void;
 }
 
 export interface OliverOSAgentDefinition extends AgentDefinition {
