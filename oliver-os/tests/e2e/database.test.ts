@@ -243,13 +243,19 @@ describe('Database E2E Tests', () => {
     let testSessionId: string;
 
     beforeAll(async () => {
-      // Create a test user
+      // Create a test user - ensure it exists before creating session
       const user = await dbService.createUser({
         email: `collab-test-${Date.now()}@example.com`,
         name: 'Collaboration Test User'
       });
       testUserIds.push(user.id);
       testUserId = user.id;
+      
+      // Verify user exists in database
+      const verifyUser = await dbService.getUserById(testUserId);
+      if (!verifyUser) {
+        throw new Error(`Failed to create test user for collaboration tests`);
+      }
     });
 
     it('should create a collaboration session', async () => {
