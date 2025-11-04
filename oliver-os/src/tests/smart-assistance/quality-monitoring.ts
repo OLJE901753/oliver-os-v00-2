@@ -13,6 +13,15 @@ import { Logger } from '../../core/logger';
 import fs from 'fs-extra';
 import path from 'path';
 
+// Helper function to create temporary test files
+async function createTestFile(content: string): Promise<string> {
+  const testDir = path.join(process.cwd(), 'test-temp');
+  await fs.ensureDir(testDir);
+  const testFile = path.join(testDir, `test-${Date.now()}-${Math.random().toString(36).substring(7)}.ts`);
+  await fs.writeFile(testFile, content);
+  return testFile;
+}
+
 interface QualityMetric {
   name: string;
   value: number;
@@ -129,7 +138,9 @@ export class QualityMonitor {
     
     try {
       const testCode = 'export class Test { method(): string { return "test"; } }';
-      await this.smartAssistance.analyzeCode(testCode);
+      const testFile = await createTestFile(testCode);
+      await this.smartAssistance.analyzeCode(testFile);
+      await fs.remove(testFile);
       
       const duration = performance.now() - start;
       const maxDuration = 1000; // 1 second
@@ -151,14 +162,30 @@ export class QualityMonitor {
     // Simulate error rate measurement
     const totalOperations = 100;
     let errorCount = 0;
+    const testFiles: string[] = [];
     
-    for (let i = 0; i < totalOperations; i++) {
-      try {
-        const testCode = `export class Test${i} { method(): string { return "test${i}"; } }`;
-        await this.smartAssistance.analyzeCode(testCode);
-      } catch (error) {
-        errorCount++;
+    try {
+      for (let i = 0; i < totalOperations; i++) {
+        try {
+          const testCode = `export class Test${i} { method(): string { return "test${i}"; } }`;
+          const testFile = await createTestFile(testCode);
+          testFiles.push(testFile);
+          await this.smartAssistance.analyzeCode(testFile);
+        } catch (error) {
+          errorCount++;
+        }
       }
+      
+      // Clean up test files
+      for (const file of testFiles) {
+        try {
+          await fs.remove(file);
+        } catch {
+          // Ignore cleanup errors
+        }
+      }
+    } catch {
+      // Error in test setup
     }
     
     return errorCount / totalOperations;
@@ -179,7 +206,9 @@ export class QualityMonitor {
     `;
     
     try {
-      const result = await this.smartAssistance.analyzeCode(testCode);
+      const testFile = await createTestFile(testCode);
+      const result = await this.smartAssistance.analyzeCode(testFile);
+      await fs.remove(testFile);
       return result.score / 10; // Normalize to 0-1
     } catch (error) {
       return 0;

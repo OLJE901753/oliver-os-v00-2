@@ -3,8 +3,8 @@
  * Comprehensive testing of the authentication implementation
  */
 
-import { describe, it, expect, beforeAll, afterAll } from 'vitest';
-import { AuthService } from '../src/services/auth';
+import { describe, it, expect, beforeAll, afterAll, vi } from 'vitest';
+import { AuthService } from '../../src/services/auth';
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
@@ -12,17 +12,17 @@ import jwt from 'jsonwebtoken';
 // Mock Prisma client for testing
 const mockPrisma = {
   user: {
-    findUnique: jest.fn(),
-    create: jest.fn(),
-    update: jest.fn(),
+    findUnique: vi.fn(),
+    create: vi.fn(),
+    update: vi.fn(),
   },
   refreshToken: {
-    create: jest.fn(),
-    findUnique: jest.fn(),
-    deleteMany: jest.fn(),
+    create: vi.fn(),
+    findUnique: vi.fn(),
+    deleteMany: vi.fn(),
   },
-  $connect: jest.fn(),
-  $disconnect: jest.fn(),
+  $connect: vi.fn(),
+  $disconnect: vi.fn(),
 } as any;
 
 describe('Authentication System Tests', () => {
@@ -39,7 +39,7 @@ describe('Authentication System Tests', () => {
   });
 
   afterAll(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   describe('User Registration', () => {
@@ -60,10 +60,10 @@ describe('Authentication System Tests', () => {
         updatedAt: new Date(),
       };
 
-      mockPrisma.user.findUnique.mockResolvedValue(null);
-      mockPrisma.user.create.mockResolvedValue(mockUser);
-      mockPrisma.user.update.mockResolvedValue(mockUser);
-      mockPrisma.refreshToken.create.mockResolvedValue({
+      (mockPrisma.user.findUnique as ReturnType<typeof vi.fn>).mockResolvedValue(null);
+      (mockPrisma.user.create as ReturnType<typeof vi.fn>).mockResolvedValue(mockUser);
+      (mockPrisma.user.update as ReturnType<typeof vi.fn>).mockResolvedValue(mockUser);
+      (mockPrisma.refreshToken.create as ReturnType<typeof vi.fn>).mockResolvedValue({
         id: 'token-123',
         userId: 'user-123',
         token: 'refresh-token',
@@ -86,7 +86,7 @@ describe('Authentication System Tests', () => {
         password: 'TestPassword123!',
       };
 
-      mockPrisma.user.findUnique.mockResolvedValue({
+      (mockPrisma.user.findUnique as ReturnType<typeof vi.fn>).mockResolvedValue({
         id: 'existing-user',
         email: userData.email,
       });
@@ -114,9 +114,9 @@ describe('Authentication System Tests', () => {
         updatedAt: new Date(),
       };
 
-      mockPrisma.user.findUnique.mockResolvedValue(mockUser);
-      mockPrisma.user.update.mockResolvedValue(mockUser);
-      mockPrisma.refreshToken.create.mockResolvedValue({
+      (mockPrisma.user.findUnique as ReturnType<typeof vi.fn>).mockResolvedValue(mockUser);
+      (mockPrisma.user.update as ReturnType<typeof vi.fn>).mockResolvedValue(mockUser);
+      (mockPrisma.refreshToken.create as ReturnType<typeof vi.fn>).mockResolvedValue({
         id: 'token-123',
         userId: 'user-123',
         token: 'refresh-token',
@@ -146,7 +146,7 @@ describe('Authentication System Tests', () => {
         updatedAt: new Date(),
       };
 
-      mockPrisma.user.findUnique.mockResolvedValue(mockUser);
+      (mockPrisma.user.findUnique as ReturnType<typeof vi.fn>).mockResolvedValue(mockUser);
 
       await expect(authService.login(credentials)).rejects.toThrow(
         'Invalid credentials'
@@ -169,7 +169,7 @@ describe('Authentication System Tests', () => {
         updatedAt: new Date(),
       };
 
-      mockPrisma.user.findUnique.mockResolvedValue(mockUser);
+      (mockPrisma.user.findUnique as ReturnType<typeof vi.fn>).mockResolvedValue(mockUser);
 
       await expect(authService.login(credentials)).rejects.toThrow(
         'Account is deactivated'
@@ -193,7 +193,7 @@ describe('Authentication System Tests', () => {
         },
       };
 
-      mockPrisma.refreshToken.findUnique.mockResolvedValue(mockTokenRecord);
+      (mockPrisma.refreshToken.findUnique as ReturnType<typeof vi.fn>).mockResolvedValue(mockTokenRecord);
 
       const result = await authService.refreshToken(refreshToken);
 
@@ -216,7 +216,7 @@ describe('Authentication System Tests', () => {
         },
       };
 
-      mockPrisma.refreshToken.findUnique.mockResolvedValue(mockTokenRecord);
+      (mockPrisma.refreshToken.findUnique as ReturnType<typeof vi.fn>).mockResolvedValue(mockTokenRecord);
 
       await expect(authService.refreshToken(refreshToken)).rejects.toThrow(
         'Invalid or expired refresh token'
@@ -239,7 +239,7 @@ describe('Authentication System Tests', () => {
         updatedAt: new Date(),
       };
 
-      mockPrisma.user.findUnique.mockResolvedValue(mockUser);
+      (mockPrisma.user.findUnique as ReturnType<typeof vi.fn>).mockResolvedValue(mockUser);
 
       const result = await authService.verifyToken(accessToken);
 
@@ -258,7 +258,7 @@ describe('Authentication System Tests', () => {
     it('should logout user and invalidate refresh token', async () => {
       const refreshToken = 'valid-refresh-token';
 
-      mockPrisma.refreshToken.deleteMany.mockResolvedValue({ count: 1 });
+      (mockPrisma.refreshToken.deleteMany as ReturnType<typeof vi.fn>).mockResolvedValue({ count: 1 });
 
       await authService.logout(refreshToken);
 
@@ -270,7 +270,7 @@ describe('Authentication System Tests', () => {
     it('should logout all sessions for user', async () => {
       const userId = 'user-123';
 
-      mockPrisma.refreshToken.deleteMany.mockResolvedValue({ count: 3 });
+      (mockPrisma.refreshToken.deleteMany as ReturnType<typeof vi.fn>).mockResolvedValue({ count: 3 });
 
       await authService.logoutAll(userId);
 
@@ -334,13 +334,4 @@ describe('Authentication System Tests', () => {
   });
 });
 
-// Mock jest for vitest compatibility
-const jest = {
-  fn: () => ({
-    mockResolvedValue: (_value: any) => {},
-    mockRejectedValue: (_value: any) => {},
-    toHaveBeenCalledWith: (...args: any[]) => {},
-    toHaveBeenCalled: () => {},
-  }),
-  clearAllMocks: () => {},
-};
+// Removed jest mock - using vi from vitest instead

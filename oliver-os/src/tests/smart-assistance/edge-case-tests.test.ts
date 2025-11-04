@@ -425,7 +425,9 @@ describe('Smart Assistance Edge Case Tests', () => {
       };
       
       // Should still work
-      const result = await smartAssistance.analyzeCode('export class Test {}');
+      const testFile = await createTestFile('export class Test {}');
+      testFiles.push(testFile);
+      const result = await smartAssistance.analyzeCode(testFile);
       expect(result).toBeDefined();
       
       // Restore original method
@@ -440,7 +442,9 @@ describe('Smart Assistance Edge Case Tests', () => {
       };
       
       // Should still work
-      const result = await smartAssistance.analyzeCode('export class Test {}');
+      const testFile = await createTestFile('export class Test {}');
+      testFiles.push(testFile);
+      const result = await smartAssistance.analyzeCode(testFile);
       expect(result).toBeDefined();
       
       // Restore original fetch
