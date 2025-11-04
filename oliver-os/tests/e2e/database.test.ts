@@ -80,8 +80,8 @@ describe('Database E2E Tests', () => {
     });
 
     it('should retrieve a user by ID', async () => {
-      if (!testUserId) {
-        // Create user if previous test failed
+      // Ensure testUserId is set from previous test
+      if (!testUserId || !testUserEmail) {
         testUserEmail = `e2e-test-${Date.now()}@example.com`;
         const user = await dbService.createUser({
           email: testUserEmail,
@@ -90,15 +90,17 @@ describe('Database E2E Tests', () => {
         testUserId = user.id;
         testUserIds.push(user.id);
       }
+      
       const user = await dbService.getUserById(testUserId);
       expect(user).toBeDefined();
+      expect(user).not.toBeNull();
       expect(user!.id).toBe(testUserId);
       expect(user!.email).toBe(testUserEmail);
     });
 
     it('should retrieve a user by email', async () => {
-      if (!testUserEmail) {
-        // Create user if previous test failed
+      // Ensure testUserId is set from previous test
+      if (!testUserId || !testUserEmail) {
         testUserEmail = `e2e-test-${Date.now()}@example.com`;
         const user = await dbService.createUser({
           email: testUserEmail,
@@ -107,8 +109,10 @@ describe('Database E2E Tests', () => {
         testUserId = user.id;
         testUserIds.push(user.id);
       }
+      
       const user = await dbService.getUserByEmail(testUserEmail);
       expect(user).toBeDefined();
+      expect(user).not.toBeNull();
       expect(user!.id).toBe(testUserId);
       expect(user!.email).toBe(testUserEmail);
     });
@@ -146,6 +150,17 @@ describe('Database E2E Tests', () => {
     });
 
     it('should retrieve thoughts by user ID', async () => {
+      // Ensure we have a thought to retrieve
+      if (!testThoughtId) {
+        // Create a thought if previous test failed
+        const thought = await dbService.createThought({
+          userId: testUserId,
+          content: 'This is a test thought for E2E testing',
+          type: 'text'
+        });
+        testThoughtId = thought.id;
+      }
+      
       const thoughts = await dbService.getThoughtsByUserId(testUserId, 10, 0);
       expect(thoughts).toBeDefined();
       expect(Array.isArray(thoughts)).toBe(true);
@@ -157,6 +172,16 @@ describe('Database E2E Tests', () => {
     });
 
     it('should search thoughts', async () => {
+      // Ensure we have a thought to search
+      if (!testThoughtId) {
+        const thought = await dbService.createThought({
+          userId: testUserId,
+          content: 'This is a test thought for E2E testing',
+          type: 'text'
+        });
+        testThoughtId = thought.id;
+      }
+      
       const results = await dbService.searchThoughts('test thought', testUserId);
       expect(results).toBeDefined();
       expect(Array.isArray(results)).toBe(true);
@@ -245,7 +270,16 @@ describe('Database E2E Tests', () => {
     });
 
     it('should add participants to a session', async () => {
-      const participantId = 'test-participant-id';
+      // Ensure session exists
+      if (!testSessionId) {
+        const session = await dbService.createCollaborationSession({
+          name: 'E2E Test Session',
+          createdBy: testUserId
+        });
+        testSessionId = session.id;
+      }
+      
+      const participantId = testUserId; // Use existing user ID
       
       await dbService.addParticipantToSession(testSessionId, participantId);
       
@@ -255,10 +289,20 @@ describe('Database E2E Tests', () => {
       });
       
       expect(session).toBeDefined();
-      expect(session!.participants).toContain(participantId);
+      const participants = JSON.parse(session!.participants || '[]');
+      expect(participants).toContain(participantId);
     });
 
     it('should create real-time events', async () => {
+      // Ensure session exists
+      if (!testSessionId) {
+        const session = await dbService.createCollaborationSession({
+          name: 'E2E Test Session',
+          createdBy: testUserId
+        });
+        testSessionId = session.id;
+      }
+      
       const eventData = {
         sessionId: testSessionId,
         userId: testUserId,
@@ -418,12 +462,12 @@ describe('Database E2E Tests', () => {
     it('should handle bulk operations efficiently', async () => {
       const startTime = Date.now();
       
-      // Create multiple users
+      // Create multiple users with unique emails
       const promises = [];
       for (let i = 0; i < 10; i++) {
         promises.push(
           dbService.createUser({
-            email: `bulk-test-${i}@example.com`,
+            email: `bulk-test-${Date.now()}-${i}@example.com`,
             name: `Bulk Test User ${i}`
           })
         );
@@ -432,15 +476,20 @@ describe('Database E2E Tests', () => {
       const users = await Promise.all(promises);
       const endTime = Date.now();
       
+      // Track users for cleanup
+      users.forEach(user => testUserIds.push(user.id));
+      
       expect(users).toHaveLength(10);
       expect(endTime - startTime).toBeLessThan(5000); // Should complete within 5 seconds
     });
 
     it('should handle concurrent database operations', async () => {
+      const uniqueEmail = `concurrent-test-${Date.now()}@example.com`;
       const user = await dbService.createUser({
-        email: `concurrent-test-${Date.now()}-${i}@example.com`,
+        email: uniqueEmail,
         name: 'Concurrent Test User'
       });
+      testUserIds.push(user.id);
       
       // Create multiple thoughts concurrently
       const promises = [];

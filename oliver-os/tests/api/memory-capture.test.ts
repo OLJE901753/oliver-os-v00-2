@@ -151,7 +151,8 @@ describe('Memory Capture API Endpoints', () => {
 
       expect(response.body.results).toEqual(mockResults);
       expect(response.body.query).toBe('test');
-      expect(captureMemoryService.searchMemories).toHaveBeenCalledWith('test');
+      // searchMemories is called with query and optional limit parameter (defaults to 50)
+      expect(captureMemoryService.searchMemories).toHaveBeenCalledWith('test', 50);
     });
   });
 

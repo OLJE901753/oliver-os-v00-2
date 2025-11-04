@@ -1,6 +1,13 @@
 import { defineConfig } from 'vitest/config';
+import path from 'path';
 
 export default defineConfig({
+  resolve: {
+    alias: {
+      // Allow importing examples from test files
+      '@examples': path.resolve(__dirname, 'examples'),
+    },
+  },
   test: {
     globals: true,
     environment: 'node',
