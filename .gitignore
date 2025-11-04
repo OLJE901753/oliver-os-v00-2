@@ -125,6 +125,10 @@ venv.bak/
 test-perf-*.ts
 test-*.backup.*
 test-large-*.ts
+test-edge-*.ts
+test-quality-*.ts
+test-performance-*.ts
+test-integration-*.ts
 
 # GitHub Workflow analysis files
 github-workflow-failure-*.json
