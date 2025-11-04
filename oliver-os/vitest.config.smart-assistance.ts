@@ -121,7 +121,7 @@ export default defineConfig({
       '@tests': path.resolve(__dirname, 'src/tests'),
       '@services': path.resolve(__dirname, 'src/services'),
       '@core': path.resolve(__dirname, 'src/core'),
-      '@examples': path.resolve(__dirname, 'src/examples')
+      '@examples': path.resolve(__dirname, 'examples')
     }
   },
   
