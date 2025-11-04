@@ -150,10 +150,11 @@ export class MemoryQueue extends EventEmitter {
   } {
     const db = this.storage.getDatabase();
     
-    const pendingStmt = db.prepare('SELECT COUNT(*) as count FROM processing_queue WHERE status = "pending"');
-    const processingStmt = db.prepare('SELECT COUNT(*) as count FROM processing_queue WHERE status = "processing"');
-    const completedStmt = db.prepare('SELECT COUNT(*) as count FROM processing_queue WHERE status = "completed"');
-    const failedStmt = db.prepare('SELECT COUNT(*) as count FROM processing_queue WHERE status = "failed"');
+    // Use parameterized queries with single quotes for string literals
+    const pendingStmt = db.prepare("SELECT COUNT(*) as count FROM processing_queue WHERE status = 'pending'");
+    const processingStmt = db.prepare("SELECT COUNT(*) as count FROM processing_queue WHERE status = 'processing'");
+    const completedStmt = db.prepare("SELECT COUNT(*) as count FROM processing_queue WHERE status = 'completed'");
+    const failedStmt = db.prepare("SELECT COUNT(*) as count FROM processing_queue WHERE status = 'failed'");
 
     return {
       pending: (pendingStmt.get() as CountRow).count,

@@ -463,7 +463,7 @@ export class MemoryStorage {
       if (row.type) byType[row.type] = row.count;
     }
 
-    const pendingStmt = this.db.prepare('SELECT COUNT(*) as count FROM processing_queue WHERE status = "pending"');
+    const pendingStmt = this.db.prepare("SELECT COUNT(*) as count FROM processing_queue WHERE status = 'pending'");
     const pendingQueueItems = (pendingStmt.get() as CountRow).count;
 
     return {
