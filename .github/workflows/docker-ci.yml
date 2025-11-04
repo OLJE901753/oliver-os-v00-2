@@ -32,11 +32,17 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Convert repository name to lowercase
+        id: lowercase
+        run: |
+          IMAGE_NAME_LOWER=$(echo "${{ env.IMAGE_NAME }}" | tr '[:upper:]' '[:lower:]')
+          echo "image_name_lower=$IMAGE_NAME_LOWER" >> $GITHUB_OUTPUT
+
       - name: Extract metadata
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          images: ${{ env.REGISTRY }}/${{ steps.lowercase.outputs.image_name_lower }}
           tags: |
             type=ref,event=branch
             type=ref,event=pr
@@ -63,7 +69,7 @@ jobs:
           context: ./oliver-os/ai-services
           file: ./oliver-os/ai-services/Dockerfile
           push: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-ai-services:${{ github.ref_name }}
+          tags: ${{ env.REGISTRY }}/${{ steps.lowercase.outputs.image_name_lower }}-ai-services:${{ github.ref_name }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
@@ -206,11 +212,17 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Convert repository name to lowercase for scanning
+        id: lowercase-scan
+        run: |
+          IMAGE_NAME_LOWER=$(echo "${{ env.IMAGE_NAME }}" | tr '[:upper:]' '[:lower:]')
+          echo "image_name_lower=$IMAGE_NAME_LOWER" >> $GITHUB_OUTPUT
+
       - name: Pull Docker image for scanning
         run: |
           echo "Pulling Docker image..."
-          docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.ref_name }} || \
-          docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:develop || \
+          docker pull ${{ env.REGISTRY }}/${{ steps.lowercase-scan.outputs.image_name_lower }}:${{ github.ref_name }} || \
+          docker pull ${{ env.REGISTRY }}/${{ steps.lowercase-scan.outputs.image_name_lower }}:develop || \
           echo "⚠️ Could not pull image, will scan build context instead"
 
       - name: Run Trivy vulnerability scanner
@@ -218,7 +230,7 @@ jobs:
         continue-on-error: true
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.ref_name }}
+          image-ref: ${{ env.REGISTRY }}/${{ steps.lowercase-scan.outputs.image_name_lower }}:${{ github.ref_name }}
           format: 'sarif'
           output: 'trivy-results.sarif'
           severity: 'CRITICAL,HIGH'
