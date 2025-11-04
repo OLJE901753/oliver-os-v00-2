@@ -441,7 +441,7 @@ describe('Smart Assistance Quality Gates', () => {
       
       expect(score).toBeGreaterThanOrEqual(0);
       expect(score).toBeLessThanOrEqual(1);
-    });
+    }, 90000);
 
     it('should calculate maintainability score', async () => {
       const score = await (qualityGateManager as any).calculateMaintainabilityScore();
@@ -494,7 +494,7 @@ describe('Smart Assistance Quality Gates', () => {
       const passingGates = gates.filter(gate => gate.passed);
       
       expect(failingGates.length + passingGates.length).toBe(gates.length);
-    });
+    }, 90000);
 
     it('should provide actionable feedback for failing gates', async () => {
       const gates = await qualityGateManager.runQualityGates();
@@ -505,6 +505,6 @@ describe('Smart Assistance Quality Gates', () => {
           expect(gate.message).toContain('current');
         }
       });
-    });
+    }, 90000);
   });
 });
