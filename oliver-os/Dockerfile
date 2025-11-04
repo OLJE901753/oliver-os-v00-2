@@ -11,12 +11,29 @@ RUN npm install -g pnpm@9
 ENV PATH="/usr/local/bin:$PATH"
 RUN which pnpm || npm list -g pnpm
 
-# Copy package files
-COPY package.json pnpm-lock.yaml* package-lock.json* ./
+# Copy package files from oliver-os directory first
+COPY oliver-os/package.json oliver-os/pnpm-lock.yaml* oliver-os/package-lock.json* ./
 
-# Remove bmad-global dependency if it exists (it's a local file dependency not available in Docker)
-# We'll install dependencies without it, then handle it separately if needed
-RUN if [ -f package.json ]; then \
+# Copy bmad-global if it exists (conditional copy using shell)
+# Build context is now root directory, so we can access bmad-global
+RUN if [ -d ../bmad-global ]; then \
+      cp -r ../bmad-global ./bmad-global && \
+      echo "✅ bmad-global copied successfully"; \
+    else \
+      echo "⚠️ bmad-global not found, will be skipped"; \
+      mkdir -p ./bmad-global; \
+    fi
+
+# Fix bmad-global path in package.json if bmad-global exists, otherwise remove it
+RUN if [ -d bmad-global ] && [ -f package.json ]; then \
+      echo "✅ bmad-global found, updating package.json path..."; \
+      node -e "const fs=require('fs'); const pkg=JSON.parse(fs.readFileSync('package.json')); \
+      if (pkg.dependencies && pkg.dependencies['bmad-global'] && pkg.dependencies['bmad-global'].startsWith('file:../')) { \
+        pkg.dependencies['bmad-global'] = 'file:./bmad-global'; \
+        fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2)); \
+      }"; \
+    elif [ ! -d bmad-global ] && [ -f package.json ]; then \
+      echo "⚠️ bmad-global not found, removing from dependencies..."; \
       node -e "const fs=require('fs'); const pkg=JSON.parse(fs.readFileSync('package.json')); \
       if (pkg.dependencies && pkg.dependencies['bmad-global']) { \
         delete pkg.dependencies['bmad-global']; \
@@ -47,7 +64,8 @@ ENV PATH="/usr/local/bin:$PATH"
 
 # Copy dependencies and source
 COPY --from=deps /app/node_modules ./node_modules
-COPY . .
+COPY --from=deps /app/bmad-global ./bmad-global/ 2>/dev/null || true
+COPY oliver-os/ ./
 
 # Create tsconfig.base.json (needed because tsconfig.json extends ../tsconfig.base.json)
 # In Docker build context (oliver-os/), parent directory isn't available
