@@ -1,6 +1,9 @@
 FROM node:20-alpine AS deps
 WORKDIR /app
 
+# Build argument to optionally skip bmad-global
+ARG INCLUDE_BMAD_GLOBAL=true
+
 # Install curl (needed for potential fallbacks)
 RUN apk add --no-cache curl
 
@@ -14,13 +17,18 @@ RUN which pnpm || npm list -g pnpm
 # Copy package files from oliver-os directory first
 COPY oliver-os/package.json oliver-os/pnpm-lock.yaml* oliver-os/package-lock.json* ./
 
-# Copy bmad-global if it exists (conditional copy using shell)
-# Build context is now root directory, so we can access bmad-global
-RUN if [ -d ../bmad-global ]; then \
-      cp -r ../bmad-global ./bmad-global && \
-      echo "✅ bmad-global copied successfully"; \
+# Copy bmad-global if INCLUDE_BMAD_GLOBAL is true and directory exists
+# Build context is root directory, so bmad-global is accessible
+RUN if [ "$INCLUDE_BMAD_GLOBAL" = "true" ]; then \
+      if [ -d ../bmad-global ]; then \
+        cp -r ../bmad-global ./bmad-global && \
+        echo "✅ bmad-global copied successfully"; \
+      else \
+        echo "⚠️ bmad-global directory not found, skipping..."; \
+        mkdir -p ./bmad-global; \
+      fi; \
     else \
-      echo "⚠️ bmad-global not found, will be skipped"; \
+      echo "ℹ️ bmad-global excluded by build arg"; \
       mkdir -p ./bmad-global; \
     fi
 
