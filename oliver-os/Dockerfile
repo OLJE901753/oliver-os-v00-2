@@ -1,9 +1,6 @@
 FROM node:20-alpine AS deps
 WORKDIR /app
 
-# Build argument to optionally skip bmad-global
-ARG INCLUDE_BMAD_GLOBAL=true
-
 # Install curl (needed for potential fallbacks)
 RUN apk add --no-cache curl
 
@@ -14,37 +11,20 @@ RUN npm install -g pnpm@9
 ENV PATH="/usr/local/bin:$PATH"
 RUN which pnpm || npm list -g pnpm
 
-# Copy package files from oliver-os directory first
+# Copy bmad-global first (required local dependency)
+# Build context is root directory, so bmad-global is accessible
+COPY bmad-global/ ./bmad-global/
+
+# Copy package files from oliver-os directory
 COPY oliver-os/package.json oliver-os/pnpm-lock.yaml* oliver-os/package-lock.json* ./
 
-# Copy bmad-global if INCLUDE_BMAD_GLOBAL is true and directory exists
-# Build context is root directory, so bmad-global is accessible at ./bmad-global
-# We need to COPY it first, then check if it was copied successfully
-COPY bmad-global/ ./bmad-global/ || true
-RUN if [ "$INCLUDE_BMAD_GLOBAL" = "true" ] && [ -d ./bmad-global ] && [ "$(ls -A ./bmad-global)" ]; then \
-      echo "✅ bmad-global copied successfully"; \
-    else \
-      echo "⚠️ bmad-global not found or empty, removing from dependencies..."; \
-      rm -rf ./bmad-global; \
-      mkdir -p ./bmad-global; \
-    fi
-
-# Fix bmad-global path in package.json if bmad-global exists, otherwise remove it
-RUN if [ -d bmad-global ] && [ -f package.json ]; then \
-      echo "✅ bmad-global found, updating package.json path..."; \
-      node -e "const fs=require('fs'); const pkg=JSON.parse(fs.readFileSync('package.json')); \
-      if (pkg.dependencies && pkg.dependencies['bmad-global'] && pkg.dependencies['bmad-global'].startsWith('file:../')) { \
-        pkg.dependencies['bmad-global'] = 'file:./bmad-global'; \
-        fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2)); \
-      }"; \
-    elif [ ! -d bmad-global ] && [ -f package.json ]; then \
-      echo "⚠️ bmad-global not found, removing from dependencies..."; \
-      node -e "const fs=require('fs'); const pkg=JSON.parse(fs.readFileSync('package.json')); \
-      if (pkg.dependencies && pkg.dependencies['bmad-global']) { \
-        delete pkg.dependencies['bmad-global']; \
-        fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2)); \
-      }"; \
-    fi
+# Fix bmad-global path in package.json (from file:../bmad-global to file:./bmad-global)
+RUN node -e "const fs=require('fs'); const pkg=JSON.parse(fs.readFileSync('package.json')); \
+    if (pkg.dependencies && pkg.dependencies['bmad-global'] && pkg.dependencies['bmad-global'].startsWith('file:../')) { \
+      pkg.dependencies['bmad-global'] = 'file:./bmad-global'; \
+      fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2)); \
+      console.log('✅ Updated bmad-global path in package.json'); \
+    }"
 
 # Install dependencies - try pnpm first, fallback to npm
 RUN if [ -f pnpm-lock.yaml ]; then \
@@ -69,7 +49,7 @@ ENV PATH="/usr/local/bin:$PATH"
 
 # Copy dependencies and source
 COPY --from=deps /app/node_modules ./node_modules
-COPY --from=deps /app/bmad-global ./bmad-global/ 2>/dev/null || true
+COPY --from=deps /app/bmad-global ./bmad-global/
 COPY oliver-os/ ./
 
 # Create tsconfig.base.json (needed because tsconfig.json extends ../tsconfig.base.json)
