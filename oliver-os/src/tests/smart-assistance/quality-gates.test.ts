@@ -397,7 +397,19 @@ describe('Smart Assistance Quality Gates', () => {
       gates.forEach(gate => {
         // Check case-insensitively since message format may vary
         expect(gate.message.toLowerCase()).toContain(gate.name.toLowerCase());
-        expect(gate.message).toContain(gate.current.toString());
+        // Numbers are formatted in messages (rounded); assert against displayed precision
+        if (gate.name === 'Test Coverage') {
+          expect(gate.message).toContain(gate.current.toFixed(1));
+        } else if (
+          gate.name === 'Performance' ||
+          gate.name === 'Reliability' ||
+          gate.name === 'Maintainability' ||
+          gate.name === 'Security'
+        ) {
+          expect(gate.message).toContain(gate.current.toFixed(2));
+        } else {
+          expect(gate.message).toContain(gate.current.toString());
+        }
         expect(gate.message).toContain(gate.threshold.toString());
       });
     }, 90000); // 90 second timeout for this test
