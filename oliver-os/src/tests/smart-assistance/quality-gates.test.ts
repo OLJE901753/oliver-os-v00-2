@@ -502,7 +502,19 @@ describe('Smart Assistance Quality Gates', () => {
       gates.forEach(gate => {
         if (!gate.passed) {
           expect(gate.message).toContain('threshold');
-          expect(gate.message).toContain('current');
+          // Ensure the message includes the current value in its displayed precision
+          if (gate.name === 'Test Coverage') {
+            expect(gate.message).toContain(gate.current.toFixed(1));
+          } else if (
+            gate.name === 'Performance' ||
+            gate.name === 'Reliability' ||
+            gate.name === 'Maintainability' ||
+            gate.name === 'Security'
+          ) {
+            expect(gate.message).toContain(gate.current.toFixed(2));
+          } else {
+            expect(gate.message).toContain(gate.current.toString());
+          }
         }
       });
     }, 90000);
