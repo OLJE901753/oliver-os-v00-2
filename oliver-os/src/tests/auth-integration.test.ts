@@ -25,6 +25,7 @@ describe('Authentication Integration Tests', () => {
   let prisma: PrismaClient;
   let testUserId: string;
   let testTokens: { accessToken: string; refreshToken: string; expiresIn: number };
+  let testEmail: string;
 
   beforeAll(async () => {
     // Set up test environment
@@ -33,9 +34,21 @@ describe('Authentication Integration Tests', () => {
     process.env.JWT_ACCESS_EXPIRY = '15m';
     process.env.JWT_REFRESH_EXPIRY = '7d';
 
+    // Generate unique email for this test run
+    testEmail = `integration-test-${Date.now()}@oliver-os.com`;
+
     // Initialize Prisma client (this would connect to a test database in real tests)
     prisma = new PrismaClient();
     authService = new AuthService(prisma);
+
+    // Clean up any existing test users before starting
+    try {
+      await prisma.user.deleteMany({
+        where: { email: { contains: 'integration-test' } }
+      });
+    } catch (error) {
+      // Ignore cleanup errors
+    }
   });
 
   afterAll(async () => {
@@ -53,10 +66,13 @@ describe('Authentication Integration Tests', () => {
 
   describe('Complete Authentication Flow', () => {
     it('should complete full user registration flow', async () => {
-      // Step 1: Register new user
-      const registerResult = await authService.register(TEST_CONFIG.testUser);
+      // Step 1: Register new user with unique email
+      const registerResult = await authService.register({
+        ...TEST_CONFIG.testUser,
+        email: testEmail
+      });
       
-      expect(registerResult.user.email).toBe(TEST_CONFIG.testUser.email);
+      expect(registerResult.user.email).toBe(testEmail);
       expect(registerResult.user.name).toBe(TEST_CONFIG.testUser.name);
       expect(registerResult.tokens.accessToken).toBeDefined();
       expect(registerResult.tokens.refreshToken).toBeDefined();
@@ -71,7 +87,7 @@ describe('Authentication Integration Tests', () => {
       });
 
       expect(createdUser).toBeDefined();
-      expect(createdUser?.email).toBe(TEST_CONFIG.testUser.email);
+      expect(createdUser?.email).toBe(testEmail);
       expect(createdUser?.isActive).toBe(true);
 
       // Step 3: Verify password was hashed
@@ -94,11 +110,11 @@ describe('Authentication Integration Tests', () => {
     it('should complete full user login flow', async () => {
       // Step 1: Login with credentials
       const loginResult = await authService.login({
-        email: TEST_CONFIG.testUser.email,
+        email: testEmail,
         password: TEST_CONFIG.testUser.password,
       });
 
-      expect(loginResult.user.email).toBe(TEST_CONFIG.testUser.email);
+      expect(loginResult.user.email).toBe(testEmail);
       expect(loginResult.tokens.accessToken).toBeDefined();
       expect(loginResult.tokens.refreshToken).toBeDefined();
 
@@ -109,7 +125,7 @@ describe('Authentication Integration Tests', () => {
       ) as any;
 
       expect(decodedToken.userId).toBe(testUserId);
-      expect(decodedToken.email).toBe(TEST_CONFIG.testUser.email);
+      expect(decodedToken.email).toBe(testEmail);
 
       // Step 3: Verify last login was updated
       const updatedUser = await prisma.user.findUnique({
@@ -143,13 +159,13 @@ describe('Authentication Integration Tests', () => {
       ) as any;
 
       expect(decodedToken.userId).toBe(testUserId);
-      expect(decodedToken.email).toBe(TEST_CONFIG.testUser.email);
+      expect(decodedToken.email).toBe(testEmail);
     });
 
     it('should complete token verification flow', async () => {
       // Step 1: Generate a valid access token
       const accessToken = jwt.sign(
-        { userId: testUserId, email: TEST_CONFIG.testUser.email },
+        { userId: testUserId, email: testEmail },
         TEST_CONFIG.jwtSecret,
         { expiresIn: '15m' }
       );
@@ -158,7 +174,7 @@ describe('Authentication Integration Tests', () => {
       const verifiedUser = await authService.verifyToken(accessToken);
 
       expect(verifiedUser.id).toBe(testUserId);
-      expect(verifiedUser.email).toBe(TEST_CONFIG.testUser.email);
+      expect(verifiedUser.email).toBe(testEmail);
       expect(verifiedUser.name).toBe(TEST_CONFIG.testUser.name);
     });
 
@@ -220,14 +236,17 @@ describe('Authentication Integration Tests', () => {
     it('should prevent duplicate user registration', async () => {
       // Try to register the same user again
       await expect(
-        authService.register(TEST_CONFIG.testUser)
+        authService.register({
+          ...TEST_CONFIG.testUser,
+          email: testEmail
+        })
       ).rejects.toThrow('User with this email already exists');
     });
 
     it('should prevent login with wrong password', async () => {
       await expect(
         authService.login({
-          email: TEST_CONFIG.testUser.email,
+          email: testEmail,
           password: 'WrongPassword123!',
         })
       ).rejects.toThrow('Invalid credentials');
@@ -257,7 +276,7 @@ describe('Authentication Integration Tests', () => {
     it('should handle expired tokens correctly', async () => {
       // Create an expired token
       const expiredToken = jwt.sign(
-        { userId: testUserId, email: TEST_CONFIG.testUser.email },
+        { userId: testUserId, email: testEmail },
         TEST_CONFIG.jwtSecret,
         { expiresIn: '-1h' } // Expired 1 hour ago
       );
@@ -272,7 +291,7 @@ describe('Authentication Integration Tests', () => {
     it('should handle multiple concurrent logins', async () => {
       const loginPromises = Array.from({ length: 10 }, () =>
         authService.login({
-          email: TEST_CONFIG.testUser.email,
+          email: testEmail,
           password: TEST_CONFIG.testUser.password,
         })
       );
@@ -281,7 +300,7 @@ describe('Authentication Integration Tests', () => {
 
       // All logins should succeed
       results.forEach((result) => {
-        expect(result.user.email).toBe(TEST_CONFIG.testUser.email);
+        expect(result.user.email).toBe(testEmail);
         expect(result.tokens.accessToken).toBeDefined();
       });
     }, 10000); // Increase timeout to 10 seconds for concurrent operations

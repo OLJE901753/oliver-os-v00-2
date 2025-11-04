@@ -423,10 +423,27 @@ describe('Database E2E Tests', () => {
 
   describe('Error Handling', () => {
     it('should handle invalid user creation', async () => {
+      // Test with empty email (should fail validation)
       await expect(
         dbService.createUser({
           email: '', // Invalid email
           name: 'Test User'
+        })
+      ).rejects.toThrow();
+      
+      // Test with duplicate email (should fail unique constraint)
+      // First create a user
+      const existingUser = await dbService.createUser({
+        email: `duplicate-test-${Date.now()}@example.com`,
+        name: 'Existing User'
+      });
+      testUserIds.push(existingUser.id);
+      
+      // Then try to create another with the same email
+      await expect(
+        dbService.createUser({
+          email: existingUser.email,
+          name: 'Duplicate User'
         })
       ).rejects.toThrow();
     });

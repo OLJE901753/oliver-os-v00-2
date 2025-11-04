@@ -225,8 +225,13 @@ export class AuthService {
    */
   async verifyToken(token: string): Promise<AuthUser> {
     try {
-      const decoded = jwt.verify(token, this.jwtSecret) as { userId: string; email: string };
+      const decoded = jwt.verify(token, this.jwtSecret) as { userId?: string; email?: string };
       
+      // Validate that decoded token contains required fields
+      if (!decoded?.userId) {
+        throw new Error('Invalid token: missing userId');
+      }
+
       const user = await this.prisma.user.findUnique({
         where: { id: decoded.userId }
       });
