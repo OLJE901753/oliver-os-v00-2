@@ -9,6 +9,7 @@ import { DatabaseService } from '../../src/services/database';
 describe('Database E2E Tests', () => {
   let dbService: DatabaseService;
   const testUserIds: string[] = [];
+  const persistentUserIds: string[] = []; // Users needed across multiple tests
 
   beforeAll(async () => {
     dbService = new DatabaseService();
@@ -17,12 +18,17 @@ describe('Database E2E Tests', () => {
 
   beforeEach(async () => {
     // Clean up test users before each test to avoid unique constraint violations
+    // But preserve users needed for later tests (created in beforeAll)
     try {
       for (const userId of testUserIds) {
-        await dbService.getClient().user.deleteMany({
-          where: { id: userId }
-        }).catch(() => {});
+        // Don't delete if it's a persistent user
+        if (!persistentUserIds.includes(userId)) {
+          await dbService.getClient().user.deleteMany({
+            where: { id: userId }
+          }).catch(() => {});
+        }
       }
+      // Only clear non-persistent users
       testUserIds.length = 0;
     } catch (error) {
       // Ignore cleanup errors
@@ -130,6 +136,7 @@ describe('Database E2E Tests', () => {
       });
       testUserId = user.id;
       testUserIds.push(user.id);
+      persistentUserIds.push(user.id); // Mark as persistent
     });
 
     it('should create a thought', async () => {
@@ -249,6 +256,7 @@ describe('Database E2E Tests', () => {
         name: 'Collaboration Test User'
       });
       testUserIds.push(user.id);
+      persistentUserIds.push(user.id); // Mark as persistent
       testUserId = user.id;
       
       // Verify user exists in database
@@ -334,6 +342,7 @@ describe('Database E2E Tests', () => {
         name: 'AI Test User'
       });
       testUserIds.push(user.id);
+      persistentUserIds.push(user.id); // Mark as persistent
       
       const thought = await dbService.createThought({
         userId: user.id,
@@ -373,6 +382,7 @@ describe('Database E2E Tests', () => {
         name: 'Voice Test User'
       });
       testUserIds.push(user.id);
+      persistentUserIds.push(user.id); // Mark as persistent
       
       const thought = await dbService.createThought({
         userId: user.id,
@@ -412,6 +422,7 @@ describe('Database E2E Tests', () => {
         name: 'Visualization Test User'
       });
       testUserIds.push(user.id);
+      persistentUserIds.push(user.id); // Mark as persistent
       testUserId = user.id;
     });
 
