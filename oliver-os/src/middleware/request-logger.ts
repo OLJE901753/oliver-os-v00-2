@@ -4,10 +4,12 @@
  */
 
 import type { Request, Response, NextFunction } from 'express';
-import type { BufferEncoding } from 'buffer';
 import { Logger } from '../core/logger';
 
 const logger = new Logger('RequestLogger');
+
+// BufferEncoding type from Node.js
+type BufferEncoding = 'ascii' | 'utf8' | 'utf-8' | 'utf16le' | 'ucs2' | 'ucs-2' | 'base64' | 'base64url' | 'latin1' | 'binary' | 'hex';
 
 export function requestLogger(req: Request, res: Response, next: NextFunction): void {
   const startTime = Date.now();

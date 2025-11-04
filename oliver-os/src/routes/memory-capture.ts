@@ -100,7 +100,7 @@ export function createMemoryCaptureRoutes(memoryService: CaptureMemoryService): 
   router.get('/search', async (req: Request, res: Response) => {
     try {
       // Support both 'q' and 'query' parameters for compatibility
-      const queryParam = (req.query.q || req.query.query) as string | undefined;
+      const queryParam = (req.query['q'] || req.query['query']) as string | undefined;
       const { limit } = req.query;
 
       if (!queryParam) {

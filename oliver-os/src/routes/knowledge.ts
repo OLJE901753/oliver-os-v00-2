@@ -10,6 +10,7 @@ import { Logger } from '../core/logger';
 import { SecurityManager } from '../core/security';
 import { Config } from '../core/config';
 import type { KnowledgeGraphService } from '../services/knowledge/knowledge-graph-service';
+import type { NodeType } from '../services/knowledge/node.types';
 
 const logger = new Logger('KnowledgeGraphRoutes');
 const config = new Config();
@@ -69,8 +70,17 @@ export function createKnowledgeGraphRoutes(knowledgeGraphService: KnowledgeGraph
       const sanitizedTitle = sanitizeString(title);
       const sanitizedContent = sanitizeString(content);
 
+      // Validate type is a valid NodeType
+      const validNodeTypes: NodeType[] = ['business_idea', 'project', 'person', 'concept', 'task', 'note'];
+      if (!validNodeTypes.includes(sanitizedType as NodeType)) {
+        return res.status(400).json({ 
+          error: 'Invalid node type',
+          message: `Type must be one of: ${validNodeTypes.join(', ')}`
+        });
+      }
+
       const node = await knowledgeGraphService.createNode({
-        type: sanitizedType,
+        type: sanitizedType as NodeType,
         title: sanitizedTitle,
         content: sanitizedContent,
         metadata,
