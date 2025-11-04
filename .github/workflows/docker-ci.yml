@@ -89,7 +89,7 @@ jobs:
       - name: Build test images
         run: |
           echo "Building backend test image..."
-          docker build -f ./oliver-os/Dockerfile -t oliver-os-backend-test ./oliver-os
+          docker build -f ./oliver-os/Dockerfile -t oliver-os-backend-test .
           
           echo "Building AI services test image..."
           docker build -f ./oliver-os/ai-services/Dockerfile -t oliver-os-ai-test ./oliver-os/ai-services

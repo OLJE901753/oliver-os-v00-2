@@ -38,7 +38,7 @@ Write-Section "Test 1: Building Backend Docker Image"
 Write-Host "Building oliver-os backend..." -ForegroundColor Cyan
 $backendBuildStart = Get-Date
 
-docker build -f oliver-os/Dockerfile -t oliver-os-backend-test oliver-os
+docker build -f oliver-os/Dockerfile -t oliver-os-backend-test .
 
 if ($LASTEXITCODE -eq 0) {
     $backendBuildTime = ((Get-Date) - $backendBuildStart).TotalSeconds
