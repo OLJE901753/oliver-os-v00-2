@@ -127,17 +127,40 @@ describe('Service Integration Tests', () => {
       } as any;
 
       // Step 1: Capture memory
+      const mockMemory = {
+        id: 'memory-123',
+        rawContent: 'Meeting with John about the new project',
+        type: 'text',
+        status: 'raw',
+        timestamp: new Date().toISOString(),
+      };
+      
+      (mockMemoryService.captureMemory as any).mockResolvedValue(mockMemory);
+      
       const capturedMemory = await mockMemoryService.captureMemory({
         rawContent: 'Meeting with John about the new project',
         type: 'text',
       });
 
       expect(mockMemoryService.captureMemory).toHaveBeenCalled();
+      expect(capturedMemory).toBeDefined();
+      expect(capturedMemory.id).toBe('memory-123');
 
       // Step 2: Organize memory
+      const mockOrganized = {
+        structured: {
+          type: 'meeting',
+          title: 'Meeting with John',
+          content: 'Meeting with John about the new project',
+        },
+      };
+      
+      (mockOrganizer.organizeMemory as any).mockResolvedValue(mockOrganized);
+      
       const organized = await mockOrganizer.organizeMemory(capturedMemory.id);
 
       expect(mockOrganizer.organizeMemory).toHaveBeenCalledWith(capturedMemory.id);
+      expect(organized).toBeDefined();
 
       // Step 3: Create knowledge graph nodes
       if (organized.structured) {

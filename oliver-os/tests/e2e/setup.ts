@@ -7,6 +7,39 @@ import { beforeAll, afterAll, beforeEach, afterEach } from 'vitest';
 import { execSync } from 'child_process';
 import { createServer } from 'http';
 import { io, Socket } from 'socket.io-client';
+import net from 'net';
+
+// Helper function to check if port is available
+function isPortAvailable(port: number): Promise<boolean> {
+  return new Promise((resolve) => {
+    const server = net.createServer();
+    server.listen(port, () => {
+      server.once('close', () => resolve(true));
+      server.close();
+    });
+    server.on('error', () => resolve(false));
+  });
+}
+
+// Helper function to kill process on port
+async function killProcessOnPort(port: number): Promise<void> {
+  try {
+    if (process.platform === 'win32') {
+      execSync(`netstat -ano | findstr :${port}`, { stdio: 'ignore' });
+      // Try to kill any process using the port
+      execSync(`for /f "tokens=5" %a in ('netstat -ano ^| findstr :${port}') do taskkill /F /PID %a`, { stdio: 'ignore' });
+    } else {
+      const pid = execSync(`lsof -ti:${port}`, { encoding: 'utf-8' }).trim();
+      if (pid) {
+        execSync(`kill -9 ${pid}`, { stdio: 'ignore' });
+      }
+    }
+    // Wait a bit for port to be released
+    await new Promise(resolve => setTimeout(resolve, 1000));
+  } catch (error) {
+    // Ignore errors - port might not be in use
+  }
+}
 
 // Test configuration
 const TEST_CONFIG = {
@@ -49,10 +82,33 @@ export const setupE2E = () => {
       const { httpServer } = createHttpServerWithWebSocket(config, serviceManager);
       backendServer = httpServer;
       
-      await new Promise<void>((resolve) => {
+      // Check if port is available, kill existing process if needed
+      const portAvailable = await isPortAvailable(TEST_CONFIG.BACKEND_PORT);
+      if (!portAvailable) {
+        console.log(`Port ${TEST_CONFIG.BACKEND_PORT} is in use, attempting to free it...`);
+        await killProcessOnPort(TEST_CONFIG.BACKEND_PORT);
+        await new Promise(resolve => setTimeout(resolve, 2000)); // Wait for port to be released
+      }
+
+      await new Promise<void>((resolve, reject) => {
+        const timeout = setTimeout(() => {
+          reject(new Error(`Failed to start server on port ${TEST_CONFIG.BACKEND_PORT} within 10 seconds`));
+        }, 10000);
+
         backendServer.listen(TEST_CONFIG.BACKEND_PORT, () => {
+          clearTimeout(timeout);
           console.log(`✅ Backend server running on port ${TEST_CONFIG.BACKEND_PORT}`);
           resolve();
+        });
+
+        backendServer.on('error', (error: NodeJS.ErrnoException) => {
+          if (error.code === 'EADDRINUSE') {
+            clearTimeout(timeout);
+            reject(new Error(`Port ${TEST_CONFIG.BACKEND_PORT} is already in use. Please stop the existing server.`));
+          } else {
+            clearTimeout(timeout);
+            reject(error);
+          }
         });
       });
     } catch (error) {

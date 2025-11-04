@@ -5,7 +5,7 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { SmartAssistanceExample } from '../../../examples/smart-assistance-example';
+import { SmartAssistanceExample } from '../../examples/smart-assistance-example';
 import { LearningService } from '../../services/memory/learning-service';
 import { MemoryService } from '../../services/memory/memory-service';
 import { ContextualSuggestionEngine } from '../../services/memory/contextual-suggestion-engine';
@@ -101,11 +101,12 @@ describe('Smart Assistance Performance Tests', () => {
   });
 
   describe('Memory Usage Tests', () => {
-    it('should not leak memory during single analysis', () => {
+    it('should not leak memory during single analysis', async () => {
       const initialMemory = process.memoryUsage();
       
-      // Run analysis
-      smartAssistance.analyzeCode(createTestFile(1000));
+      // Run analysis - await createTestFile first
+      const testFile = await createTestFile(1000);
+      await smartAssistance.analyzeCode(testFile);
       
       // Force garbage collection
       if (global.gc) {

@@ -7,7 +7,7 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore - Import path outside src directory
-import { SmartAssistanceExample } from '../../../examples/smart-assistance-example';
+import { SmartAssistanceExample } from '../../examples/smart-assistance-example';
 import { Config } from '../../core/config';
 import { Logger } from '../../core/logger';
 import fs from 'fs-extra';

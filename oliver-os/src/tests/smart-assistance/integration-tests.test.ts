@@ -5,7 +5,7 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { SmartAssistanceExample } from '../../../examples/smart-assistance-example';
+import { SmartAssistanceExample } from '../../examples/smart-assistance-example';
 import { Config } from '../../core/config';
 import { Logger } from '../../core/logger';
 import fs from 'fs-extra';

@@ -7,10 +7,19 @@
 import { Router, type IRouter } from 'express';
 import type { Request, Response } from 'express';
 import { Logger } from '../core/logger';
+import { SecurityManager } from '../core/security';
+import { Config } from '../core/config';
 import type { CaptureMemoryService } from '../services/memory/capture/capture-memory-service';
 import type { MemoryStatus } from '../services/memory/capture/storage';
 
-const logger = new Logger('MemoryCaptureAPI');
+const logger = new Logger('MemoryCaptureRoutes');
+const config = new Config();
+const securityManager = new SecurityManager(config);
+
+// Input sanitization helper
+function sanitizeInput(input: string): string {
+  return securityManager.sanitizeInput(input);
+}
 
 export function createMemoryCaptureRoutes(memoryService: CaptureMemoryService): IRouter {
   const router: IRouter = Router();
@@ -30,8 +39,11 @@ export function createMemoryCaptureRoutes(memoryService: CaptureMemoryService): 
         });
       }
 
+      // Sanitize rawContent to prevent XSS
+      const sanitizedContent = sanitizeInput(rawContent);
+
       const memory = await memoryService.captureMemory({
-        rawContent,
+        rawContent: sanitizedContent,
         type,
         metadata,
         audioUrl,
@@ -46,9 +58,14 @@ export function createMemoryCaptureRoutes(memoryService: CaptureMemoryService): 
       });
     } catch (error) {
       logger.error(`Failed to capture memory: ${error}`);
+      // Sanitize error message
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      const sanitizedMessage = errorMessage.replace(/postgresql:\/\/[^@]+@/gi, 'postgresql://***:***@')
+        .replace(/password['"]?\s*[:=]\s*['"]?[^'"]+/gi, 'password=***');
+      
       return res.status(500).json({
         error: 'Failed to capture memory',
-        message: error instanceof Error ? error.message : 'Unknown error',
+        message: sanitizedMessage,
       });
     }
   });
@@ -82,20 +99,22 @@ export function createMemoryCaptureRoutes(memoryService: CaptureMemoryService): 
    */
   router.get('/search', async (req: Request, res: Response) => {
     try {
-      const { q, limit } = req.query;
+      // Support both 'q' and 'query' parameters for compatibility
+      const queryParam = (req.query.q || req.query.query) as string | undefined;
+      const { limit } = req.query;
 
-      if (!q) {
+      if (!queryParam) {
         return res.status(400).json({
           error: 'Missing query parameter',
-          message: 'q parameter is required',
+          message: 'q or query parameter is required',
         });
       }
 
       const searchLimit = limit ? parseInt(limit as string) : 50;
-      const results = await memoryService.searchMemories(q as string, searchLimit);
+      const results = await memoryService.searchMemories(queryParam, searchLimit);
 
       return res.json({
-        query: q,
+        query: queryParam,
         results,
         count: results.length,
       });
@@ -109,8 +128,56 @@ export function createMemoryCaptureRoutes(memoryService: CaptureMemoryService): 
   });
 
   /**
+   * GET /api/memory/timeline
+   * Chronological view
+   * IMPORTANT: Must be defined before /:id route to avoid route conflicts
+   */
+  router.get('/timeline', async (req: Request, res: Response) => {
+    try {
+      const { start, end } = req.query;
+
+      const startDate = start ? new Date(start as string) : undefined;
+      const endDate = end ? new Date(end as string) : undefined;
+
+      const memories = await memoryService.getTimeline(startDate, endDate);
+
+      return res.json({
+        memories,
+        count: memories.length,
+        startDate: startDate?.toISOString(),
+        endDate: endDate?.toISOString(),
+      });
+    } catch (error) {
+      logger.error(`Failed to get timeline: ${error}`);
+      return res.status(500).json({
+        error: 'Failed to get timeline',
+        message: error instanceof Error ? error.message : 'Unknown error',
+      });
+    }
+  });
+
+  /**
+   * GET /api/memory/stats
+   * Get service statistics
+   * IMPORTANT: Must be defined before /:id route to avoid route conflicts
+   */
+  router.get('/stats', async (_req: Request, res: Response) => {
+    try {
+      const stats = await memoryService.getStats();
+      return res.json(stats);
+    } catch (error) {
+      logger.error(`Failed to get stats: ${error}`);
+      return res.status(500).json({
+        error: 'Failed to get stats',
+        message: error instanceof Error ? error.message : 'Unknown error',
+      });
+    }
+  });
+
+  /**
    * GET /api/memory/:id
    * Get specific memory
+   * IMPORTANT: This must be defined AFTER all specific routes like /timeline, /stats, /search
    */
   router.get('/:id', async (req: Request, res: Response) => {
     try {
@@ -132,34 +199,6 @@ export function createMemoryCaptureRoutes(memoryService: CaptureMemoryService): 
       logger.error(`Failed to get memory: ${error}`);
       return res.status(500).json({
         error: 'Failed to get memory',
-        message: error instanceof Error ? error.message : 'Unknown error',
-      });
-    }
-  });
-
-  /**
-   * GET /api/memory/timeline
-   * Chronological view
-   */
-  router.get('/timeline', async (req: Request, res: Response) => {
-    try {
-      const { start, end } = req.query;
-
-      const startDate = start ? new Date(start as string) : undefined;
-      const endDate = end ? new Date(end as string) : undefined;
-
-      const memories = await memoryService.getTimeline(startDate, endDate);
-
-      return res.json({
-        memories,
-        count: memories.length,
-        startDate: startDate?.toISOString(),
-        endDate: endDate?.toISOString(),
-      });
-    } catch (error) {
-      logger.error(`Failed to get timeline: ${error}`);
-      return res.status(500).json({
-        error: 'Failed to get timeline',
         message: error instanceof Error ? error.message : 'Unknown error',
       });
     }
@@ -236,23 +275,6 @@ export function createMemoryCaptureRoutes(memoryService: CaptureMemoryService): 
       logger.error(`Failed to update memory status: ${error}`);
       return res.status(500).json({
         error: 'Failed to update memory status',
-        message: error instanceof Error ? error.message : 'Unknown error',
-      });
-    }
-  });
-
-  /**
-   * GET /api/memory/stats
-   * Get service statistics
-   */
-  router.get('/stats', async (_req: Request, res: Response) => {
-    try {
-      const stats = await memoryService.getStats();
-      return res.json(stats);
-    } catch (error) {
-      logger.error(`Failed to get stats: ${error}`);
-      return res.status(500).json({
-        error: 'Failed to get stats',
         message: error instanceof Error ? error.message : 'Unknown error',
       });
     }

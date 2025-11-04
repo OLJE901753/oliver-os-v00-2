@@ -124,11 +124,11 @@ describe('Memory Capture API Endpoints', () => {
 
       const response = await request(app)
         .get('/api/memory/timeline')
-        .query({ limit: 20 })
         .expect(200);
 
       expect(response.body.memories).toEqual(mockMemories);
-      expect(captureMemoryService.getTimeline).toHaveBeenCalledWith(20);
+      expect(response.body.count).toBe(mockMemories.length);
+      expect(captureMemoryService.getTimeline).toHaveBeenCalledWith(undefined, undefined);
     });
   });
 

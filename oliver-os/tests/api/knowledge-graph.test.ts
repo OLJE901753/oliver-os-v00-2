@@ -171,7 +171,11 @@ describe('Knowledge Graph API Endpoints', () => {
         .get('/api/knowledge/nodes')
         .expect(200);
 
-      expect(response.body).toEqual(mockNodes);
+      expect(response.body).toEqual({
+        nodes: mockNodes,
+        count: mockNodes.length,
+        type: 'all'
+      });
       expect(knowledgeGraphService.getAllNodes).toHaveBeenCalled();
     });
   });

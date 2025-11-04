@@ -1,17 +1,8 @@
 {
   "version": "1.0.0",
-  "lastUpdated": "2025-11-04T00:55:32.496Z",
+  "lastUpdated": "2025-11-04T02:03:31.577Z",
   "codePatterns": {
-    "frequentlyUsed": [
-      {
-        "id": "review-pattern-1762217732495",
-        "pattern": "High-quality code review",
-        "frequency": 1,
-        "successRate": 0.86,
-        "lastUsed": "2025-11-04T00:55:32.495Z",
-        "example": "Code review completed with overall score of 86.0%. 2 high priority issues found. "
-      }
-    ],
+    "frequentlyUsed": [],
     "successfulPatterns": [],
     "userPreferences": {
       "preferredImports": [],
@@ -41,14 +32,5 @@
     "rejectedSuggestions": [],
     "userFeedback": {}
   },
-  "feedback": [
-    {
-      "id": "feedback_1762217732495_tksm040kt",
-      "suggestionId": "test-suggestion-1",
-      "action": "accepted",
-      "reason": "Good suggestion",
-      "date": "2025-11-04T00:55:32.495Z",
-      "timestamp": "2025-11-04T00:55:32.495Z"
-    }
-  ]
+  "preferences": {}
 }

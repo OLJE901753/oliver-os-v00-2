@@ -7,9 +7,35 @@
 import { Router, type IRouter } from 'express';
 import type { Request, Response } from 'express';
 import { Logger } from '../core/logger';
+import { SecurityManager } from '../core/security';
+import { Config } from '../core/config';
 import type { KnowledgeGraphService } from '../services/knowledge/knowledge-graph-service';
 
-const logger = new Logger('KnowledgeGraphAPI');
+const logger = new Logger('KnowledgeGraphRoutes');
+const config = new Config();
+const securityManager = new SecurityManager(config);
+
+// Input validation helpers
+function validateStringInput(input: string | undefined, fieldName: string, maxLength = 10000): { valid: boolean; error?: string } {
+  if (input === undefined || input === null) {
+    return { valid: false, error: `${fieldName} is required` };
+  }
+  if (typeof input !== 'string') {
+    return { valid: false, error: `${fieldName} must be a string` };
+  }
+  if (input.length > maxLength) {
+    return { valid: false, error: `${fieldName} exceeds maximum length of ${maxLength} characters` };
+  }
+  // Check for SQL injection patterns
+  if (/['";\\]/.test(input) || /(--|\/\*|\*\/|;|DROP|DELETE|UPDATE|INSERT|SELECT)/i.test(input)) {
+    return { valid: false, error: `Invalid characters detected in ${fieldName}` };
+  }
+  return { valid: true };
+}
+
+function sanitizeString(input: string): string {
+  return securityManager.sanitizeInput(input);
+}
 
 export function createKnowledgeGraphRoutes(knowledgeGraphService: KnowledgeGraphService): IRouter {
   const router: IRouter = Router();
@@ -22,17 +48,31 @@ export function createKnowledgeGraphRoutes(knowledgeGraphService: KnowledgeGraph
     try {
       const { type, title, content, metadata, tags } = req.body;
 
-      if (!type || !title || !content) {
-        return res.status(400).json({
-          error: 'Missing required fields',
-          message: 'type, title, and content are required',
-        });
+      // Validate required fields
+      const typeValidation = validateStringInput(type, 'type', 50);
+      if (!typeValidation.valid) {
+        return res.status(400).json({ error: typeValidation.error });
       }
 
+      const titleValidation = validateStringInput(title, 'title', 500);
+      if (!titleValidation.valid) {
+        return res.status(400).json({ error: titleValidation.error });
+      }
+
+      const contentValidation = validateStringInput(content, 'content', 50000);
+      if (!contentValidation.valid) {
+        return res.status(400).json({ error: contentValidation.error });
+      }
+
+      // Sanitize inputs
+      const sanitizedType = sanitizeString(type);
+      const sanitizedTitle = sanitizeString(title);
+      const sanitizedContent = sanitizeString(content);
+
       const node = await knowledgeGraphService.createNode({
-        type,
-        title,
-        content,
+        type: sanitizedType,
+        title: sanitizedTitle,
+        content: sanitizedContent,
         metadata,
         tags,
       });
@@ -44,9 +84,15 @@ export function createKnowledgeGraphRoutes(knowledgeGraphService: KnowledgeGraph
       });
     } catch (error) {
       logger.error(`Failed to create node: ${error}`);
+      // Sanitize error message to prevent leaking sensitive info
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      const sanitizedMessage = errorMessage.replace(/postgresql:\/\/[^@]+@/gi, 'postgresql://***:***@')
+        .replace(/password['"]?\s*[:=]\s*['"]?[^'"]+/gi, 'password=***')
+        .replace(/postgresql:\/\/[^@]+/gi, 'postgresql://***');
+      
       return res.status(500).json({
         error: 'Failed to create node',
-        message: error instanceof Error ? error.message : 'Unknown error',
+        message: sanitizedMessage,
       });
     }
   });
@@ -73,9 +119,15 @@ export function createKnowledgeGraphRoutes(knowledgeGraphService: KnowledgeGraph
       return res.json(node);
     } catch (error) {
       logger.error(`Failed to get node: ${error}`);
+      // Sanitize error message to prevent leaking sensitive info
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      const sanitizedMessage = errorMessage.replace(/postgresql:\/\/[^@]+@/gi, 'postgresql://***:***@')
+        .replace(/password['"]?\s*[:=]\s*['"]?[^'"]+/gi, 'password=***')
+        .replace(/postgresql:\/\/[^@]+/gi, 'postgresql://***');
+      
       return res.status(500).json({
         error: 'Failed to get node',
-        message: error instanceof Error ? error.message : 'Unknown error',
+        message: sanitizedMessage,
       });
     }
   });
