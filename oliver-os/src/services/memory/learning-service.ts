@@ -105,7 +105,10 @@ export class LearningService extends EventEmitter {
     
     // Ensure memory exists and has codePatterns with frequentlyUsed array
     if (!memory || !memory.codePatterns || !memory.codePatterns.frequentlyUsed) {
-      this._logger.warn('No code patterns found in memory, initializing empty patterns');
+      // Only log warning outside of test environment to reduce noise
+      if (process.env['NODE_ENV'] !== 'test' && !process.env['VITEST']) {
+        this._logger.warn('No code patterns found in memory, initializing empty patterns');
+      }
       return;
     }
     
@@ -145,7 +148,10 @@ export class LearningService extends EventEmitter {
     
     // Ensure memory exists and has projectHistory
     if (!memory || !memory.projectHistory || !memory.projectHistory.sessions) {
-      this._logger.warn('No project history found in memory');
+      // Only log warning outside of test environment to reduce noise
+      if (process.env['NODE_ENV'] !== 'test' && !process.env['VITEST']) {
+        this._logger.warn('No project history found in memory');
+      }
       return;
     }
     

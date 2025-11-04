@@ -78,7 +78,10 @@ export class ContextualSuggestionEngine extends EventEmitter {
     
     // Ensure memory exists and has projectHistory
     if (!memory || !memory.projectHistory) {
-      this._logger.warn('No project history found in memory');
+      // Only log warning outside of test environment to reduce noise
+      if (process.env['NODE_ENV'] !== 'test' && !process.env['VITEST']) {
+        this._logger.warn('No project history found in memory');
+      }
       return;
     }
     
