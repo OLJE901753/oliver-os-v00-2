@@ -6,23 +6,14 @@
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { SmartAssistanceExample } from '@examples/smart-assistance-example';
-import { LearningService } from '../../services/memory/learning-service';
-import { MemoryService } from '../../services/memory/memory-service';
-import { ContextualSuggestionEngine } from '../../services/memory/contextual-suggestion-engine';
-import { Config } from '../../core/config';
-import { Logger } from '../../core/logger';
 import fs from 'fs-extra';
 import path from 'path';
 
 describe('Smart Assistance Performance Tests', () => {
   let smartAssistance: SmartAssistanceExample;
-  let config: Config;
-  let logger: Logger;
   let testFiles: string[] = [];
 
   beforeEach(async () => {
-    config = new Config();
-    logger = new Logger('PerformanceTest');
     smartAssistance = new SmartAssistanceExample();
     await smartAssistance.initialize();
   });
@@ -91,11 +82,18 @@ describe('Smart Assistance Performance Tests', () => {
       
       // Check that duration increases roughly linearly
       for (let i = 1; i < durations.length; i++) {
-        const ratio = durations[i] / durations[i - 1];
-        const sizeRatio = sizes[i] / sizes[i - 1];
+        const currentDuration = durations[i];
+        const previousDuration = durations[i - 1];
+        const currentSize = sizes[i];
+        const previousSize = sizes[i - 1];
         
-        // Duration should not increase more than 2x the size increase
-        expect(ratio).toBeLessThan(sizeRatio * 2);
+        if (currentDuration !== undefined && previousDuration !== undefined && currentSize !== undefined && previousSize !== undefined) {
+          const ratio = currentDuration / previousDuration;
+          const sizeRatio = currentSize / previousSize;
+          
+          // Duration should not increase more than 2x the size increase
+          expect(ratio).toBeLessThan(sizeRatio * 2);
+        }
       }
     }, 60000); // 60 second timeout for this test
   });
@@ -333,8 +331,9 @@ describe('Smart Assistance Performance Tests', () => {
         example: 'example'
       });
       
+      // Save memory which will trigger a reload
       const start = performance.now();
-      await memoryService.loadMemory();
+      await memoryService.saveMemory();
       const duration = performance.now() - start;
       
       expect(duration).toBeLessThan(100); // 100ms max

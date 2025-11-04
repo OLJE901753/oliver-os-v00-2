@@ -10,19 +10,16 @@ import { LearningService } from '../../services/memory/learning-service';
 import { MemoryService } from '../../services/memory/memory-service';
 import { ContextualSuggestionEngine } from '../../services/memory/contextual-suggestion-engine';
 import { Config } from '../../core/config';
-import { Logger } from '../../core/logger';
 import fs from 'fs-extra';
 import path from 'path';
 
 describe('Smart Assistance Edge Case Tests', () => {
   let smartAssistance: SmartAssistanceExample;
   let config: Config;
-  let logger: Logger;
   let testFiles: string[] = [];
 
   beforeEach(async () => {
     config = new Config();
-    logger = new Logger('EdgeCaseTest');
     smartAssistance = new SmartAssistanceExample();
     await smartAssistance.initialize();
   });

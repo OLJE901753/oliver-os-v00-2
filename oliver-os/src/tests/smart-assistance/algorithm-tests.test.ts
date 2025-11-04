@@ -23,7 +23,7 @@ describe('Smart Assistance Algorithm Quality Tests', () => {
     logger = new Logger('AlgorithmTest');
     memoryService = new MemoryService(config);
     learningService = new LearningService(config, memoryService);
-    suggestionEngine = new ContextualSuggestionEngine(config, memoryService);
+    suggestionEngine = new ContextualSuggestionEngine(config, memoryService, learningService);
     
     await learningService.initialize();
     await suggestionEngine.initialize();
