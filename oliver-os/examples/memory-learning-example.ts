@@ -12,7 +12,7 @@ import {
   ContextualSuggestionEngine,
   type CodePattern,
   type ArchitectureDecision,
-  type LearningContext
+  type SuggestionContext
 } from '../src/services/memory';
 
 export class MemoryLearningExample {
@@ -185,8 +185,9 @@ export class MemoryLearningExample {
   async generateContextualSuggestions(): Promise<void> {
     this.logger.info('💡 Generating Contextual Suggestions...');
     
-    const context: LearningContext = {
+    const context: SuggestionContext = {
       currentFile: 'user-profile.tsx',
+      fileType: 'typescript',
       projectStructure: ['src', 'components', 'services'],
       recentChanges: ['react-component-pattern', 'service-class-pattern'],
       userPreferences: {

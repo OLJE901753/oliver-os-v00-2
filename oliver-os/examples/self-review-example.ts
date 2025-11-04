@@ -296,11 +296,10 @@ export class SelfReviewExample {
       this.logger.info(`  Average Confidence: ${(reviewStats.averageConfidence * 100).toFixed(1)}%`);
       
       // Get quality gate statistics
-      const qualityGateStats = this.qualityGateService.getQualityGateStats();
+      // Note: QualityGateService doesn't have getQualityGateStats method
+      // Access gate history directly if needed
       this.logger.info('📊 Quality Gate Statistics:');
-      this.logger.info(`  Total Gates: ${qualityGateStats.totalGates}`);
-      this.logger.info(`  Passed Gates: ${qualityGateStats.passedGates}`);
-      this.logger.info(`  Average Score: ${(qualityGateStats.averageScore * 100).toFixed(1)}%`);
+      this.logger.info('  (Statistics method not available in QualityGateService)');
       
       // Get change documentation statistics
       const changeDocStats = this.changeDocumentationService.getDocumentationStats();
@@ -337,7 +336,8 @@ export class SelfReviewExample {
       
       this.logger.info('✅ Statistics retrieved successfully');
     } catch (error) {
-      this.logger.error('❌ Statistics retrieval failed:', error);
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      this.logger.error(`❌ Statistics retrieval failed: ${errorMessage}`);
     }
   }
 
@@ -353,8 +353,9 @@ export class SelfReviewExample {
       this.logger.info('✅ Self-review data exported');
       
       // Export quality gate data
-      await this.qualityGateService.exportQualityGateData('./quality-gate-export.json');
-      this.logger.info('✅ Quality gate data exported');
+      // Note: QualityGateService doesn't have exportQualityGateData method
+      // Could manually export gate history if needed
+      this.logger.info('⚠️ Quality gate data export not available (method not implemented)');
       
       // Export change documentation data
       await this.changeDocumentationService.exportDocumentationData('./change-documentation-export.json');
@@ -374,7 +375,8 @@ export class SelfReviewExample {
       
       this.logger.info('✅ All data exported successfully');
     } catch (error) {
-      this.logger.error('❌ Data export failed:', error);
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      this.logger.error(`❌ Data export failed: ${errorMessage}`);
     }
   }
 
@@ -396,7 +398,8 @@ export class SelfReviewExample {
       
       this.logger.info('🎉 All examples completed successfully!');
     } catch (error) {
-      this.logger.error('❌ Examples execution failed', error);
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      this.logger.error(`❌ Examples execution failed: ${errorMessage}`);
     }
   }
 
@@ -409,7 +412,8 @@ export class SelfReviewExample {
     try {
       // Clear caches and histories
       this.selfReviewService.clearReviewCache();
-      this.qualityGateService.clearGateHistory();
+      // Note: QualityGateService doesn't have clearGateHistory method
+      // Gate history is managed internally by the service
       this.changeDocumentationService.clearDocumentationHistory();
       this.visualDocumentationService.clearDiagramHistory();
       this.improvementSuggestionsService.clearSuggestionHistory();
@@ -417,7 +421,8 @@ export class SelfReviewExample {
       
       this.logger.info('✅ Self-review and quality gate system shutdown complete');
     } catch (error) {
-      this.logger.error('❌ Shutdown failed:', error);
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      this.logger.error(`❌ Shutdown failed: ${errorMessage}`);
     }
   }
 }

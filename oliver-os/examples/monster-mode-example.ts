@@ -47,7 +47,8 @@ export class MonsterModeExample {
       
       this.logger.info('✅ Monster Mode system initialized successfully');
     } catch (error) {
-      this.logger.error('Failed to initialize Monster Mode system:', error);
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      this.logger.error(`Failed to initialize Monster Mode system: ${errorMessage}`);
       throw error;
     }
   }
@@ -76,7 +77,8 @@ export class MonsterModeExample {
       
       this.logger.info('✅ Monster Mode demonstration completed successfully');
     } catch (error) {
-      this.logger.error('Failed to demonstrate Monster Mode capabilities:', error);
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      this.logger.error(`Failed to demonstrate Monster Mode capabilities: ${errorMessage}`);
       throw error;
     }
   }
@@ -118,19 +120,16 @@ export class MonsterModeExample {
         }
       ];
 
-      for (const task of tasks) {
-        await this.taskPrioritization.prioritizeTask(task);
-      }
-
-      const prioritizedTasks = await this.taskPrioritization.getPrioritizedTasks();
+      const prioritizedTasks = await this.taskPrioritization.scheduleTasks(tasks, 'hybrid');
       this.logger.info(`✅ Prioritized ${prioritizedTasks.length} tasks`);
       
       // Display prioritized tasks
-      for (const task of prioritizedTasks) {
-        this.logger.info(`📋 Task: ${task.description} - Priority: ${task.priority} - Score: ${task.priorityScore}`);
+      for (const taskWithPriority of prioritizedTasks) {
+        this.logger.info(`📋 Task: ${taskWithPriority.task.description} - Priority: ${taskWithPriority.priority.priority} - Score: ${taskWithPriority.priority.score}`);
       }
     } catch (error) {
-      this.logger.error('Failed to demonstrate task prioritization:', error);
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      this.logger.error(`Failed to demonstrate task prioritization: ${errorMessage}`);
       throw error;
     }
   }
@@ -163,19 +162,28 @@ export class MonsterModeExample {
         }
       ];
 
-      for (const conflict of conflicts) {
-        await this.conflictResolution.resolveConflict(conflict);
-      }
-
-      const resolvedConflicts = await this.conflictResolution.getResolvedConflicts();
-      this.logger.info(`✅ Resolved ${resolvedConflicts.length} conflicts`);
+      // Detect conflicts first
+      const detectedConflicts = await this.conflictResolution.detectConflicts({
+        conflicts: conflicts,
+        agents: ['frontend', 'backend', 'ai-services']
+      });
       
-      // Display resolved conflicts
-      for (const conflict of resolvedConflicts) {
-        this.logger.info(`⚖️ Conflict: ${conflict.description} - Resolution: ${conflict.resolution}`);
+      // Resolve each detected conflict by ID
+      for (const conflict of detectedConflicts) {
+        try {
+          const resolution = await this.conflictResolution.resolveConflict(conflict.id);
+          this.logger.info(`✅ Resolved conflict ${conflict.id}: ${resolution.solution}`);
+        } catch (error) {
+          const errorMessage = error instanceof Error ? error.message : String(error);
+          this.logger.error(`Failed to resolve conflict ${conflict.id}: ${errorMessage}`);
+        }
       }
+      
+      const conflictStats = this.conflictResolution.getConflictResolutionStats();
+      this.logger.info(`✅ Total conflicts: ${conflictStats.totalConflicts}, Resolved: ${conflictStats.resolvedConflicts}`);
     } catch (error) {
-      this.logger.error('Failed to demonstrate conflict resolution:', error);
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      this.logger.error(`Failed to demonstrate conflict resolution: ${errorMessage}`);
       throw error;
     }
   }
@@ -206,19 +214,33 @@ export class MonsterModeExample {
         }
       ];
 
-      for (const workflow of workflows) {
-        await this.workflowOptimization.optimizeWorkflow(workflow);
-      }
-
-      const optimizedWorkflows = await this.workflowOptimization.getOptimizedWorkflows();
-      this.logger.info(`✅ Optimized ${optimizedWorkflows.length} workflows`);
+      // Analyze workflow performance
+      const workflowContext = {
+        completedTasks: new Map([
+          ['task-1', { id: 'task-1', type: 'development', status: 'completed', actualDuration: 3000000 }],
+          ['task-2', { id: 'task-2', type: 'testing', status: 'completed', actualDuration: 1500000 }]
+        ]),
+        activeTasks: new Map([
+          ['task-3', { id: 'task-3', type: 'review', status: 'active' }]
+        ]),
+        taskQueue: [],
+        agentStatuses: new Map([
+          ['agent-1', { id: 'agent-1', status: 'busy', load: 0.7 }],
+          ['agent-2', { id: 'agent-2', status: 'idle', load: 0.3 }]
+        ])
+      };
       
-      // Display optimized workflows
-      for (const workflow of optimizedWorkflows) {
-        this.logger.info(`⚡ Workflow: ${workflow.name} - Efficiency: ${workflow.optimizedEfficiency} - Improvement: ${workflow.improvement}`);
+      const analysis = await this.workflowOptimization.analyzeWorkflowPerformance(workflowContext);
+      const optimizations = await this.workflowOptimization.generateOptimizations(analysis);
+      this.logger.info(`✅ Generated ${optimizations.length} workflow optimizations`);
+      
+      // Display optimizations
+      for (const optimization of optimizations) {
+        this.logger.info(`⚡ Optimization: ${optimization.description} - Impact: ${optimization.impact} - Effort: ${optimization.effort}`);
       }
     } catch (error) {
-      this.logger.error('Failed to demonstrate workflow optimization:', error);
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      this.logger.error(`Failed to demonstrate workflow optimization: ${errorMessage}`);
       throw error;
     }
   }
@@ -232,25 +254,20 @@ export class MonsterModeExample {
     try {
       const context = {
         agentStatuses: new Map([
-          ['frontend', { load: 0.6, status: 'busy' }],
-          ['backend', { load: 0.8, status: 'busy' }],
-          ['ai-services', { load: 0.4, status: 'idle' }],
-          ['database', { load: 0.9, status: 'busy' }],
-          ['integration', { load: 0.3, status: 'idle' }]
+          ['frontend', { id: 'frontend', status: 'busy' as const, load: 0.6 }],
+          ['backend', { id: 'backend', status: 'busy' as const, load: 0.8 }],
+          ['ai-services', { id: 'ai-services', status: 'idle' as const, load: 0.4 }],
+          ['database', { id: 'database', status: 'busy' as const, load: 0.9 }],
+          ['integration', { id: 'integration', status: 'idle' as const, load: 0.3 }]
         ]),
-        services: [
-          { modular: true, documented: false, tested: true, authenticated: false, authorized: false, encrypted: false, redundant: false, monitored: true, configurable: true, extensible: false },
-          { modular: false, documented: true, tested: false, authenticated: true, authorized: true, encrypted: true, redundant: true, monitored: false, configurable: false, extensible: true }
-        ],
+        services: new Map([
+          ['service-1', { id: 'service-1', name: 'Service 1', modular: true, documented: false, tested: true, authenticated: false, authorized: false, encrypted: false, redundant: false, monitored: true, configurable: true, extensible: false }],
+          ['service-2', { id: 'service-2', name: 'Service 2', modular: false, documented: true, tested: false, authenticated: true, authorized: true, encrypted: true, redundant: true, monitored: false, configurable: false, extensible: true }]
+        ]),
         completedTasks: new Map([
-          ['task-1', { actualDuration: 3000000 }],
-          ['task-2', { actualDuration: 1500000 }]
-        ]),
-        activeTasks: new Map([
-          ['task-3', { startTime: Date.now() }]
-        ]),
-        taskQueue: ['task-4', 'task-5'],
-        recoveryTime: 500
+          ['task-1', { id: 'task-1', actualDuration: 3000000 }],
+          ['task-2', { id: 'task-2', actualDuration: 1500000 }]
+        ])
       };
 
       const analysis = await this.architectureImprovements.analyzeArchitecture(context);
@@ -263,7 +280,8 @@ export class MonsterModeExample {
         this.logger.info(`🏗️ Improvement: ${improvement.description} - Impact: ${improvement.impact} - Priority: ${improvement.priority}`);
       }
     } catch (error) {
-      this.logger.error('Failed to demonstrate architecture improvements:', error);
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      this.logger.error(`Failed to demonstrate architecture improvements: ${errorMessage}`);
       throw error;
     }
   }
@@ -289,15 +307,14 @@ export class MonsterModeExample {
         performanceMonitoring: true
       };
 
-      await this.masterOrchestrator.configureOrchestration(orchestrationConfig);
-      
-      const status = await this.masterOrchestrator.getOrchestrationStatus();
-      this.logger.info(`✅ Master orchestration configured - Status: ${status.status}`);
+      const status = this.masterOrchestrator.getMonsterModeStatus();
+      this.logger.info(`✅ Master orchestration status retrieved`);
       
       // Display orchestration status
-      this.logger.info(`🎯 Orchestration Status: ${status.status} - Active Tasks: ${status.activeTasks} - Available Capacity: ${status.availableCapacity}`);
+      this.logger.info(`🎯 Orchestration Status: ${JSON.stringify(status, null, 2)}`);
     } catch (error) {
-      this.logger.error('Failed to demonstrate master orchestration:', error);
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      this.logger.error(`Failed to demonstrate master orchestration: ${errorMessage}`);
       throw error;
     }
   }
@@ -311,18 +328,19 @@ export class MonsterModeExample {
       const conflictStats = await this.conflictResolution.getConflictResolutionStats();
       const workflowStats = await this.workflowOptimization.getWorkflowOptimizationStats();
       const architectureStats = await this.architectureImprovements.getArchitectureImprovementStats();
-      const orchestrationStats = await this.masterOrchestrator.getOrchestrationStats();
+      const orchestrationStatus = this.masterOrchestrator.getMonsterModeStatus();
 
       return {
         taskPrioritization: taskStats,
         conflictResolution: conflictStats,
         workflowOptimization: workflowStats,
         architectureImprovements: architectureStats,
-        masterOrchestration: orchestrationStats,
+        masterOrchestration: orchestrationStatus,
         timestamp: new Date().toISOString()
       };
     } catch (error) {
-      this.logger.error('Failed to get Monster Mode statistics:', error);
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      this.logger.error(`Failed to get Monster Mode statistics: ${errorMessage}`);
       throw error;
     }
   }
@@ -336,11 +354,15 @@ export class MonsterModeExample {
       const conflictData = await this.conflictResolution.exportConflictResolutionData(`${exportPath}/conflict-resolution.json`);
       const workflowData = await this.workflowOptimization.exportWorkflowOptimizationData(`${exportPath}/workflow-optimization.json`);
       const architectureData = await this.architectureImprovements.exportArchitectureImprovementData(`${exportPath}/architecture-improvements.json`);
-      const orchestrationData = await this.masterOrchestrator.exportOrchestrationData(`${exportPath}/master-orchestration.json`);
+      // Note: MasterOrchestrator doesn't have exportOrchestrationData method
+      // Using getMonsterModeStatus instead
+      const orchestrationStatus = this.masterOrchestrator.getMonsterModeStatus();
+      // Could write this to a file if needed
 
       this.logger.info(`📤 Monster Mode data exported to: ${exportPath}`);
     } catch (error) {
-      this.logger.error('Failed to export Monster Mode data:', error);
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      this.logger.error(`Failed to export Monster Mode data: ${errorMessage}`);
       throw error;
     }
   }
@@ -354,11 +376,13 @@ export class MonsterModeExample {
       await this.conflictResolution.clearConflictResolutionData();
       await this.workflowOptimization.clearWorkflowOptimizationData();
       await this.architectureImprovements.clearArchitectureImprovementData();
-      await this.masterOrchestrator.clearOrchestrationData();
+      // Note: MasterOrchestrator doesn't have clearOrchestrationData method
+      // Clearing would require shutdown or other methods
 
       this.logger.info('🗑️ Monster Mode data cleared');
     } catch (error) {
-      this.logger.error('Failed to clear Monster Mode data:', error);
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      this.logger.error(`Failed to clear Monster Mode data: ${errorMessage}`);
       throw error;
     }
   }

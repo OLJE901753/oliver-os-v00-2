@@ -4,15 +4,14 @@
  * Following BMAD principles: Break, Map, Automate, Document
  */
 
-import { EnhancedCodebuffService } from './enhanced-codebuff-service';
-import { Config } from '../../core/config';
-import { Logger } from '../../core/logger';
+import { EnhancedCodebuffService } from '../src/services/codebuff/enhanced-codebuff-service';
+import { Config } from '../src/core/config';
+import { Logger } from '../src/core/logger';
 import type { 
   CodebuffRunOptions, 
-  WorkflowDefinition, 
-  AgentSpawnRequest,
-  OliverOSAgentDefinition 
-} from './types';
+  WorkflowDefinition,
+  OliverOSAgentDefinition
+} from '../src/services/codebuff/types';
 
 export class OrchestrationExample {
   private codebuffService: EnhancedCodebuffService;
@@ -37,7 +36,8 @@ export class OrchestrationExample {
       
       this.logger.info('✅ Orchestration system initialized successfully');
     } catch (error) {
-      this.logger.error('❌ Failed to initialize orchestration system', error);
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      this.logger.error(`❌ Failed to initialize orchestration system: ${errorMessage}`);
       throw error;
     }
   }
@@ -51,7 +51,7 @@ export class OrchestrationExample {
     const options: CodebuffRunOptions = {
       agent: 'code-generator',
       prompt: 'Create a simple TypeScript function that reads a file and returns its content. Use the filesystem tools available.',
-      handleEvent: (event) => {
+      handleEvent: (event: { type: string; message: string; toolName?: string }) => {
         this.logger.info(`📡 Event: ${event.type} - ${event.message}`);
       }
     };
@@ -68,7 +68,8 @@ export class OrchestrationExample {
         this.logger.error(`❌ Simple task failed: ${result.error}`);
       }
     } catch (error) {
-      this.logger.error('❌ Simple task execution failed', error);
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      this.logger.error(`❌ Simple task execution failed: ${errorMessage}`);
     }
   }
 
@@ -107,7 +108,8 @@ export class OrchestrationExample {
         this.logger.error('❌ Multi-agent workflow failed');
       }
     } catch (error) {
-      this.logger.error('❌ Multi-agent workflow execution failed', error);
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      this.logger.error(`❌ Multi-agent workflow execution failed: ${errorMessage}`);
     }
   }
 
@@ -122,8 +124,8 @@ export class OrchestrationExample {
       const fsResult = await this.codebuffService.orchestrateTask({
         agent: 'code-generator',
         prompt: 'Create a new directory called "test-output" and write a simple README.md file in it',
-        handleEvent: (event) => {
-          if (event.type === 'tool_called') {
+        handleEvent: (event: { type: string; message: string; toolName?: string }) => {
+          if (event.type === 'tool_called' && event.toolName) {
             this.logger.info(`🔧 Tool called: ${event.toolName}`);
           }
         }
@@ -164,7 +166,8 @@ export class OrchestrationExample {
       }
 
     } catch (error) {
-      this.logger.error('❌ Tool integration demo failed', error);
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      this.logger.error(`❌ Tool integration demo failed: ${errorMessage}`);
     }
   }
 
@@ -192,12 +195,13 @@ export class OrchestrationExample {
       const tools = this.codebuffService.toolRegistry.listTools();
       this.logger.info(`🔧 Available Tools: ${tools.length} tools`);
       
-      tools.forEach(tool => {
+      tools.forEach((tool: { name: string; description: string }) => {
         this.logger.info(`  - ${tool.name}: ${tool.description}`);
       });
 
     } catch (error) {
-      this.logger.error('❌ System monitoring demo failed', error);
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      this.logger.error(`❌ System monitoring demo failed: ${errorMessage}`);
     }
   }
 
@@ -344,7 +348,8 @@ export class OrchestrationExample {
       
       this.logger.info('🎉 All examples completed successfully!');
     } catch (error) {
-      this.logger.error('❌ Examples execution failed', error);
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      this.logger.error(`❌ Examples execution failed: ${errorMessage}`);
     }
   }
 
