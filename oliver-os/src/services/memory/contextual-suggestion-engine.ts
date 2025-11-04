@@ -75,7 +75,14 @@ export class ContextualSuggestionEngine extends EventEmitter {
    */
   private async loadContextHistory(): Promise<void> {
     const memory = this._memoryService.getMemory();
-    const sessions = memory.projectHistory?.sessions || [];
+    
+    // Ensure memory exists and has projectHistory
+    if (!memory || !memory.projectHistory) {
+      this._logger.warn('No project history found in memory');
+      return;
+    }
+    
+    const sessions = memory.projectHistory.sessions || [];
     
     for (const session of sessions) {
       const context: SuggestionContext = {
@@ -116,6 +123,25 @@ export class ContextualSuggestionEngine extends EventEmitter {
   private getCommonContexts(): SuggestionContext[] {
     const contexts: SuggestionContext[] = [];
     const memory = this._memoryService.getMemory();
+    
+    // Ensure memory exists before accessing its properties
+    if (!memory) {
+      // Return default contexts if memory is not available
+      const commonFileTypes = ['tsx', 'ts', 'js', 'jsx', 'py'];
+      for (const fileType of commonFileTypes) {
+        contexts.push({
+          currentFile: `example.${fileType}`,
+          fileType,
+          projectStructure: ['src', 'components', 'services'],
+          recentChanges: [],
+          userPreferences: {},
+          codingPatterns: [],
+          architectureDecisions: [],
+          namingConventions: {}
+        });
+      }
+      return contexts;
+    }
     
     // Common file types
     const commonFileTypes = ['tsx', 'ts', 'js', 'jsx', 'py'];
@@ -190,7 +216,12 @@ export class ContextualSuggestionEngine extends EventEmitter {
   private async generateCodeGenerationSuggestions(context: SuggestionContext): Promise<ContextualSuggestion[]> {
     const suggestions: ContextualSuggestion[] = [];
     const memory = this._memoryService.getMemory();
-    const patterns = memory.codePatterns?.frequentlyUsed || [];
+    
+    if (!memory || !memory.codePatterns) {
+      return suggestions;
+    }
+    
+    const patterns = memory.codePatterns.frequentlyUsed || [];
     
     for (const pattern of patterns) {
       if (pattern.successRate > 0.8 && this.isRelevantForFileType(pattern, context.fileType)) {
@@ -219,7 +250,12 @@ export class ContextualSuggestionEngine extends EventEmitter {
   private async generateRefactoringSuggestions(context: SuggestionContext): Promise<ContextualSuggestion[]> {
     const suggestions: ContextualSuggestion[] = [];
     const memory = this._memoryService.getMemory();
-    const patterns = memory.codePatterns?.frequentlyUsed || [];
+    
+    if (!memory || !memory.codePatterns) {
+      return suggestions;
+    }
+    
+    const patterns = memory.codePatterns.frequentlyUsed || [];
     
     for (const pattern of patterns) {
       if (pattern.successRate > 0.9 && pattern.frequency > 5) {
@@ -248,7 +284,12 @@ export class ContextualSuggestionEngine extends EventEmitter {
   private async generateOptimizationSuggestions(context: SuggestionContext): Promise<ContextualSuggestion[]> {
     const suggestions: ContextualSuggestion[] = [];
     const memory = this._memoryService.getMemory();
-    const patterns = memory.codePatterns?.frequentlyUsed || [];
+    
+    if (!memory || !memory.codePatterns) {
+      return suggestions;
+    }
+    
+    const patterns = memory.codePatterns.frequentlyUsed || [];
     
     for (const pattern of patterns) {
       if (pattern.frequency > 10 && pattern.successRate > 0.85) {
@@ -277,7 +318,12 @@ export class ContextualSuggestionEngine extends EventEmitter {
   private async generateArchitectureSuggestions(context: SuggestionContext): Promise<ContextualSuggestion[]> {
     const suggestions: ContextualSuggestion[] = [];
     const memory = this._memoryService.getMemory();
-    const decisions = memory.architecture?.decisions || [];
+    
+    if (!memory || !memory.architecture) {
+      return suggestions;
+    }
+    
+    const decisions = memory.architecture.decisions || [];
     
     for (const decision of decisions) {
       if (decision.impact === 'high') {
@@ -399,7 +445,12 @@ export class ContextualSuggestionEngine extends EventEmitter {
    */
   private getAlternativePatterns(pattern: CodePattern): string[] {
     const memory = this._memoryService.getMemory();
-    const patterns = memory.codePatterns?.frequentlyUsed || [];
+    
+    if (!memory || !memory.codePatterns) {
+      return [];
+    }
+    
+    const patterns = memory.codePatterns.frequentlyUsed || [];
     
     return patterns
       .filter((p) => p.id !== pattern.id && p.successRate > 0.7)
@@ -412,7 +463,12 @@ export class ContextualSuggestionEngine extends EventEmitter {
    */
   private getAlternativeArchitectureDecisions(decision: ArchitectureDecision): string[] {
     const memory = this._memoryService.getMemory();
-    const decisions = memory.architecture?.decisions || [];
+    
+    if (!memory || !memory.architecture) {
+      return [];
+    }
+    
+    const decisions = memory.architecture.decisions || [];
     
     return decisions
       .filter((d) => d.id !== decision.id && d.impact === 'high')
@@ -672,7 +728,10 @@ export class ContextualSuggestionEngine extends EventEmitter {
       files: Array.from(this.contextHistory.keys()),
       relationships: this.buildFileRelationships(),
       patterns: this.getActivePatterns(),
-      preferences: this._memoryService.getMemory().codePatterns.userPreferences
+      preferences: (() => {
+        const memory = this._memoryService.getMemory();
+        return memory?.codePatterns?.userPreferences || {};
+      })()
     };
   }
 
@@ -680,17 +739,21 @@ export class ContextualSuggestionEngine extends EventEmitter {
    * Build file relationships
    */
   private buildFileRelationships(): Array<{ source: string; target: string; type: string; strength: number }> {
-    const relationships = [];
+    const relationships: Array<{ source: string; target: string; type: string; strength: number }> = [];
     const files = Array.from(this.contextHistory.keys());
     
     for (let i = 0; i < files.length; i++) {
       for (let j = i + 1; j < files.length; j++) {
-        relationships.push({
-          source: files[i],
-          target: files[j],
-          type: 'dependency',
-          strength: Math.random() * 0.8 + 0.2 // Simulate relationship strength
-        });
+        const source = files[i];
+        const target = files[j];
+        if (source && target) {
+          relationships.push({
+            source,
+            target,
+            type: 'dependency',
+            strength: Math.random() * 0.8 + 0.2 // Simulate relationship strength
+          });
+        }
       }
     }
     
@@ -702,6 +765,11 @@ export class ContextualSuggestionEngine extends EventEmitter {
    */
   private getActivePatterns(): CodePattern[] {
     const memory = this._memoryService.getMemory();
+    
+    if (!memory || !memory.codePatterns || !memory.codePatterns.frequentlyUsed) {
+      return [];
+    }
+    
     return memory.codePatterns.frequentlyUsed.slice(0, 5); // Return top 5 patterns
   }
 }

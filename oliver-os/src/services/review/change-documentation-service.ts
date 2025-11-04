@@ -38,6 +38,11 @@ export interface FileChange {
   complexity: 'low' | 'medium' | 'high';
 }
 
+interface ParsedStatusLine {
+  filePath: string;
+  changeType: 'added' | 'modified' | 'deleted' | 'renamed';
+}
+
 export interface ChangeAnalysis {
   whatChanged: string;
   whyChanged: string;
@@ -312,7 +317,7 @@ export class ChangeDocumentationService extends EventEmitter {
   /**
    * Parse status line
    */
-  private parseStatusLine(line: string): any {
+  private parseStatusLine(line: string): ParsedStatusLine | null {
     const parts = line.trim().split(/\s+/);
     if (parts.length < 2) return null;
     
@@ -333,7 +338,7 @@ export class ChangeDocumentationService extends EventEmitter {
   /**
    * Analyze file change
    */
-  private async analyzeFileChange(change: any, diff: string): Promise<FileChange> {
+  private async analyzeFileChange(change: ParsedStatusLine, diff: string): Promise<FileChange> {
     const linesAdded = this.countLinesAdded(diff, change.filePath);
     const linesDeleted = this.countLinesDeleted(diff, change.filePath);
     const description = await this.generateChangeDescription(change, diff);

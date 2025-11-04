@@ -624,11 +624,17 @@ export class TerminalMCPAdapter implements MCPToolAdapter {
   }
 }
 
+interface MemoryItem {
+  value: string;
+  timestamp: number;
+  ttl: number;
+}
+
 export class MemoryMCPAdapter implements MCPToolAdapter {
   private _logger: Logger;
   public serverName = 'memory';
   public tools: CustomToolDefinition[];
-  private memoryStore: Map<string, unknown> = new Map();
+  private memoryStore: Map<string, MemoryItem> = new Map();
 
   constructor() {
     this._logger = new Logger('MemoryMCPAdapter');
@@ -702,10 +708,15 @@ export class MemoryMCPAdapter implements MCPToolAdapter {
   async healthCheck(): Promise<boolean> {
     try {
       // Simple health check - verify memory operations work
-      this.memoryStore.set('health_check', 'ok');
+      const testItem: MemoryItem = {
+        value: 'ok',
+        timestamp: Date.now(),
+        ttl: 1000
+      };
+      this.memoryStore.set('health_check', testItem);
       const result = this.memoryStore.get('health_check');
       this.memoryStore.delete('health_check');
-      return result === 'ok';
+      return result?.value === 'ok';
     } catch (error) {
       this._logger.error('Memory health check failed', error);
       return false;
@@ -743,8 +754,11 @@ export class MemoryMCPAdapter implements MCPToolAdapter {
           };
         }
         
+        // Type assertion for memoryItem
+        const item = memoryItem as MemoryItem;
+        
         // Check TTL
-        if (Date.now() - memoryItem.timestamp > memoryItem.ttl) {
+        if (Date.now() - item.timestamp > item.ttl) {
           this.memoryStore.delete(retrieveKey);
           return {
             success: false,
@@ -754,8 +768,8 @@ export class MemoryMCPAdapter implements MCPToolAdapter {
         
         return {
           success: true,
-          value: memoryItem.value,
-          timestamp: memoryItem.timestamp
+          value: item.value,
+          timestamp: item.timestamp
         };
       }
 
@@ -768,8 +782,10 @@ export class MemoryMCPAdapter implements MCPToolAdapter {
         for (const [key, item] of this.memoryStore.entries()) {
           if (matches.length >= limit) break;
           
-          if (key && key.includes(pattern) || item.value.includes(pattern)) {
-            matches.push({ key, value: item.value });
+          // Type assertion for item
+          const memoryItem = item as MemoryItem;
+          if (key && (key.includes(pattern) || memoryItem.value.includes(pattern))) {
+            matches.push({ key, value: memoryItem.value });
           }
         }
         

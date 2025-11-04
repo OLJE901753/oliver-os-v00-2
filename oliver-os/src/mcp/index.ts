@@ -87,6 +87,7 @@ export class MCPManager {
 // CLI interface
 async function main() {
   const manager = new MCPManager();
+  const logger = new Logger('MCPIndex');
   
   try {
     await manager.initialize();
@@ -108,19 +109,19 @@ async function main() {
         break;
       }
       default:
-        console.error('❌ Unknown transport type. Use: stdio, websocket, or http');
+        logger.error('❌ Unknown transport type. Use: stdio, websocket, or http');
         process.exit(1);
     }
     
     // Keep the process running
     process.on('SIGINT', async () => {
-      console.log('\n🛑 Shutting down MCP Server...');
+      logger.info('\n🛑 Shutting down MCP Server...');
       await manager.stop();
       process.exit(0);
     });
     
   } catch (error) {
-    console.error('❌ Failed to start MCP Server:', error);
+    logger.error('❌ Failed to start MCP Server:', error);
     process.exit(1);
   }
 }
@@ -131,5 +132,9 @@ export * from './types';
 
 // Run if this is the main module
 if (typeof process !== 'undefined' && import.meta.url === `file://${process.argv[1]!}`) {
-  main().catch(console.error);
+  main().catch((error) => {
+    const logger = new Logger('MCPIndex');
+    logger.error('Fatal error:', error);
+    process.exit(1);
+  });
 }

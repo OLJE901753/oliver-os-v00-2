@@ -4,7 +4,7 @@
  * Following BMAD principles: Break, Map, Automate, Document
  */
 
-import { CodebuffClient } from '@codebuff/sdk';
+import { CodebuffClient, type CodebuffResult as SDKCodebuffResult } from '@codebuff/sdk';
 import { Logger } from '../../core/logger';
 import { Config } from '../../core/config';
 import type {
@@ -344,7 +344,7 @@ export class CodebuffService {
     };
   }
 
-  private async documentResults(result: CodebuffResult, options: CodebuffRunOptions): Promise<Record<string, unknown>> {
+  private async documentResults(result: SDKCodebuffResult | CodebuffResult, options: CodebuffRunOptions): Promise<Record<string, unknown>> {
     // Document everything
     return {
       agent: options.agent,

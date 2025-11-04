@@ -58,7 +58,9 @@ export function errorHandler(
 
   // Add stack trace in development
   if (process.env['NODE_ENV'] === 'development') {
-    errorResponse.error.stack = error.stack || undefined;
+    if (error.stack) {
+      errorResponse.error.stack = error.stack;
+    }
     errorResponse.error.details = error;
   }
 

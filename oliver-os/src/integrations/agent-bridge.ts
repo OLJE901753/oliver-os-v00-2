@@ -4,7 +4,7 @@
  * Enables agent-to-agent communication
  */
 
-import type { AgentMessage } from '../services/multi-agent/types';
+import type { AgentMessage, AgentType } from '../services/multi-agent/types';
 import { Logger } from '../core/logger';
 import { readFile } from 'fs/promises';
 import { join } from 'path';
@@ -74,14 +74,17 @@ export class AgentBridgeService {
     content: Record<string, unknown>,
     recipient?: string
   ): Promise<void> {
+    // Set recipient - always assign a value, never undefined
+    const finalRecipient: AgentType | 'all' = (recipient || 'all') as AgentType | 'all';
+    
     const message: AgentMessage = {
       id: `msg-${Date.now()}`,
       type: messageType as AgentMessage['type'],
       sender: sender as AgentMessage['sender'],
-      recipient: (recipient || 'all') as AgentMessage['recipient'],
+      recipient: finalRecipient,
       content,
       timestamp: new Date().toISOString(),
-      priority: 'normal'
+      priority: 'normal' as const
     };
     
     this.logger.info(`📤 Routing message from ${sender} to agents: ${recipient || 'all'}`);

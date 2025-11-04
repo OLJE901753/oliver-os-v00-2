@@ -14,10 +14,15 @@ interface MemoryRecord {
   value: Record<string, unknown>;
   ttl?: number;
   tags?: string[];
-  priority?: string;
+  priority?: string | Record<string, unknown>;
   createdAt: string;
   lastAccessed?: string;
   accessCount?: number;
+  // Additional properties for internal management
+  created_at?: string;
+  updated_at?: string;
+  expires_at?: string | null;
+  deleted?: boolean;
 }
 
 export class MemoryMCPServer extends EventEmitter implements OliverOSMCPServer {
@@ -416,17 +421,23 @@ export class MemoryMCPServer extends EventEmitter implements OliverOSMCPServer {
     
     this._logger.info(`💾 Storing memory: ${key}`);
     
-    const memory = {
+    const now = new Date().toISOString();
+    const memory: MemoryRecord = {
       key: key as string,
       value: value as Record<string, unknown>,
-      tags: tags as string[] || [],
-      priority: priority || 'medium',
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-      ttl: ttl as number,
+      tags: (tags as string[]) || [],
+      priority: (priority as string | Record<string, unknown>) || 'medium',
+      createdAt: now,
+      created_at: now,
+      updated_at: now,
       expires_at: ttl ? new Date(Date.now() + (ttl as number) * 1000).toISOString() : null,
       deleted: false
     };
+    
+    // Conditionally add ttl only if it's defined
+    if (ttl !== undefined) {
+      memory.ttl = ttl as number;
+    }
     
     this.memories.set(key as string, memory);
     
@@ -486,7 +497,7 @@ export class MemoryMCPServer extends EventEmitter implements OliverOSMCPServer {
       .filter(memory => !memory.deleted)
       .filter(memory => {
         if (tags && Array.isArray(tags)) {
-          return tags.some(tag => memory.tags.includes(tag));
+          return tags.some(tag => memory.tags?.includes(tag));
         }
         return true;
       })
@@ -497,12 +508,14 @@ export class MemoryMCPServer extends EventEmitter implements OliverOSMCPServer {
       .sort((a, b) => {
         switch (sort_by) {
           case 'created':
-            return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+            return new Date(a.created_at || a.createdAt).getTime() - new Date(b.created_at || b.createdAt).getTime();
           case 'updated':
-            return new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime();
+            return new Date(b.updated_at || b.createdAt).getTime() - new Date(a.updated_at || a.createdAt).getTime();
           case 'priority': {
             const priorityOrder = { critical: 4, high: 3, medium: 2, low: 1 };
-            return priorityOrder[b.priority as keyof typeof priorityOrder] - priorityOrder[a.priority as keyof typeof priorityOrder];
+            const aPriority = typeof a.priority === 'string' ? a.priority : 'medium';
+            const bPriority = typeof b.priority === 'string' ? b.priority : 'medium';
+            return priorityOrder[bPriority as keyof typeof priorityOrder] - priorityOrder[aPriority as keyof typeof priorityOrder];
           }
           default:
             return 0;
@@ -538,13 +551,34 @@ export class MemoryMCPServer extends EventEmitter implements OliverOSMCPServer {
       return this.createErrorResult(`Memory is deleted: ${key}`);
     }
     
-    const updatedMemory = {
-      ...existingMemory,
+    const updatedMemory: MemoryRecord = {
+      key: existingMemory.key,
       value: merge ? { ...existingMemory.value, ...(value as Record<string, unknown>) } : value as Record<string, unknown>,
-      tags: tags || existingMemory.tags,
-      priority: priority || existingMemory.priority,
-      updated_at: new Date().toISOString()
+      createdAt: existingMemory.createdAt,
+      updated_at: new Date().toISOString(),
+      tags: (tags as string[]) || existingMemory.tags || [],
+      priority: (priority as string | Record<string, unknown>) || existingMemory.priority || 'medium'
     };
+    
+    // Conditionally add optional properties from existingMemory
+    if (existingMemory.ttl !== undefined) {
+      updatedMemory.ttl = existingMemory.ttl;
+    }
+    if (existingMemory.lastAccessed !== undefined) {
+      updatedMemory.lastAccessed = existingMemory.lastAccessed;
+    }
+    if (existingMemory.accessCount !== undefined) {
+      updatedMemory.accessCount = existingMemory.accessCount;
+    }
+    if (existingMemory.created_at !== undefined) {
+      updatedMemory.created_at = existingMemory.created_at;
+    }
+    if (existingMemory.expires_at !== undefined && existingMemory.expires_at !== null) {
+      updatedMemory.expires_at = existingMemory.expires_at;
+    }
+    if (existingMemory.deleted !== undefined) {
+      updatedMemory.deleted = existingMemory.deleted;
+    }
     
     this.memories.set(key as string, updatedMemory);
     
@@ -603,9 +637,10 @@ export class MemoryMCPServer extends EventEmitter implements OliverOSMCPServer {
     }
     
     if (tags && Array.isArray(tags)) {
-      memories = memories.filter(memory => 
-        tags.some(tag => memory.tags.includes(tag))
-      );
+      memories = memories.filter(memory => {
+        const memoryTags = memory.tags;
+        return memoryTags && tags.some(tag => memoryTags.includes(tag));
+      });
     }
     
     if (priority) {
@@ -638,13 +673,14 @@ export class MemoryMCPServer extends EventEmitter implements OliverOSMCPServer {
     let memories = Array.from(this.memories.values());
     
     if (tags && Array.isArray(tags)) {
-      memories = memories.filter(memory => 
-        tags.some(tag => memory.tags.includes(tag))
-      );
+      memories = memories.filter(memory => {
+        const memoryTags = memory.tags;
+        return memoryTags && tags.some(tag => memoryTags.includes(tag));
+      });
     }
     
     if (!include_metadata) {
-      memories = memories.map(memory => ({ key: memory.key, value: memory.value }));
+      memories = memories.map(memory => ({ key: memory.key, value: memory.value, createdAt: memory.createdAt }));
     }
     
     const exportPath = (output_path as string) || path.join(this.memoryDir, `export_${Date.now()}.${exportFormat}`);
@@ -654,14 +690,18 @@ export class MemoryMCPServer extends EventEmitter implements OliverOSMCPServer {
         await fs.writeJSON(exportPath as string, memories, { spaces: 2 });
       } else if (exportFormat === 'csv') {
         // Simple CSV export
-        const csvContent = memories.map(memory => 
-          `${memory.key},"${JSON.stringify(memory.value).replace(/"/g, '""')}",${memory.tags.join(';')},${memory.priority}`
-        ).join('\n');
+        const csvContent = memories.map(memory => {
+          const tagsStr = memory.tags?.join(';') || '';
+          const priorityStr = typeof memory.priority === 'string' ? memory.priority : 'medium';
+          return `${memory.key},"${JSON.stringify(memory.value).replace(/"/g, '""')}",${tagsStr},${priorityStr}`;
+        }).join('\n');
         await fs.writeFile(exportPath as string, csvContent);
       } else {
-        const txtContent = memories.map(memory => 
-          `Key: ${memory.key}\nValue: ${JSON.stringify(memory.value, null, 2)}\nTags: ${memory.tags.join(', ')}\nPriority: ${memory.priority}\n---\n`
-        ).join('\n');
+        const txtContent = memories.map(memory => {
+          const tagsStr = memory.tags?.join(', ') || '';
+          const priorityStr = typeof memory.priority === 'string' ? memory.priority : 'medium';
+          return `Key: ${memory.key}\nValue: ${JSON.stringify(memory.value, null, 2)}\nTags: ${tagsStr}\nPriority: ${priorityStr}\n---\n`;
+        }).join('\n');
         await fs.writeFile(exportPath as string, txtContent);
       }
       
@@ -757,8 +797,10 @@ export class MemoryMCPServer extends EventEmitter implements OliverOSMCPServer {
     const toCleanup = Array.from(this.memories.entries())
       .filter(([_key, memory]) => {
         if (memory.deleted) return true;
-        if (new Date(memory.created_at) < cutoffDate) return true;
-        if (priority_filter && priorityOrder[memory.priority as keyof typeof priorityOrder] <= filterPriority) return true;
+        const createdDate = memory.created_at || memory.createdAt;
+        if (createdDate && new Date(createdDate) < cutoffDate) return true;
+        const priorityStr = typeof memory.priority === 'string' ? memory.priority : 'medium';
+        if (priority_filter && priorityOrder[priorityStr as keyof typeof priorityOrder] <= filterPriority) return true;
         if (memory.expires_at && new Date(memory.expires_at) < new Date()) return true;
         return false;
       });
@@ -801,20 +843,24 @@ export class MemoryMCPServer extends EventEmitter implements OliverOSMCPServer {
       memory_directory: this.memoryDir,
       total_size: JSON.stringify(memories).length,
       priority_distribution: {
-        low: activeMemories.filter(m => m.priority === 'low').length,
-        medium: activeMemories.filter(m => m.priority === 'medium').length,
-        high: activeMemories.filter(m => m.priority === 'high').length,
-        critical: activeMemories.filter(m => m.priority === 'critical').length
+        low: activeMemories.filter(m => (typeof m.priority === 'string' ? m.priority : 'medium') === 'low').length,
+        medium: activeMemories.filter(m => (typeof m.priority === 'string' ? m.priority : 'medium') === 'medium').length,
+        high: activeMemories.filter(m => (typeof m.priority === 'string' ? m.priority : 'medium') === 'high').length,
+        critical: activeMemories.filter(m => (typeof m.priority === 'string' ? m.priority : 'medium') === 'critical').length
       },
       tag_usage: this.getTagUsage(activeMemories),
       oldest_memory: activeMemories.length > 0 ? 
-        activeMemories.reduce((oldest, current) => 
-          new Date(current.created_at) < new Date(oldest.created_at) ? current : oldest
-        ).created_at : null,
+        activeMemories.reduce((oldest, current) => {
+          const oldestDate = oldest.created_at || oldest.createdAt;
+          const currentDate = current.created_at || current.createdAt;
+          return new Date(currentDate) < new Date(oldestDate) ? current : oldest;
+        }).created_at || null : null,
       newest_memory: activeMemories.length > 0 ? 
-        activeMemories.reduce((newest, current) => 
-          new Date(current.created_at) > new Date(newest.created_at) ? current : newest
-        ).created_at : null,
+        activeMemories.reduce((newest, current) => {
+          const newestDate = newest.created_at || newest.createdAt;
+          const currentDate = current.created_at || current.createdAt;
+          return new Date(currentDate) > new Date(newestDate) ? current : newest;
+        }).created_at || null : null,
       generated_at: new Date().toISOString()
     };
     
@@ -829,8 +875,10 @@ export class MemoryMCPServer extends EventEmitter implements OliverOSMCPServer {
   private getTagUsage(memories: MemoryRecord[]): Record<string, number> {
     const tagCount: Record<string, number> = {};
     for (const memory of memories) {
-      for (const tag of memory.tags) {
-        tagCount[tag] = (tagCount[tag] || 0) + 1;
+      if (memory.tags) {
+        for (const tag of memory.tags) {
+          tagCount[tag] = (tagCount[tag] || 0) + 1;
+        }
       }
     }
     return tagCount;
@@ -850,7 +898,11 @@ export class MemoryMCPServer extends EventEmitter implements OliverOSMCPServer {
   private async handleGetRecentMemories(): Promise<MCPResourceResult> {
     const recentMemories = Array.from(this.memories.values())
       .filter(m => !m.deleted)
-      .sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime())
+      .sort((a, b) => {
+        const aDate = a.updated_at || a.createdAt;
+        const bDate = b.updated_at || b.createdAt;
+        return new Date(bDate).getTime() - new Date(aDate).getTime();
+      })
       .slice(0, 10);
     
     return {

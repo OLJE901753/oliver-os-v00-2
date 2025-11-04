@@ -19,7 +19,7 @@ interface ContentSecurityPolicy {
     objectSrc?: string[];
     mediaSrc?: string[];
     frameSrc?: string[];
-    upgradeInsecureRequests?: unknown[];
+    upgradeInsecureRequests?: boolean | null;
   };
 }
 
@@ -110,7 +110,7 @@ export class SecurityManager {
             objectSrc: ["'none'"],
             mediaSrc: ["'self'"],
             frameSrc: ["'none'"],
-            upgradeInsecureRequests: [],
+            upgradeInsecureRequests: true,
           },
         },
       },

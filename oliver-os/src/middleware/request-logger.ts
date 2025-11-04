@@ -4,8 +4,6 @@
  */
 
 import type { Request, Response, NextFunction } from 'express';
-import { Buffer } from 'node:buffer';
-import type { BufferEncoding } from 'node:fs';
 import { Logger } from '../core/logger';
 
 const logger = new Logger('RequestLogger');
@@ -26,8 +24,8 @@ export function requestLogger(req: Request, res: Response, next: NextFunction): 
   });
 
   // Override res.end to log response
-  const originalEnd = res.end;
-  res.end = function(chunk?: string | Buffer, encoding?: BufferEncoding, _cb?: () => void): Response {
+  const originalEnd = res.end.bind(res);
+  res.end = ((chunk?: any, encodingOrCb?: any, cb?: () => void): Response => {
     const responseTime = Date.now() - startTime;
     
     logger.info('Response sent', {
@@ -39,9 +37,24 @@ export function requestLogger(req: Request, res: Response, next: NextFunction): 
       timestamp: new Date().toISOString()
     });
 
-    // Call original end method
-    return originalEnd.call(this, chunk, encoding);
-  };
+    // Call original end method - handle all overloads
+    if (typeof encodingOrCb === 'function') {
+      // end(chunk, cb) or end(cb)
+      return originalEnd(chunk, encodingOrCb);
+    } else if (encodingOrCb && typeof encodingOrCb === 'string' && cb) {
+      // end(chunk, encoding, cb)
+      return originalEnd(chunk, encodingOrCb as BufferEncoding, cb);
+    } else if (encodingOrCb && typeof encodingOrCb === 'string') {
+      // end(chunk, encoding)
+      return originalEnd(chunk, encodingOrCb as BufferEncoding);
+    } else if (chunk !== undefined) {
+      // end(chunk)
+      return originalEnd(chunk);
+    } else {
+      // end()
+      return originalEnd();
+    }
+  }) as typeof res.end;
 
   next();
 }

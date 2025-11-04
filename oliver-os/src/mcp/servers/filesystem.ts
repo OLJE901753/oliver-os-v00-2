@@ -552,7 +552,8 @@ export class FilesystemMCPServer extends EventEmitter implements OliverOSMCPServ
     this._logger.info(`📋 Copying: ${sourcePath} -> ${destPath}`);
     
     try {
-      await fs.copy(sourcePath, destPath, { recursive: (recursive as boolean) || true });
+      // fs-extra copy handles recursion by default, no need for recursive option
+      await fs.copy(sourcePath, destPath);
       
       return {
         content: [{

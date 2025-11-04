@@ -58,7 +58,7 @@ export function createServer(config: Config, serviceManager?: unknown, prisma?: 
   const securityConfig = securityManager.getConfig();
   
   // Security middleware
-  app.use(helmet(securityConfig.helmet));
+  app.use(helmet(securityConfig.helmet as Parameters<typeof helmet>[0]));
   // Ensure CORP allows favicon and similar resources
   // @ts-ignore - helmet namespace typing
   app.use((helmet as unknown as { crossOriginResourcePolicy: (options: { policy: string }) => unknown }).crossOriginResourcePolicy({ policy: 'cross-origin' }));
@@ -278,17 +278,17 @@ export function createServer(config: Config, serviceManager?: unknown, prisma?: 
   app.use('/api/websocket', websocketRouter);
   
   // Authentication routes (with rate limiting)
-  if (prisma) {
-    app.use('/api/auth', authRateLimit, createAuthRoutes(prisma));
+  if (prisma && typeof prisma === 'object' && prisma !== null && 'user' in prisma) {
+    app.use('/api/auth', authRateLimit, createAuthRoutes(prisma as Parameters<typeof createAuthRoutes>[0]));
   }
   
   // Agent routes (if service manager is provided)
-  if (serviceManager) {
-    app.use('/api/agents', createAgentRoutes(serviceManager));
+  if (serviceManager && typeof serviceManager === 'object' && serviceManager !== null && 'registerService' in serviceManager) {
+    app.use('/api/agents', createAgentRoutes(serviceManager as Parameters<typeof createAgentRoutes>[0]));
   }
 
   // Unified agent routes (for Python agent communication)
-  app.use('/api/unified', createUnifiedAgentRoutes(config, serviceManager));
+  app.use('/api/unified', createUnifiedAgentRoutes(config, serviceManager && typeof serviceManager === 'object' && serviceManager !== null && 'registerService' in serviceManager ? serviceManager as Parameters<typeof createUnifiedAgentRoutes>[1] : undefined));
   
   // Assistant and Organizer routes - will be initialized async
   // Store service instances for route handlers to check (currently unused - reserved for future use)
@@ -363,8 +363,8 @@ export function createServer(config: Config, serviceManager?: unknown, prisma?: 
         organizerRouter.stack.length = 0;
         organizerRouter.stack.push(...organizerRoutes.stack);
 
-        if (serviceManager) {
-          await serviceManager.registerService('thought-organizer', 'Thought Organizer Service', {
+        if (serviceManager && typeof serviceManager === 'object' && serviceManager !== null && 'registerService' in serviceManager) {
+          await (serviceManager as { registerService: (id: string, name: string, metadata: Record<string, unknown>) => Promise<void> }).registerService('thought-organizer', 'Thought Organizer Service', {
             status: 'ready',
           });
         }
@@ -381,8 +381,8 @@ export function createServer(config: Config, serviceManager?: unknown, prisma?: 
         assistantRouter.stack.length = 0;
         assistantRouter.stack.push(...assistantRoutes.stack);
 
-        if (serviceManager) {
-          await serviceManager.registerService('assistant', 'AI Assistant Service', {
+        if (serviceManager && typeof serviceManager === 'object' && serviceManager !== null && 'registerService' in serviceManager) {
+          await (serviceManager as { registerService: (id: string, name: string, metadata: Record<string, unknown>) => Promise<void> }).registerService('assistant', 'AI Assistant Service', {
             status: 'ready',
           });
         }
@@ -406,8 +406,8 @@ export function createServer(config: Config, serviceManager?: unknown, prisma?: 
       knowledgeGraphReady = true;
       app.use('/api/knowledge', createKnowledgeGraphRoutes(service));
       
-      if (serviceManager) {
-        await serviceManager.registerService('knowledge-graph', 'Knowledge Graph Service', {
+      if (serviceManager && typeof serviceManager === 'object' && serviceManager !== null && 'registerService' in serviceManager) {
+        await (serviceManager as { registerService: (id: string, name: string, metadata: Record<string, unknown>) => Promise<void> }).registerService('knowledge-graph', 'Knowledge Graph Service', {
           stats: await service.getGraphStats(),
         });
       }
@@ -434,8 +434,8 @@ export function createServer(config: Config, serviceManager?: unknown, prisma?: 
       memoryReady = true;
       app.use('/api/memory', createMemoryCaptureRoutes(service));
       
-      if (serviceManager) {
-        await serviceManager.registerService('memory-capture', 'Memory Capture Service', {
+      if (serviceManager && typeof serviceManager === 'object' && serviceManager !== null && 'registerService' in serviceManager) {
+        await (serviceManager as { registerService: (id: string, name: string, metadata: Record<string, unknown>) => Promise<void> }).registerService('memory-capture', 'Memory Capture Service', {
           stats: await service.getStats(),
         });
       }
@@ -457,8 +457,8 @@ export function createServer(config: Config, serviceManager?: unknown, prisma?: 
       organizerRouter.stack.length = 0;
       organizerRouter.stack.push(...organizerRoutes.stack);
       
-      if (serviceManager) {
-        await serviceManager.registerService('thought-organizer', 'Thought Organizer Service', {
+      if (serviceManager && typeof serviceManager === 'object' && serviceManager !== null && 'registerService' in serviceManager) {
+        await (serviceManager as { registerService: (id: string, name: string, metadata: Record<string, unknown>) => Promise<void> }).registerService('thought-organizer', 'Thought Organizer Service', {
           status: 'ready',
         });
       }
@@ -473,8 +473,8 @@ export function createServer(config: Config, serviceManager?: unknown, prisma?: 
       assistantRouter.stack.length = 0;
       assistantRouter.stack.push(...assistantRoutes.stack);
       
-      if (serviceManager) {
-        await serviceManager.registerService('assistant', 'AI Assistant Service', {
+      if (serviceManager && typeof serviceManager === 'object' && serviceManager !== null && 'registerService' in serviceManager) {
+        await (serviceManager as { registerService: (id: string, name: string, metadata: Record<string, unknown>) => Promise<void> }).registerService('assistant', 'AI Assistant Service', {
           status: 'ready',
         });
       }
@@ -493,8 +493,8 @@ export function createServer(config: Config, serviceManager?: unknown, prisma?: 
         app.use('/api/knowledge', createKnowledgeGraphRoutes(knowledgeGraphService));
         
         // Register with service manager if available
-        if (serviceManager) {
-          await serviceManager.registerService('knowledge-graph', 'Knowledge Graph Service', {
+        if (serviceManager && typeof serviceManager === 'object' && serviceManager !== null && 'registerService' in serviceManager) {
+          await (serviceManager as { registerService: (id: string, name: string, metadata: Record<string, unknown>) => Promise<void> }).registerService('knowledge-graph', 'Knowledge Graph Service', {
             stats: await knowledgeGraphService.getGraphStats(),
           });
         }
@@ -529,8 +529,8 @@ export function createServer(config: Config, serviceManager?: unknown, prisma?: 
         app.use('/api/memory', createMemoryCaptureRoutes(captureMemoryService));
         
         // Register with service manager if available
-        if (serviceManager) {
-          await serviceManager.registerService('memory-capture', 'Memory Capture Service', {
+        if (serviceManager && typeof serviceManager === 'object' && serviceManager !== null && 'registerService' in serviceManager) {
+          await (serviceManager as { registerService: (id: string, name: string, metadata: Record<string, unknown>) => Promise<void> }).registerService('memory-capture', 'Memory Capture Service', {
             stats: await captureMemoryService.getStats(),
           });
         }

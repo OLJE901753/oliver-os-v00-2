@@ -7,10 +7,17 @@
 import fs from 'fs-extra';
 import path from 'path';
 
+interface LearningEventData {
+  pattern?: string;
+  patternId?: string;
+  currentStyle?: string;
+  [key: string]: unknown;
+}
+
 interface LearningEvent {
   timestamp: string;
   event: string;
-  data: unknown;
+  data: LearningEventData | unknown;
   context?: {
     currentStyle?: string;
     adaptations?: Array<{ pattern: string; confidence: number; timestamp: string }>;
@@ -76,7 +83,8 @@ function generatePersonalDashboard(): void {
   // Extract patterns
   const patterns = new Map<string, number>();
   recent.forEach(log => {
-    const pattern = log.data?.pattern || log.data?.patternId || 'unknown';
+    const data = log.data as LearningEventData | undefined;
+    const pattern = data?.pattern || data?.patternId || 'unknown';
     if (pattern && pattern !== 'unknown') {
       patterns.set(pattern, (patterns.get(pattern) || 0) + 1);
     }
@@ -94,13 +102,17 @@ function generatePersonalDashboard(): void {
   
   // Current coding style
   console.log('\n  Current coding style preference:');
-  const lastStyleEvent = [...recent].reverse().find(log => 
-    log.context?.currentStyle || log.data?.currentStyle
-  );
+  const lastStyleEvent = [...recent].reverse().find(log => {
+    const data = log.data as LearningEventData | undefined;
+    return log.context?.currentStyle || data?.currentStyle;
+  });
   
+  const lastStyleEventData = lastStyleEvent?.data as LearningEventData | undefined;
+  const lastLogData = logs[logs.length - 1]?.data as LearningEventData | undefined;
   const currentStyle = lastStyleEvent?.context?.currentStyle || 
-                       lastStyleEvent?.data?.currentStyle || 
+                       lastStyleEventData?.currentStyle || 
                        logs[logs.length - 1]?.context?.currentStyle ||
+                       lastLogData?.currentStyle ||
                        'default';
   
   console.log(`    ${JSON.stringify(currentStyle, null, 2)}`);

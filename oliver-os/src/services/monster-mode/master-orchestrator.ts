@@ -243,7 +243,11 @@ export class MasterOrchestrator extends EventEmitter {
 
       // Initialize Learning Service
       if (this.monsterModeConfig.agents.learning) {
-        const learningService = new LearningService(this._config, this.agents.get('memory'));
+        const memoryService = this.agents.get('memory') as MemoryService | undefined;
+        if (!memoryService) {
+          throw new Error('Memory service must be initialized before Learning Service');
+        }
+        const learningService = new LearningService(this._config, memoryService);
         await learningService.initialize();
         this.agents.set('learning', learningService);
         this.agentStatuses.set('learning', this.createAgentStatus('learning', 'Learning Service', ['pattern-recognition', 'suggestion-generation', 'feedback-learning']));
@@ -251,7 +255,12 @@ export class MasterOrchestrator extends EventEmitter {
 
       // Initialize Self Review Service
       if (this.monsterModeConfig.agents.selfReview) {
-        const selfReviewService = new SelfReviewService(this._config, this.agents.get('memory'), this.agents.get('learning'));
+        const memoryService = this.agents.get('memory') as MemoryService | undefined;
+        const learningService = this.agents.get('learning') as LearningService | undefined;
+        if (!memoryService || !learningService) {
+          throw new Error('Memory and Learning services must be initialized before Self Review Service');
+        }
+        const selfReviewService = new SelfReviewService(this._config, memoryService, learningService);
         await selfReviewService.initialize();
         this.agents.set('selfReview', selfReviewService);
         this.agentStatuses.set('selfReview', this.createAgentStatus('selfReview', 'Self Review Service', ['code-review', 'quality-analysis', 'suggestion-generation']));
@@ -283,7 +292,12 @@ export class MasterOrchestrator extends EventEmitter {
 
       // Initialize Improvement Suggestions Service
       if (this.monsterModeConfig.agents.improvementSuggestions) {
-        const improvementSuggestionsService = new ImprovementSuggestionsService(this._config, this.agents.get('memory'), this.agents.get('learning'));
+        const memoryService = this.agents.get('memory') as MemoryService | undefined;
+        const learningService = this.agents.get('learning') as LearningService | undefined;
+        if (!memoryService || !learningService) {
+          throw new Error('Memory and Learning services must be initialized before Improvement Suggestions Service');
+        }
+        const improvementSuggestionsService = new ImprovementSuggestionsService(this._config, memoryService, learningService);
         await improvementSuggestionsService.initialize();
         this.agents.set('improvementSuggestions', improvementSuggestionsService);
         this.agentStatuses.set('improvementSuggestions', this.createAgentStatus('improvementSuggestions', 'Improvement Suggestions Service', ['suggestion-generation', 'code-improvement', 'best-practices']));
@@ -567,8 +581,11 @@ export class MasterOrchestrator extends EventEmitter {
    * Execute review task
    */
   private async executeReviewTask(task: Task, agent: unknown): Promise<unknown> {
-    if (agent.reviewFile) {
-      return await agent.reviewFile(task.context.filePath);
+    if (agent && typeof agent === 'object' && agent !== null && 'reviewFile' in agent && typeof (agent as { reviewFile?: unknown }).reviewFile === 'function') {
+      const filePath = task.context['filePath'] as string | undefined;
+      if (filePath) {
+        return await ((agent as { reviewFile: (path: string) => Promise<unknown> }).reviewFile(filePath));
+      }
     }
     return { reviewed: true, score: 0.8 };
   }
@@ -577,8 +594,8 @@ export class MasterOrchestrator extends EventEmitter {
    * Execute quality check task
    */
   private async executeQualityCheckTask(_task: Task, agent: unknown): Promise<unknown> {
-    if (agent.runQualityGate) {
-      return await agent.runQualityGate();
+    if (agent && typeof agent === 'object' && agent !== null && 'runQualityGate' in agent && typeof (agent as { runQualityGate?: unknown }).runQualityGate === 'function') {
+      return await ((agent as { runQualityGate: () => Promise<unknown> }).runQualityGate());
     }
     return { qualityCheck: true, passed: true };
   }
@@ -587,8 +604,8 @@ export class MasterOrchestrator extends EventEmitter {
    * Execute documentation task
    */
   private async executeDocumentationTask(_task: Task, agent: unknown): Promise<unknown> {
-    if (agent.documentCurrentChanges) {
-      return await agent.documentCurrentChanges();
+    if (agent && typeof agent === 'object' && agent !== null && 'documentCurrentChanges' in agent && typeof (agent as { documentCurrentChanges?: unknown }).documentCurrentChanges === 'function') {
+      return await ((agent as { documentCurrentChanges: () => Promise<unknown> }).documentCurrentChanges());
     }
     return { documented: true, summary: 'Documentation generated' };
   }
@@ -918,7 +935,7 @@ export class MasterOrchestrator extends EventEmitter {
 
     // Calculate conflict rate
     const totalTasks = this.completedTasks.size + this.activeTasks.size + this.taskQueue.length;
-    metrics.conflictRate = this.conflicts.size / totalTasks;
+    metrics['conflictRate'] = this.conflicts.size / totalTasks;
 
     return metrics;
   }
@@ -930,7 +947,8 @@ export class MasterOrchestrator extends EventEmitter {
     const optimizations: WorkflowOptimization[] = [];
 
     // Performance optimizations
-    if (metrics.averageTaskDuration > 60000) { // 1 minute
+    const avgTaskDuration = metrics['averageTaskDuration'] as number | undefined;
+    if (avgTaskDuration && avgTaskDuration > 60000) { // 1 minute
       optimizations.push({
         id: this.generateOptimizationId(),
         type: 'performance',
@@ -948,7 +966,8 @@ export class MasterOrchestrator extends EventEmitter {
     }
 
     // Efficiency optimizations
-    if (metrics.agentUtilization < 0.7) {
+    const agentUtil = metrics['agentUtilization'] as number | undefined;
+    if (agentUtil !== undefined && agentUtil < 0.7) {
       optimizations.push({
         id: this.generateOptimizationId(),
         type: 'efficiency',
@@ -966,7 +985,8 @@ export class MasterOrchestrator extends EventEmitter {
     }
 
     // Quality optimizations
-    if (metrics.conflictRate > 0.1) {
+    const conflictRate = typeof metrics['conflictRate'] === 'number' ? metrics['conflictRate'] : 0;
+    if (conflictRate > 0.1) {
       optimizations.push({
         id: this.generateOptimizationId(),
         type: 'quality',

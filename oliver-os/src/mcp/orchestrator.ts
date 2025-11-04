@@ -286,13 +286,19 @@ export class MCPOrchestrator extends EventEmitter {
     const status: Record<string, ServerStatus> = {};
     
     for (const [name, serverInfo] of this.servers.entries()) {
-      status[name] = {
+      const serverStatus: ServerStatus = {
         name: serverInfo.name,
         port: serverInfo.port,
         status: serverInfo.status,
-        lastError: serverInfo.lastError,
         uptime: serverInfo.status === 'running' ? 'running' : 'stopped'
       };
+      
+      // Conditionally add lastError only if it exists
+      if (serverInfo.lastError !== undefined) {
+        serverStatus.lastError = serverInfo.lastError;
+      }
+      
+      status[name] = serverStatus;
     }
     
     return status;
@@ -376,7 +382,8 @@ export class MCPOrchestrator extends EventEmitter {
       method: 'tools/list'
     };
 
-    return await serverInfo.server.handleRequest(request);
+    const response = await serverInfo.server.handleRequest(request);
+    return response as ToolsListResult;
   }
 
   async getServerResources(serverName: string): Promise<MCPResponse> {
@@ -444,6 +451,7 @@ export class MCPOrchestrator extends EventEmitter {
 // CLI interface for the orchestrator
 export async function main() {
   const orchestrator = new MCPOrchestrator();
+  const logger = new Logger('MCPOrchestratorCLI');
   
   try {
     const command = process.argv[2]! || 'start';
@@ -451,42 +459,42 @@ export async function main() {
     switch (command) {
       case 'start':
         await orchestrator.startAll();
-        console.log('🎉 All MCP servers started successfully!');
+        logger.info('🎉 All MCP servers started successfully!');
         break;
       case 'stop':
         await orchestrator.stopAll();
-        console.log('🛑 All MCP servers stopped');
+        logger.info('🛑 All MCP servers stopped');
         break;
       case 'status': {
         const status = orchestrator.getServerStatus();
-        console.log('📊 MCP Server Status:');
-        console.log(JSON.stringify(status, null, 2));
+        logger.info('📊 MCP Server Status:');
+        logger.info(JSON.stringify(status, null, 2));
         break;
       }
       case 'health': {
         const health = await orchestrator.getServerHealth();
-        console.log('🏥 MCP Server Health:');
-        console.log(JSON.stringify(health, null, 2));
+        logger.info('🏥 MCP Server Health:');
+        logger.info(JSON.stringify(health, null, 2));
         break;
       }
       case 'restart': {
         const serverName = process.argv[3]!;
         if (serverName) {
           await orchestrator.restartServer(serverName);
-          console.log(`🔄 ${serverName} server restarted`);
+          logger.info(`🔄 ${serverName} server restarted`);
         } else {
-          console.log('❌ Please specify server name to restart');
+          logger.warn('❌ Please specify server name to restart');
         }
         break;
       }
       default:
-        console.log('Available commands: start, stop, status, health, restart <server>');
+        logger.info('Available commands: start, stop, status, health, restart <server>');
     }
     
     if (command === 'start') {
       // Keep the process running
       process.on('SIGINT', async () => {
-        console.log('\n🛑 Shutting down MCP servers...');
+        logger.info('\n🛑 Shutting down MCP servers...');
         await orchestrator.stopAll();
         process.exit(0);
       });
@@ -498,12 +506,16 @@ export async function main() {
     }
     
   } catch (error) {
-    console.error('❌ MCP Orchestrator error:', error);
+    logger.error('❌ MCP Orchestrator error:', error);
     process.exit(1);
   }
 }
 
 // Run if this is the main module
 if (typeof process !== 'undefined' && import.meta.url === `file://${process.argv[1]!}`) {
-  main().catch(console.error);
+  main().catch((error) => {
+    const logger = new Logger('MCPOrchestratorCLI');
+    logger.error('Fatal error:', error);
+    process.exit(1);
+  });
 }

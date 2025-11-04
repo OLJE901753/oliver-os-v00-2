@@ -460,50 +460,64 @@ export class DatabaseMCPServer extends EventEmitter implements OliverOSMCPServer
       const tableName = table as string;
       const op = operation as string;
       
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      let results: any;
+      // Type-safe dynamic Prisma access
+      type PrismaDelegate = {
+        findMany: (args: { where?: Record<string, unknown>; take?: number; skip?: number }) => Promise<unknown[]>;
+        create: (args: { data: Record<string, unknown> }) => Promise<unknown>;
+        updateMany: (args: { where: Record<string, unknown>; data: Record<string, unknown> }) => Promise<unknown>;
+        deleteMany: (args: { where: Record<string, unknown> }) => Promise<unknown>;
+      };
+      
+      type PrismaClientWithDynamic = PrismaClient & {
+        [key: string]: PrismaDelegate | undefined;
+      };
+      
+      const prismaClient = this.prisma as unknown as PrismaClientWithDynamic;
+      const tableDelegate = prismaClient[tableName];
+      
+      if (!tableDelegate) {
+        throw new Error(`Table "${tableName}" not found in Prisma schema`);
+      }
+      
+      let results: unknown;
       
       switch (op.toLowerCase()) {
-        case 'select':
-          // Dynamic table access requires type assertion
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          results = await (this.prisma as any)[tableName].findMany({
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            where: where as any || {},
-            take: limit as number || undefined,
-            skip: offset as number || undefined
-          });
+        case 'select': {
+          const findManyArgs: { where: Record<string, unknown>; take?: number; skip?: number } = {
+            where: (where as Record<string, unknown>) || {}
+          };
+          if (limit !== undefined && limit !== null) {
+            findManyArgs.take = limit as number;
+          }
+          if (offset !== undefined && offset !== null) {
+            findManyArgs.skip = offset as number;
+          }
+          results = await tableDelegate.findMany(findManyArgs);
           break;
+        }
         case 'insert':
           if (!data) {
             throw new Error('Data required for insert operation');
           }
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          results = await (this.prisma as any)[tableName].create({
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            data: data as any
+          results = await tableDelegate.create({
+            data: data as Record<string, unknown>
           });
           break;
         case 'update':
           if (!data || !where) {
             throw new Error('Data and where required for update operation');
           }
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          results = await (this.prisma as any)[tableName].updateMany({
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            where: where as any,
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            data: data as any
+          results = await tableDelegate.updateMany({
+            where: where as Record<string, unknown>,
+            data: data as Record<string, unknown>
           });
           break;
         case 'delete':
           if (!where) {
             throw new Error('Where required for delete operation');
           }
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          results = await (this.prisma as any)[tableName].deleteMany({
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            where: where as any
+          results = await tableDelegate.deleteMany({
+            where: where as Record<string, unknown>
           });
           break;
         default:

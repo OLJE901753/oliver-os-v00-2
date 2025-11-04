@@ -350,13 +350,18 @@ Generate the complete code implementation:`;
           const eslintResults = JSON.parse(stdout) as Array<{ messages: Array<{ line: number; column: number; message: string; severity: number; ruleId?: string }> }>;
           
           eslintIssues = eslintResults.flatMap((file) => 
-            file.messages.map((msg) => ({
-              line: msg.line,
-              column: msg.column,
-              message: msg.message,
-              severity: msg.severity === 1 ? 'warning' : 'error',
-              rule: msg.ruleId
-            }))
+            file.messages.map((msg) => {
+              const issue: { line: number; column: number; message: string; severity: string; rule?: string } = {
+                line: msg.line,
+                column: msg.column,
+                message: msg.message,
+                severity: msg.severity === 1 ? 'warning' : 'error'
+              };
+              if (msg.ruleId) {
+                issue.rule = msg.ruleId;
+              }
+              return issue;
+            })
           );
         } catch (eslintError) {
           this._logger.debug(`ESLint not available or failed: ${eslintError}`);

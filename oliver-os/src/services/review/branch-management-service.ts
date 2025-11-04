@@ -709,24 +709,46 @@ export class BranchManagementService extends EventEmitter {
   /**
    * Get workflow statistics
    */
-  getWorkflowStats(): any {
+  getWorkflowStats(): {
+    totalWorkflows: number;
+    completedWorkflows: number;
+    failedWorkflows: number;
+    runningWorkflows: number;
+    averageDuration: number;
+    byType: Record<string, number>;
+    lastWorkflow?: SoloWorkflow;
+  } {
     const workflows = Array.from(this.workflowHistory.values());
     
-    return {
+    const result: {
+      totalWorkflows: number;
+      completedWorkflows: number;
+      failedWorkflows: number;
+      runningWorkflows: number;
+      averageDuration: number;
+      byType: Record<string, number>;
+      lastWorkflow?: SoloWorkflow;
+    } = {
       totalWorkflows: workflows.length,
       completedWorkflows: workflows.filter(w => w.status === 'completed').length,
       failedWorkflows: workflows.filter(w => w.status === 'failed').length,
       runningWorkflows: workflows.filter(w => w.status === 'running').length,
-      averageDuration: workflows.reduce((sum, w) => sum + (w.duration || 0), 0) / workflows.length,
+      averageDuration: workflows.length > 0 ? workflows.reduce((sum, w) => sum + (w.duration || 0), 0) / workflows.length : 0,
       byType: workflows.reduce((acc, w) => {
         const type = w.id.split('-')[0];
         if (type) {
           acc[type] = (acc[type] || 0) + 1;
         }
         return acc;
-      }, {} as any),
-      lastWorkflow: workflows[workflows.length - 1]
+      }, {} as Record<string, number>),
     };
+    
+    const lastWorkflow = workflows.length > 0 ? workflows[workflows.length - 1] : undefined;
+    if (lastWorkflow !== undefined) {
+      result.lastWorkflow = lastWorkflow;
+    }
+    
+    return result;
   }
 
   /**

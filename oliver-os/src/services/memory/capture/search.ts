@@ -5,7 +5,7 @@
  */
 
 import { Logger } from '../../../core/logger';
-import type { MemoryStorage, MemoryRecord } from './storage';
+import type { MemoryStorage, MemoryRecord, MemoryType, MemoryStatus } from './storage';
 
 export interface SearchResult extends MemoryRecord {
   relevance: number;
@@ -45,8 +45,7 @@ export class MemorySearch {
    * Full-text search across memories
    */
   search(query: string, limit: number = 50): SearchResult[] {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const db = (this.storage as any).db;
+    const db = this.storage.getDatabase();
     
     if (!db) {
       this.logger.error('Database not available');
@@ -107,8 +106,7 @@ export class MemorySearch {
    * Fallback search using LIKE (if FTS5 fails)
    */
   private fallbackSearch(query: string, limit: number): SearchResult[] {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const db = (this.storage as any).db;
+    const db = this.storage.getDatabase();
     const searchTerm = `%${query}%`;
 
     const stmt = db.prepare(`
@@ -151,8 +149,7 @@ export class MemorySearch {
     },
     limit: number = 50
   ): SearchResult[] {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const db = (this.storage as any).db;
+    const db = this.storage.getDatabase();
 
     try {
       let sql = `
@@ -225,17 +222,27 @@ export class MemorySearch {
    * Convert database row to MemoryRecord
    */
   private rowToMemory(row: MemoryDBRow): MemoryRecord {
-    return {
+    const memory: MemoryRecord = {
       id: row.id,
       rawContent: row.raw_content,
-      type: row.type,
+      type: row.type as MemoryType,
       timestamp: new Date(row.timestamp),
-      status: row.status,
-      metadata: JSON.parse(row.metadata || '{}'),
-      audioUrl: row.audio_url || undefined,
-      transcript: row.transcript || undefined,
-      durationSeconds: row.duration_seconds || undefined,
+      status: row.status as MemoryStatus,
+      metadata: JSON.parse(row.metadata || '{}')
     };
+    
+    // Conditionally add optional properties only if they have values
+    if (row.audio_url) {
+      memory.audioUrl = row.audio_url;
+    }
+    if (row.transcript) {
+      memory.transcript = row.transcript;
+    }
+    if (row.duration_seconds !== null && row.duration_seconds !== undefined) {
+      memory.durationSeconds = row.duration_seconds;
+    }
+    
+    return memory;
   }
 }
 

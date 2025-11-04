@@ -447,7 +447,7 @@ export class VisualDocumentationService extends EventEmitter {
         mermaidCode += `    ${func.name}[${func.name}]\n`;
         
         // Add function calls
-        func.calls.forEach((call: any) => {
+        func.calls.forEach((call: string) => {
           mermaidCode += `    ${func.name} --> ${call}\n`;
         });
       });
@@ -617,7 +617,7 @@ export class VisualDocumentationService extends EventEmitter {
     return variables;
   }
 
-  private extractStateTransitions(_fileContent: string): any[] {
+  private extractStateTransitions(_fileContent: string): Array<{ from: string; to: string; trigger: string }> {
     // Simplified implementation
     return [];
   }
@@ -653,8 +653,8 @@ export class VisualDocumentationService extends EventEmitter {
     return methods;
   }
 
-  private extractFunctions(fileContent: string): any[] {
-    const functions: any[] = [];
+  private extractFunctions(fileContent: string): Array<{ name: string; calls: string[] }> {
+    const functions: Array<{ name: string; calls: string[] }> = [];
     const functionMatches = fileContent.match(/function\s+(\w+)/g);
     
     if (functionMatches) {
@@ -672,8 +672,8 @@ export class VisualDocumentationService extends EventEmitter {
     return functions;
   }
 
-  private extractAsyncOperations(fileContent: string): any[] {
-    const operations: any[] = [];
+  private extractAsyncOperations(fileContent: string): Array<{ from: string; to: string; action: string }> {
+    const operations: Array<{ from: string; to: string; action: string }> = [];
     const asyncMatches = fileContent.match(/await\s+(\w+)/g);
     
     if (asyncMatches) {

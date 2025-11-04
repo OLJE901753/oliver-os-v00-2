@@ -128,6 +128,13 @@ router.post('/send/:clientId', (req: Request, res: Response) => {
       });
     }
 
+    if (!clientId) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Client ID is required'
+      });
+    }
+
     const success = wsManager.sendToClient(clientId, event, data);
     
     if (success) {

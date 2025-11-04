@@ -65,11 +65,20 @@ export interface AgentTaskProgress {
   subtasks: string[];
 }
 
+export interface TaskArtifact {
+  id: string;
+  type: string;
+  name: string;
+  content: string;
+  agentType: AgentType;
+  createdAt: string;
+}
+
 export interface TaskResult {
   success: boolean;
   taskId: string;
   duration: number;
-  artifacts: any[];
+  artifacts: TaskArtifact[];
   metrics: {
     agentsUsed: number;
     processingTime: number;
@@ -145,7 +154,7 @@ export interface AgentResponse {
   agentType: AgentType;
   status: 'accepted' | 'rejected' | 'in-progress' | 'completed' | 'failed';
   progress: number;
-  result?: any;
+  result?: Record<string, unknown>;
   error?: string;
   timestamp: string;
 }
@@ -191,7 +200,7 @@ export interface WorkflowStepExecution {
   startTime: string;
   endTime?: string;
   duration?: number;
-  result?: any;
+  result?: Record<string, unknown>;
   error?: string;
 }
 

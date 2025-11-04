@@ -368,8 +368,8 @@ export class TaskPrioritizationService extends EventEmitter {
     let urgency = 0;
 
     // Check for immediate deadlines
-    if (task.deadline) {
-      const deadline = new Date(task.deadline);
+    if (task['deadline']) {
+      const deadline = new Date(task['deadline'] as string);
       const now = new Date();
       const timeDiff = deadline.getTime() - now.getTime();
       const hoursDiff = timeDiff / (1000 * 60 * 60);
@@ -382,12 +382,12 @@ export class TaskPrioritizationService extends EventEmitter {
     }
 
     // Check for blocking other tasks
-    if (task.blocking && task.blocking.length > 0) {
+    if (task['blocking'] && Array.isArray(task['blocking']) && task['blocking'].length > 0) {
       urgency += 0.3;
     }
 
     // Check for user requests
-    if (task.userRequested) {
+    if (task['userRequested']) {
       urgency += 0.2;
     }
 
@@ -407,17 +407,17 @@ export class TaskPrioritizationService extends EventEmitter {
     let importance = 0.5; // Base importance
 
     // Check task type
-    switch (task.type) {
-      case 'critical-bugfix':
+    switch (task['type']) {
+      case 'architecture':
         importance = 1.0;
         break;
-      case 'security-fix':
+      case 'code-generation':
         importance = 0.9;
         break;
-      case 'feature':
+      case 'optimization':
         importance = 0.7;
         break;
-      case 'refactor':
+      case 'review':
         importance = 0.6;
         break;
       case 'documentation':
@@ -428,8 +428,8 @@ export class TaskPrioritizationService extends EventEmitter {
     }
 
     // Check business impact
-    if (task.businessImpact) {
-      switch (task.businessImpact) {
+    if (task['businessImpact']) {
+      switch (task['businessImpact']) {
         case 'high':
           importance += 0.3;
           break;
@@ -443,8 +443,8 @@ export class TaskPrioritizationService extends EventEmitter {
     }
 
     // Check user impact
-    if (task.userImpact) {
-      switch (task.userImpact) {
+    if (task['userImpact']) {
+      switch (task['userImpact']) {
         case 'high':
           importance += 0.2;
           break;
@@ -470,8 +470,8 @@ export class TaskPrioritizationService extends EventEmitter {
     let complexity = 0.5; // Base complexity
 
     // Check estimated duration
-    if (task.estimatedDuration) {
-      const hours = task.estimatedDuration / (1000 * 60 * 60);
+    if (task['estimatedDuration']) {
+      const hours = (task['estimatedDuration'] as number) / (1000 * 60 * 60);
       if (hours > 8) complexity = 0.8;
       else if (hours > 4) complexity = 0.6;
       else if (hours > 2) complexity = 0.4;
@@ -479,13 +479,13 @@ export class TaskPrioritizationService extends EventEmitter {
     }
 
     // Check dependencies
-    if (task.dependencies && task.dependencies.length > 0) {
+    if (task['dependencies'] && Array.isArray(task['dependencies']) && task['dependencies'].length > 0) {
       complexity += 0.2;
     }
 
     // Check requirements
-    if (task.requirements && task.requirements.length > 0) {
-      complexity += 0.1 * task.requirements.length;
+    if (task['requirements'] && Array.isArray(task['requirements']) && task['requirements'].length > 0) {
+      complexity += 0.1 * task['requirements'].length;
     }
 
     // Invert complexity for priority (simpler tasks get higher priority)
@@ -507,17 +507,17 @@ export class TaskPrioritizationService extends EventEmitter {
     let dependencies = 0;
 
     // Check for blocking dependencies
-    if (task.dependencies && task.dependencies.length > 0) {
+    if (task['dependencies'] && Array.isArray(task['dependencies']) && task['dependencies'].length > 0) {
       // Handle case where dependencies might be strings or objects with blocking property
-      const deps = task.dependencies as unknown[];
+      const deps = task['dependencies'] as unknown[];
       const blockingDeps = deps.filter((dep): dep is Record<string, unknown> => 
-        typeof dep === 'object' && dep !== null && 'blocking' in dep && Boolean((dep as Record<string, unknown>).blocking)
+        typeof dep === 'object' && dep !== null && 'blocking' in dep && Boolean((dep as Record<string, unknown>)['blocking'])
       );
-      dependencies = blockingDeps.length / task.dependencies.length;
+      dependencies = blockingDeps.length / task['dependencies'].length;
     }
 
     // Check for circular dependencies
-    if (task.circularDependencies) {
+    if (task['circularDependencies']) {
       dependencies += 0.5;
     }
 
@@ -537,13 +537,13 @@ export class TaskPrioritizationService extends EventEmitter {
     let resources = 0.5; // Base resource availability
 
     // Check resource requirements
-    if (task.resourceRequirements) {
-      const availableResources = context.availableResources || {};
-      const requiredResources = task.resourceRequirements;
+    if (task['resourceRequirements']) {
+      const availableResources = (context['availableResources'] as Record<string, unknown>) || {};
+      const requiredResources = task['resourceRequirements'] as Record<string, unknown>;
       
       let resourceAvailability = 1;
       for (const [resource, required] of Object.entries(requiredResources)) {
-        const available = availableResources[resource] || 0;
+        const available = (availableResources[resource] as number) || 0;
         resourceAvailability *= Math.min(1, available / (required as number));
       }
       
@@ -566,8 +566,8 @@ export class TaskPrioritizationService extends EventEmitter {
     let quality = 0.5; // Base quality
 
     // Check quality requirements
-    if (task.qualityRequirements) {
-      switch (task.qualityRequirements) {
+    if (task['qualityRequirements']) {
+      switch (task['qualityRequirements']) {
         case 'high':
           quality = 0.8;
           break;
@@ -581,12 +581,12 @@ export class TaskPrioritizationService extends EventEmitter {
     }
 
     // Check testing requirements
-    if (task.testingRequired) {
+    if (task['testingRequired']) {
       quality += 0.2;
     }
 
     // Check review requirements
-    if (task.reviewRequired) {
+    if (task['reviewRequired']) {
       quality += 0.1;
     }
 
@@ -605,8 +605,8 @@ export class TaskPrioritizationService extends EventEmitter {
   private calculateDeadlineFactor(task: Task & Record<string, unknown>, _context: Record<string, unknown>): PriorityFactor {
     let deadline = 0;
 
-    if (task.deadline) {
-      const deadlineDate = new Date(task.deadline);
+    if (task['deadline']) {
+      const deadlineDate = new Date(task['deadline'] as string);
       const now = new Date();
       const timeDiff = deadlineDate.getTime() - now.getTime();
       const daysDiff = timeDiff / (1000 * 60 * 60 * 24);
@@ -635,8 +635,8 @@ export class TaskPrioritizationService extends EventEmitter {
     let impact = 0.5; // Base impact
 
     // Check system impact
-    if (task.systemImpact) {
-      switch (task.systemImpact) {
+    if (task['systemImpact']) {
+      switch (task['systemImpact']) {
         case 'high':
           impact = 0.9;
           break;
@@ -650,8 +650,8 @@ export class TaskPrioritizationService extends EventEmitter {
     }
 
     // Check user impact
-    if (task.userImpact) {
-      switch (task.userImpact) {
+    if (task['userImpact']) {
+      switch (task['userImpact']) {
         case 'high':
           impact += 0.2;
           break;
@@ -662,8 +662,8 @@ export class TaskPrioritizationService extends EventEmitter {
     }
 
     // Check business impact
-    if (task.businessImpact) {
-      switch (task.businessImpact) {
+    if (task['businessImpact']) {
+      switch (task['businessImpact']) {
         case 'high':
           impact += 0.2;
           break;
@@ -753,15 +753,15 @@ export class TaskPrioritizationService extends EventEmitter {
       
       case 'deadline-based':
         return taskPriorities.sort((a, b) => {
-          const aDeadline = new Date(a.task.deadline || '2099-12-31');
-          const bDeadline = new Date(b.task.deadline || '2099-12-31');
+          const aDeadline = new Date((a.task['deadline'] as string) || '2099-12-31');
+          const bDeadline = new Date((b.task['deadline'] as string) || '2099-12-31');
           return aDeadline.getTime() - bDeadline.getTime();
         });
       
       case 'resource-based':
         return taskPriorities.sort((a, b) => {
-          const aResources = a.task.resourceRequirements ? Object.keys(a.task.resourceRequirements).length : 0;
-          const bResources = b.task.resourceRequirements ? Object.keys(b.task.resourceRequirements).length : 0;
+          const aResources = a.task['resourceRequirements'] ? Object.keys(a.task['resourceRequirements'] as Record<string, unknown>).length : 0;
+          const bResources = b.task['resourceRequirements'] ? Object.keys(b.task['resourceRequirements'] as Record<string, unknown>).length : 0;
           return aResources - bResources;
         });
       
@@ -821,7 +821,7 @@ export class TaskPrioritizationService extends EventEmitter {
       averageScore: priorities.length > 0 ? priorities.reduce((sum, priority) => sum + priority.score, 0) / priorities.length : 0,
       topFactors: this.getTopFactors(priorities),
       schedulingStrategies: Array.from(this.schedulingStrategies.values()),
-      lastPriority: priorities.length > 0 ? priorities[priorities.length - 1] : undefined
+      ...(priorities.length > 0 ? { lastPriority: priorities[priorities.length - 1] } : {})
     };
   }
 

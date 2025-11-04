@@ -7,7 +7,6 @@
 import { EventEmitter } from 'node:events';
 import { Logger } from '../../../core/logger';
 import type { MemoryStorage, ProcessingQueueItem } from './storage';
-import Database from 'better-sqlite3';
 
 interface CountRow {
   count: number;
@@ -64,8 +63,8 @@ export class MemoryQueue extends EventEmitter {
   stop(): void {
     if (this.processingInterval) {
       clearInterval(this.processingInterval);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (this as any).processingInterval = undefined; // Avoid TS2412 with exactOptionalPropertyTypes
+      // Use delete to properly handle optional property with exactOptionalPropertyTypes
+      delete (this as unknown as { processingInterval?: NodeJS.Timeout }).processingInterval;
       this.logger.info('Queue processing stopped');
     }
   }
@@ -149,8 +148,7 @@ export class MemoryQueue extends EventEmitter {
     completed: number;
     failed: number;
   } {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const db = (this.storage as any).db as Database.Database;
+    const db = this.storage.getDatabase();
     
     const pendingStmt = db.prepare('SELECT COUNT(*) as count FROM processing_queue WHERE status = "pending"');
     const processingStmt = db.prepare('SELECT COUNT(*) as count FROM processing_queue WHERE status = "processing"');

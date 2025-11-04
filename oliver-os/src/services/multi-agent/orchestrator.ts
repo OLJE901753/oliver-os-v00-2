@@ -15,6 +15,7 @@ import type {
   AgentMessage,
   AgentCapabilities,
   TaskResult,
+  TaskArtifact,
   AgentHealth
 } from './types';
 
@@ -335,7 +336,7 @@ export class CentralOrchestrator extends EventEmitter {
   /**
    * Generate mock artifacts
    */
-  private generateMockArtifacts(task: TaskDefinition): any[] {
+  private generateMockArtifacts(task: TaskDefinition): TaskArtifact[] {
     return task.assignedAgents.map(agentType => ({
       id: `artifact-${agentType}-${Date.now()}`,
       type: 'code',

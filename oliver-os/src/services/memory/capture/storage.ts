@@ -378,31 +378,47 @@ export class MemoryStorage {
    * Convert database row to MemoryRecord
    */
   private rowToMemory(row: MemoryDBRow): MemoryRecord {
-    return {
+    const result: MemoryRecord = {
       id: row.id,
       rawContent: row.raw_content,
       type: row.type as MemoryType,
       timestamp: new Date(row.timestamp),
       status: row.status as MemoryStatus,
       metadata: JSON.parse(row.metadata || '{}'),
-      audioUrl: row.audio_url || undefined,
-      transcript: row.transcript || undefined,
-      durationSeconds: row.duration_seconds || undefined,
     };
+    
+    // Only include optional properties if they have values
+    if (row.audio_url) {
+      result.audioUrl = row.audio_url;
+    }
+    if (row.transcript) {
+      result.transcript = row.transcript;
+    }
+    if (row.duration_seconds !== undefined && row.duration_seconds !== null) {
+      result.durationSeconds = row.duration_seconds;
+    }
+    
+    return result;
   }
 
   /**
    * Convert database row to ProcessingQueueItem
    */
   private rowToQueueItem(row: QueueItemDBRow): ProcessingQueueItem {
-    return {
+    const result: ProcessingQueueItem = {
       id: row.id,
       memoryId: row.memory_id,
       status: row.status as ProcessingQueueItem['status'],
       attempts: row.attempts,
-      error: row.error || undefined,
       createdAt: new Date(row.created_at),
     };
+    
+    // Only include optional error if it has a value
+    if (row.error) {
+      result.error = row.error;
+    }
+    
+    return result;
   }
 
   /**
@@ -456,6 +472,14 @@ export class MemoryStorage {
       byType,
       pendingQueueItems,
     };
+  }
+
+  /**
+   * Get database instance for advanced operations
+   * Exposed for classes that need direct database access (e.g., search, queue)
+   */
+  getDatabase(): Database.Database {
+    return this.db;
   }
 }
 

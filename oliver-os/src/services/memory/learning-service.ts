@@ -102,6 +102,13 @@ export class LearningService extends EventEmitter {
    */
   private async loadLearningPatterns(): Promise<void> {
     const memory = this.memoryService.getMemory();
+    
+    // Ensure memory exists and has codePatterns with frequentlyUsed array
+    if (!memory || !memory.codePatterns || !memory.codePatterns.frequentlyUsed) {
+      this._logger.warn('No code patterns found in memory, initializing empty patterns');
+      return;
+    }
+    
     const patterns = memory.codePatterns.frequentlyUsed || [];
     
     for (const pattern of patterns) {
@@ -135,6 +142,13 @@ export class LearningService extends EventEmitter {
    */
   private async analyzeProjectHistory(): Promise<void> {
     const memory = this.memoryService.getMemory();
+    
+    // Ensure memory exists and has projectHistory
+    if (!memory || !memory.projectHistory || !memory.projectHistory.sessions) {
+      this._logger.warn('No project history found in memory');
+      return;
+    }
+    
     const sessions = memory.projectHistory.sessions || [];
     
     for (const session of sessions) {
@@ -420,11 +434,14 @@ export class LearningService extends EventEmitter {
       this.suggestionHistory.set(suggestionId, []);
     }
     
-    this.suggestionHistory.get(suggestionId)!.push({
+    const entry: { accepted: boolean; feedback?: string; timestamp: string } = {
       accepted,
-      feedback,
       timestamp: new Date().toISOString()
-    });
+    };
+    if (feedback !== undefined) {
+      entry.feedback = feedback;
+    }
+    this.suggestionHistory.get(suggestionId)!.push(entry);
     
     this._logger.info(`🧠 Learned from feedback: ${suggestionId} (accepted: ${accepted})`);
     this.emit('learning:feedback', { suggestionId, accepted, feedback });

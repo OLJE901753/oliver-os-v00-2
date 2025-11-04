@@ -4,9 +4,10 @@
  */
 
 import type { EventEmitter } from 'node:events';
-import type { KnowledgeNode, NodeCreateInput, RelationshipCreateInput } from '../../services/knowledge/node.types';
-import type { Relationship } from '../../services/knowledge/relationship.types';
-import type { MemoryRecord, MemoryCaptureInput } from '../../services/memory/capture/capture-memory-service';
+import type { KnowledgeNode, NodeCreateInput } from '../../services/knowledge/node.types';
+import type { Relationship, RelationshipCreateInput } from '../../services/knowledge/relationship.types';
+import type { MemoryRecord } from '../../services/memory/capture/storage';
+import type { MemoryCaptureInput } from '../../services/memory/capture/capture-memory-service';
 
 // Base service interface
 export interface IService extends EventEmitter {

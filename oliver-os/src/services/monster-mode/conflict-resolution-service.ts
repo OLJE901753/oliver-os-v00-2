@@ -381,7 +381,8 @@ export class ConflictResolutionService extends EventEmitter {
     // Check for resource competition
     const resourceUsage = new Map<string, string[]>();
     
-    for (const [agentId, agentStatus] of context.agentStatuses || []) {
+    const agentStatuses = context['agentStatuses'] as unknown as Map<string, AgentStatus> | undefined;
+    for (const [agentId, agentStatus] of agentStatuses || []) {
       if (agentStatus.status === 'busy') {
         const resources = this.getAgentResources(agentId);
         for (const resource of resources) {
@@ -420,7 +421,7 @@ export class ConflictResolutionService extends EventEmitter {
     const conflicts: Conflict[] = [];
 
     // Check for conflicting priorities
-    const taskQueue = context.taskQueue as unknown as Array<Task & Record<string, unknown>> | undefined;
+    const taskQueue = context['taskQueue'] as unknown as Array<Task & Record<string, unknown>> | undefined;
     const priorityTasks = taskQueue?.filter((task) => task.priority === 'critical') || [];
     
     if (priorityTasks.length > 1) {
@@ -449,7 +450,8 @@ export class ConflictResolutionService extends EventEmitter {
     // Check for circular dependencies
     const dependencyGraph = new Map<string, string[]>();
     
-    for (const task of context.taskQueue || []) {
+    const taskQueueForDeps = context['taskQueue'] as unknown as Array<Task & Record<string, unknown>> | undefined;
+    for (const task of taskQueueForDeps || []) {
       dependencyGraph.set(task.id, task.dependencies || []);
     }
 
@@ -499,7 +501,7 @@ export class ConflictResolutionService extends EventEmitter {
     const conflicts: Conflict[] = [];
 
     // Check for quality conflicts between agents
-    const agentStatuses = context.agentStatuses as unknown as Map<string, AgentStatus> | undefined;
+    const agentStatuses = context['agentStatuses'] as unknown as Map<string, AgentStatus> | undefined;
     const qualityAgents = Array.from(agentStatuses?.values() || []).filter((agent) => 
       agent.capabilities.includes('quality-analysis') || 
       agent.capabilities.includes('quality-checking')
@@ -529,12 +531,12 @@ export class ConflictResolutionService extends EventEmitter {
     const conflicts: Conflict[] = [];
 
     // Check for deadline conflicts
-    const taskQueue = context.taskQueue as unknown as Array<Task & Record<string, unknown>> | undefined;
+    const taskQueue = context['taskQueue'] as unknown as Array<Task & Record<string, unknown>> | undefined;
     const tasksWithDeadlines = taskQueue?.filter((task) => task['deadline']) || [];
     const now = new Date();
 
     for (const task of tasksWithDeadlines) {
-      const deadline = new Date(task.deadline);
+      const deadline = new Date(task['deadline'] as string);
       const timeDiff = deadline.getTime() - now.getTime();
       const hoursDiff = timeDiff / (1000 * 60 * 60);
 
@@ -563,7 +565,7 @@ export class ConflictResolutionService extends EventEmitter {
     const conflicts: Conflict[] = [];
 
     // Check for architecture conflicts
-    const taskQueue = context.taskQueue as unknown as Array<Task & Record<string, unknown>> | undefined;
+    const taskQueue = context['taskQueue'] as unknown as Array<Task & Record<string, unknown>> | undefined;
     const architectureTasks = taskQueue?.filter((task) => 
       task.type === 'architecture' || (task.requirements && Array.isArray(task.requirements) && task.requirements.includes('architecture'))
     ) || [];
@@ -955,7 +957,7 @@ export class ConflictResolutionService extends EventEmitter {
     const resolvedConflicts = conflicts.filter(conflict => conflict.status === 'resolved');
     const totalConflicts = conflicts.length;
     
-    return {
+    const stats: ConflictResolutionStats = {
       totalConflicts,
       resolvedConflicts: resolvedConflicts.length,
       successRate: totalConflicts > 0 ? resolvedConflicts.length / totalConflicts : 0,
@@ -968,9 +970,16 @@ export class ConflictResolutionService extends EventEmitter {
         return acc;
       }, {} as Record<string, number>),
       resolutionStrategies: Array.from(this.resolutionStrategies.values()),
-      conflictPatterns: Array.from(this.conflictPatterns.values()),
-      lastConflict: conflicts.length > 0 ? conflicts[conflicts.length - 1] : undefined
+      conflictPatterns: Array.from(this.conflictPatterns.values())
     };
+    
+    // Conditionally add lastConflict only if conflicts exist
+    const lastConflict = conflicts.length > 0 ? conflicts[conflicts.length - 1] : undefined;
+    if (lastConflict !== undefined) {
+      stats.lastConflict = lastConflict;
+    }
+    
+    return stats;
   }
 
   /**

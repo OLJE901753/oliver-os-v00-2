@@ -155,7 +155,9 @@ export class OliverOSBMADService implements OliverOSBMADIntegration {
       // Add Oliver-OS specific analysis
       const enhancedAnalysis = await this.enhanceAnalysisForOliverOS(analysis);
 
-      this._logger.info(`✅ Analysis completed. Quality score: ${enhancedAnalysis.quality.score}/100`);
+      // Type assertion for enhancedAnalysis to access properties
+      const analysisResult = enhancedAnalysis as { quality?: { score?: number } };
+      this._logger.info(`✅ Analysis completed. Quality score: ${analysisResult.quality?.score ?? 'N/A'}/100`);
       
       return enhancedAnalysis;
 
@@ -180,10 +182,12 @@ export class OliverOSBMADService implements OliverOSBMADIntegration {
 
       const result = await this.workflowEngine.executeWorkflow();
 
-      if (result.success) {
-        this._logger.info(`✅ Workflow completed successfully in ${result.duration}ms`);
+      // Type assertion for result to access properties
+      const workflowResult = result as { success?: boolean; duration?: number; error?: string };
+      if (workflowResult.success) {
+        this._logger.info(`✅ Workflow completed successfully in ${workflowResult.duration ?? 0}ms`);
       } else {
-        this._logger.error(`❌ Workflow failed: ${result.error}`);
+        this._logger.error(`❌ Workflow failed: ${workflowResult.error ?? 'Unknown error'}`);
       }
 
       return result;
@@ -372,18 +376,25 @@ export class OliverOSBMADService implements OliverOSBMADIntegration {
       }
     ];
 
+    // Type assertion for analysis to ensure it's an object before spreading
+    const analysisObj = analysis as Record<string, unknown> & {
+      overall?: Record<string, unknown>;
+      recommendations?: unknown[];
+      metadata?: Record<string, unknown>;
+    };
+
     return {
-      ...analysis,
+      ...analysisObj,
       overall: {
-        ...analysis.overall,
+        ...(analysisObj.overall || {}),
         ...oliverOSMetrics
       },
       recommendations: [
-        ...analysis.recommendations,
+        ...(Array.isArray(analysisObj.recommendations) ? analysisObj.recommendations : []),
         ...oliverOSRecommendations
       ],
       metadata: {
-        ...analysis.metadata,
+        ...(analysisObj.metadata || {}),
         oliverOSSpecific: {
           thoughtProcessingEnabled: true,
           collaborationEnabled: true,
@@ -398,6 +409,12 @@ export class OliverOSBMADService implements OliverOSBMADIntegration {
    * Generate Oliver-OS specific report
    */
   private async generateOliverOSReport(analysis: ProjectAnalysis, format: string, outputPath: string): Promise<void> {
+    // Type assertion for analysis to access properties
+    const analysisObj = analysis as { recommendations?: BMADRecommendation[] };
+    const recommendations = Array.isArray(analysisObj.recommendations) 
+      ? analysisObj.recommendations 
+      : [];
+    
     const report = {
       project: 'Oliver-OS',
       version: 'V00.2',
@@ -409,7 +426,7 @@ export class OliverOSBMADService implements OliverOSBMADIntegration {
         aiIntegrationScore: this.calculateAIIntegrationScore(),
         realTimeScore: this.calculateRealTimePerformance()
       },
-      recommendations: analysis.recommendations.filter((rec: BMADRecommendation) => 
+      recommendations: recommendations.filter((rec: BMADRecommendation) => 
         rec.type === 'architecture' || rec.type === 'performance'
       ),
       nextSteps: [

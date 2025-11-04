@@ -8,6 +8,25 @@ import { Logger } from '../../core/logger';
 import { Octokit } from '@octokit/rest';
 import type { MCPTool, MCPResource, MCPRequest, MCPResponse, OliverOSMCPServer, MCPServerConfig, MCPToolResult, MCPResourceResult } from '../types';
 
+// GitHub API parameter types
+interface ReposListForOrgParams {
+  org: string;
+  type?: 'all' | 'public' | 'private' | 'forks' | 'sources' | 'member';
+  sort?: 'created' | 'updated' | 'pushed' | 'full_name';
+  direction?: 'asc' | 'desc';
+  per_page?: number;
+  page?: number;
+}
+
+interface ReposListForUserParams {
+  username: string;
+  type?: 'all' | 'owner' | 'member';
+  sort?: 'created' | 'updated' | 'pushed' | 'full_name';
+  direction?: 'asc' | 'desc';
+  per_page?: number;
+  page?: number;
+}
+
 export class GitHubMCPServer extends EventEmitter implements OliverOSMCPServer {
   private _logger: Logger;
   public config: MCPServerConfig;
@@ -410,26 +429,32 @@ export class GitHubMCPServer extends EventEmitter implements OliverOSMCPServer {
       let response;
       try {
         // Try as organization first
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const orgParams: any = {
+        const orgParams: ReposListForOrgParams = {
           org: ownerStr,
           sort: sortStr,
           per_page: Math.min(perPage, 100)
         };
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        if (typeStr !== 'all') orgParams.type = typeStr as any; // Type mismatch, but acceptable
-        response = await this.octokit.repos.listForOrg(orgParams);
+        // Map type for organization (different enum values)
+        if (typeStr !== 'all') {
+          const orgTypeMap: Record<string, 'all' | 'public' | 'private' | 'forks' | 'sources' | 'member'> = {
+            'owner': 'sources',
+            'public': 'public',
+            'private': 'private'
+          };
+          orgParams.type = orgTypeMap[typeStr] || 'all';
+        }
+        response = await this.octokit.repos.listForOrg(orgParams as Parameters<typeof this.octokit.repos.listForOrg>[0]);
       } catch (orgError) {
         // If organization fails, try as user
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const userParams: any = {
+        const userParams: ReposListForUserParams = {
           username: ownerStr,
           sort: sortStr,
           per_page: Math.min(perPage, 100)
         };
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        if (typeStr !== 'all') userParams.type = typeStr as any; // Type mismatch, but acceptable
-        response = await this.octokit.repos.listForUser(userParams);
+        if (typeStr !== 'all') {
+          userParams.type = typeStr as 'all' | 'owner' | 'member';
+        }
+        response = await this.octokit.repos.listForUser(userParams as Parameters<typeof this.octokit.repos.listForUser>[0]);
       }
       
       return {

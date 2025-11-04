@@ -470,7 +470,7 @@ export class WebSocketManager {
     
     // Forward monitoring events to all connected clients
     if (this.monitoringService) {
-      this.monitoringService.on('dashboard:data', (data: DashboardData) => {
+      this.monitoringService.on('dashboard:data', ((data: DashboardData) => {
         this._logger.info('📊 Broadcasting dashboard data to clients', { 
           clientCount: this.connectedClients.size,
           dataKeys: Object.keys(data)
@@ -480,63 +480,63 @@ export class WebSocketManager {
           data,
           timestamp: new Date().toISOString()
         });
-      });
+      }) as (data: unknown) => void);
       
-      this.monitoringService.on('metrics:update', (data: MetricsData) => {
+      this.monitoringService.on('metrics:update', ((data: MetricsData) => {
         this.broadcast('metrics:update', {
           type: 'metrics_update',
           data,
           timestamp: new Date().toISOString()
         });
-      });
+      }) as (data: unknown) => void);
       
-      this.monitoringService.on('alerts:new', (data: AlertData) => {
+      this.monitoringService.on('alerts:new', ((data: AlertData) => {
         this.broadcast('alerts:new', {
           type: 'alert_new',
           data,
           timestamp: new Date().toISOString()
         });
-      });
+      }) as (data: unknown) => void);
       
-      this.monitoringService.on('alerts:update', (data: AlertData) => {
+      this.monitoringService.on('alerts:update', ((data: AlertData) => {
         this.broadcast('alerts:update', {
           type: 'alert_update',
           data,
           timestamp: new Date().toISOString()
         });
-      });
+      }) as (data: unknown) => void);
       
-      this.monitoringService.on('health:update', (data: HealthStatus) => {
+      this.monitoringService.on('health:update', ((data: HealthStatus) => {
         this.broadcast('health:update', {
           type: 'health_update',
           data,
           timestamp: new Date().toISOString()
         });
-      });
+      }) as (data: unknown) => void);
       
-      this.monitoringService.on('performance:update', (data: PerformanceData) => {
+      this.monitoringService.on('performance:update', ((data: PerformanceData) => {
         this.broadcast('performance:update', {
           type: 'performance_update',
           data,
           timestamp: new Date().toISOString()
         });
-      });
+      }) as (data: unknown) => void);
       
-      this.monitoringService.on('tests:update', (data: TestData) => {
+      this.monitoringService.on('tests:update', ((data: TestData) => {
         this.broadcast('tests:update', {
           type: 'tests_update',
           data,
           timestamp: new Date().toISOString()
         });
-      });
+      }) as (data: unknown) => void);
       
-      this.monitoringService.on('quality-gates:update', (data: QualityGateData) => {
+      this.monitoringService.on('quality-gates:update', ((data: QualityGateData) => {
         this.broadcast('quality-gates:update', {
           type: 'quality_gates_update',
           data,
           timestamp: new Date().toISOString()
         });
-      });
+      }) as (data: unknown) => void);
     }
   }
 

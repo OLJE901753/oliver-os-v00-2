@@ -7,7 +7,7 @@
  * workflow management, and tool coordination in the Oliver-OS ecosystem.
  */
 
-import { CodebuffClient } from '@codebuff/sdk';
+import { CodebuffClient, type CodebuffResult as SDKCodebuffResult } from '@codebuff/sdk';
 import { EventEmitter } from 'node:events';
 import { Logger } from '../../core/logger';
 import { Config } from '../../core/config';
@@ -463,11 +463,24 @@ export class EnhancedCodebuffService extends EventEmitter {
       prompt: options.prompt
     });
 
-    return result;
+    // Convert SDK result to our local CodebuffResult type
+    const sdkResult = result as SDKCodebuffResult;
+    const codebuffResult: CodebuffResult = {
+      success: sdkResult.success,
+      output: typeof sdkResult.data === 'string' ? sdkResult.data : JSON.stringify(sdkResult.data),
+      events: _events, // Use the events passed in
+      metadata: sdkResult.metadata || {},
+      artifacts: _artifacts
+    };
+    // Only include error if it's defined (exactOptionalPropertyTypes requirement)
+    if (sdkResult.error !== undefined) {
+      codebuffResult.error = sdkResult.error;
+    }
+    return codebuffResult;
   }
 
   private async documentOrchestratedResults(
-    result: CodebuffResult, 
+    result: SDKCodebuffResult | CodebuffResult, 
     options: CodebuffRunOptions, 
     artifacts: Artifact[]
   ): Promise<Record<string, unknown>> {
@@ -544,7 +557,11 @@ export class EnhancedCodebuffService extends EventEmitter {
     return {
       emit: (event: string, data: unknown) => {
         this.emit(event, data);
-        this._logger.debug(`📡 Event emitted: ${event}`, data);
+        // Cast data for logger - logger can handle unknown, but we ensure type safety
+        const logData = typeof data === 'object' && data !== null 
+          ? (data as Record<string, unknown>) 
+          : undefined;
+        this._logger.debug(`📡 Event emitted: ${event}`, logData);
       },
       on: (event: string, handler: (data: unknown) => void) => {
         this.on(event, handler);

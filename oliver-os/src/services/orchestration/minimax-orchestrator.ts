@@ -151,17 +151,17 @@ export class MinimaxOrchestrator extends EventEmitter {
       const agentsConfig = config.agents || {};
 
       for (const [agentId, agentData] of Object.entries(agentsConfig)) {
-        const agent = agentData as any;
-        const modelStr = agent.model || 'minimax/MiniMax-M2';
+        const agent = agentData as Record<string, unknown>;
+        const modelStr = (agent['model'] as string) || 'minimax/MiniMax-M2';
         const provider = modelStr.split('/')[0] || 'minimax';
 
         const agentDef: AgentDefinition = {
           id: agentId,
-          displayName: agent.displayName || agentId,
+          displayName: (agent['displayName'] as string) || agentId,
           model: modelStr,
-          instructionsPrompt: agent.instructionsPrompt || '',
-          toolNames: agent.toolNames || [],
-          spawnableAgents: agent.spawnableAgents || [],
+          instructionsPrompt: (agent['instructionsPrompt'] as string) || '',
+          toolNames: (agent['toolNames'] as string[]) || [],
+          spawnableAgents: (agent['spawnableAgents'] as string[]) || [],
           status: 'idle',
           metadata: { provider }
         };
@@ -214,19 +214,20 @@ export class MinimaxOrchestrator extends EventEmitter {
       const workflowsConfig = config.workflows || {};
 
       for (const [workflowId, workflowData] of Object.entries(workflowsConfig)) {
-        const workflow = workflowData as any;
+        const workflow = workflowData as Record<string, unknown>;
         const steps: WorkflowStep[] = [];
         const agents: string[] = [];
 
-        for (let idx = 0; idx < (workflow.steps || []).length; idx++) {
-          const stepData = workflow.steps[idx];
+        for (let idx = 0; idx < ((workflow['steps'] as unknown[]) || []).length; idx++) {
+          const stepData = (workflow['steps'] as unknown[])[idx] as Record<string, unknown>;
+          const workflowSettings = (workflow['settings'] as Record<string, unknown>) || {};
           const step: WorkflowStep = {
             id: `${workflowId}-step-${idx}`,
-            agent: stepData.agent || '',
-            prompt: stepData.prompt || '',
-            dependencies: stepData.dependencies || [],
-            timeout: workflow.settings?.defaultTimeout || 300000,
-            retries: workflow.settings?.retryAttempts || 3
+            agent: (stepData['agent'] as string) || '',
+            prompt: (stepData['prompt'] as string) || '',
+            dependencies: (stepData['dependencies'] as string[]) || [],
+            timeout: (workflowSettings['defaultTimeout'] as number) || 300000,
+            retries: (workflowSettings['retryAttempts'] as number) || 3
           };
           steps.push(step);
           if (step.agent && !agents.includes(step.agent)) {
@@ -236,8 +237,8 @@ export class MinimaxOrchestrator extends EventEmitter {
 
         const workflowDef: WorkflowDefinition = {
           id: workflowId,
-          name: workflow.name || workflowId,
-          description: workflow.description || '',
+          name: (workflow['name'] as string) || workflowId,
+          description: (workflow['description'] as string) || '',
           steps,
           agents,
           status: 'idle',

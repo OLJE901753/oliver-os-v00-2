@@ -264,8 +264,8 @@ export class UnifiedAgentRouter {
       destination: res.destination,
       intent: res.intent,
       decision: res.decision,
-      retrieved: Array.isArray(req.translated?.metadata?.retrieved)
-        ? req.translated.metadata.retrieved
+      retrieved: Array.isArray(req.translated?.metadata?.['retrieved'])
+        ? req.translated.metadata['retrieved']
         : []
     };
     this.recentDecisions.push(item);
@@ -294,7 +294,11 @@ export class UnifiedAgentRouter {
         sender: request.sender,
         message: request.message,
         destination,
-        intent: { type: request.translated?.type || 'code-generation', priority: request.translated?.priority || 'medium' }
+        intent: { 
+          type: request.translated?.type || 'code-generation', 
+          priority: request.translated?.priority || 'medium',
+          confidence: 'medium'
+        }
       });
     }
     return items;
@@ -312,7 +316,9 @@ export class UnifiedAgentRouter {
   // Route to CodeBuff (via AgentManager through ServiceManager)
   // Chooses an agent type based on translated.type
   protected async routeToCodeBuff(message: string, translated?: RouteRequest['translated'], decision?: DecisionCtx): Promise<RouteResult> {
-    if (!this.serviceManager || !this.serviceManager.spawnAgent) {
+    // Type guard for serviceManager
+    const serviceManager = this.serviceManager as { spawnAgent?: (request: { agentType: string; prompt: string; metadata: Record<string, unknown> }) => Promise<{ id: string }> } | undefined;
+    if (!serviceManager || !serviceManager.spawnAgent) {
       this.logger.warn('ServiceManager not available; falling back to Monster Mode');
       return await this.routeToMonsterMode(message, translated, decision);
     }
@@ -322,7 +328,7 @@ export class UnifiedAgentRouter {
     else if (t.includes('documentation') || t.includes('doc')) agentType = 'documentation-generator';
 
     const prompt = translated?.description || message;
-    const spawned = await this.serviceManager.spawnAgent({ agentType, prompt, metadata: { translated, source: 'unified-router' } });
+    const spawned = await serviceManager.spawnAgent({ agentType, prompt, metadata: { translated, source: 'unified-router' } });
 
     const routeResult: RouteResult = {
       destination: 'codebuff',
