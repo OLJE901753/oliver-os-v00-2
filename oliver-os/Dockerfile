@@ -18,17 +18,14 @@ RUN which pnpm || npm list -g pnpm
 COPY oliver-os/package.json oliver-os/pnpm-lock.yaml* oliver-os/package-lock.json* ./
 
 # Copy bmad-global if INCLUDE_BMAD_GLOBAL is true and directory exists
-# Build context is root directory, so bmad-global is accessible
-RUN if [ "$INCLUDE_BMAD_GLOBAL" = "true" ]; then \
-      if [ -d ../bmad-global ]; then \
-        cp -r ../bmad-global ./bmad-global && \
-        echo "✅ bmad-global copied successfully"; \
-      else \
-        echo "⚠️ bmad-global directory not found, skipping..."; \
-        mkdir -p ./bmad-global; \
-      fi; \
+# Build context is root directory, so bmad-global is accessible at ./bmad-global
+# We need to COPY it first, then check if it was copied successfully
+COPY bmad-global/ ./bmad-global/ || true
+RUN if [ "$INCLUDE_BMAD_GLOBAL" = "true" ] && [ -d ./bmad-global ] && [ "$(ls -A ./bmad-global)" ]; then \
+      echo "✅ bmad-global copied successfully"; \
     else \
-      echo "ℹ️ bmad-global excluded by build arg"; \
+      echo "⚠️ bmad-global not found or empty, removing from dependencies..."; \
+      rm -rf ./bmad-global; \
       mkdir -p ./bmad-global; \
     fi
 
