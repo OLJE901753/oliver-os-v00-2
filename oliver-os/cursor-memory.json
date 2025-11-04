@@ -1,8 +1,17 @@
 {
   "version": "1.0.0",
-  "lastUpdated": "2025-11-04T12:56:23.343Z",
+  "lastUpdated": "2025-11-04T13:45:14.009Z",
   "codePatterns": {
-    "frequentlyUsed": [],
+    "frequentlyUsed": [
+      {
+        "id": "test-pattern",
+        "pattern": "test pattern",
+        "frequency": 1,
+        "successRate": 0.8,
+        "lastUsed": "2025-11-04T13:45:14.009Z",
+        "example": "example"
+      }
+    ],
     "successfulPatterns": [],
     "userPreferences": {
       "preferredImports": [],
@@ -32,15 +41,5 @@
     "rejectedSuggestions": [],
     "userFeedback": {}
   },
-  "preferences": {
-    "preferredPatterns": [
-      "async/await",
-      "error-handling"
-    ],
-    "avoidPatterns": [
-      "eval",
-      "var"
-    ],
-    "lastUpdated": "2025-11-04T12:56:23.343Z"
-  }
+  "preferences": {}
 }
