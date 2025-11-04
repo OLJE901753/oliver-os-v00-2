@@ -49,7 +49,8 @@ describe('Smart Assistance Edge Case Tests', () => {
     });
 
     it('should handle empty string inputs', async () => {
-      const result = await smartAssistance.analyzeCode('');
+      const testFile = await createTestFile('');
+      const result = await smartAssistance.analyzeCode(testFile);
       expect(result).toBeDefined();
       expect(result.score).toBeGreaterThanOrEqual(0);
     });
@@ -67,13 +68,15 @@ describe('Smart Assistance Edge Case Tests', () => {
 
     it('should handle extremely long inputs', async () => {
       const longCode = 'a'.repeat(1000000); // 1MB string
-      const result = await smartAssistance.analyzeCode(longCode);
+      const testFile = await createTestFile(longCode);
+      const result = await smartAssistance.analyzeCode(testFile);
       expect(result).toBeDefined();
     });
 
     it('should handle inputs with only whitespace', async () => {
       const whitespaceCode = '   \n\t\r   ';
-      const result = await smartAssistance.analyzeCode(whitespaceCode);
+      const testFile = await createTestFile(whitespaceCode);
+      const result = await smartAssistance.analyzeCode(testFile);
       expect(result).toBeDefined();
     });
   });
@@ -146,7 +149,8 @@ describe('Smart Assistance Edge Case Tests', () => {
         }
       `;
       
-      const result = await smartAssistance.analyzeCode(malformedCode);
+      const testFile = await createTestFile(malformedCode);
+      const result = await smartAssistance.analyzeCode(testFile);
       expect(result).toBeDefined();
     });
 
@@ -159,7 +163,8 @@ describe('Smart Assistance Edge Case Tests', () => {
          */
       `;
       
-      const result = await smartAssistance.analyzeCode(commentOnlyCode);
+      const testFile = await createTestFile(commentOnlyCode);
+      const result = await smartAssistance.analyzeCode(testFile);
       expect(result).toBeDefined();
     });
 
@@ -170,7 +175,8 @@ describe('Smart Assistance Edge Case Tests', () => {
         import * as fs from 'fs-extra';
       `;
       
-      const result = await smartAssistance.analyzeCode(importOnlyCode);
+      const testFile = await createTestFile(importOnlyCode);
+      const result = await smartAssistance.analyzeCode(testFile);
       expect(result).toBeDefined();
     });
 
@@ -182,7 +188,8 @@ describe('Smart Assistance Edge Case Tests', () => {
         export default Test;
       `;
       
-      const result = await smartAssistance.analyzeCode(exportOnlyCode);
+      const testFile = await createTestFile(exportOnlyCode);
+      const result = await smartAssistance.analyzeCode(testFile);
       expect(result).toBeDefined();
     });
 
@@ -196,7 +203,8 @@ describe('Smart Assistance Edge Case Tests', () => {
         const symbols = 'αβγδεζηθικλμνξοπρστυφχψω';
       `;
       
-      const result = await smartAssistance.analyzeCode(unicodeCode);
+      const testFile = await createTestFile(unicodeCode);
+      const result = await smartAssistance.analyzeCode(testFile);
       expect(result).toBeDefined();
     });
 
@@ -204,7 +212,8 @@ describe('Smart Assistance Edge Case Tests', () => {
       const longLine = 'a'.repeat(10000);
       const longLineCode = `const veryLongVariable = '${longLine}';`;
       
-      const result = await smartAssistance.analyzeCode(longLineCode);
+      const testFile = await createTestFile(longLineCode);
+      const result = await smartAssistance.analyzeCode(testFile);
       expect(result).toBeDefined();
     });
 
@@ -218,26 +227,27 @@ describe('Smart Assistance Edge Case Tests', () => {
       }
       nestedCode += '}';
       
-      const result = await smartAssistance.analyzeCode(nestedCode);
+      const testFile = await createTestFile(nestedCode);
+      const result = await smartAssistance.analyzeCode(testFile);
       expect(result).toBeDefined();
     });
   });
 
   describe('Memory and Learning Edge Cases', () => {
-    it('should handle learning with empty patterns', async () => {
+    it('should handle learning with empty patterns', () => {
       const learningService = (smartAssistance as any).learningService;
       
-      await expect(learningService.recordPattern(null as any))
-        .rejects.toThrow();
+      expect(() => learningService.recordPattern(null as any))
+        .toThrow();
       
-      await expect(learningService.recordPattern(undefined as any))
-        .rejects.toThrow();
+      expect(() => learningService.recordPattern(undefined as any))
+        .toThrow();
       
-      await expect(learningService.recordPattern({} as any))
-        .rejects.toThrow();
+      expect(() => learningService.recordPattern({} as any))
+        .toThrow();
     });
 
-    it('should handle learning with invalid pattern data', async () => {
+    it('should handle learning with invalid pattern data', () => {
       const learningService = (smartAssistance as any).learningService;
       
       const invalidPatterns = [
@@ -252,8 +262,8 @@ describe('Smart Assistance Edge Case Tests', () => {
       ];
       
       for (const pattern of invalidPatterns) {
-        await expect(learningService.recordPattern(pattern))
-          .rejects.toThrow();
+        expect(() => learningService.recordPattern(pattern))
+          .toThrow();
       }
     });
 
@@ -342,9 +352,10 @@ describe('Smart Assistance Edge Case Tests', () => {
     it('should handle analysis timeout gracefully', async () => {
       // Create a very complex file that might cause timeout
       const complexCode = generateComplexCode(1000);
+      const testFile = await createTestFile(complexCode);
       
       const start = performance.now();
-      const result = await smartAssistance.analyzeCode(complexCode);
+      const result = await smartAssistance.analyzeCode(testFile);
       const duration = performance.now() - start;
       
       expect(result).toBeDefined();
@@ -396,7 +407,8 @@ describe('Smart Assistance Edge Case Tests', () => {
       };
       
       // Should still work with other services
-      const result = await smartAssistance.analyzeCode('export class Test {}');
+      const testFile = await createTestFile('export class Test {}');
+      const result = await smartAssistance.analyzeCode(testFile);
       expect(result).toBeDefined();
       
       // Restore original method
@@ -493,7 +505,8 @@ describe('Smart Assistance Edge Case Tests', () => {
       code += `      for (let j = 0; j < 10; j++) {\n`;
       code += `        while (j < 5) {\n`;
       code += `          try {\n`;
-      code += `            return 'complex-${i}-${j}';\n`;
+      code += `            const value = 'complex-${i}-' + j;\n`;
+      code += `            return value;\n`;
       code += `          } catch (error) {\n`;
       code += `            throw error;\n`;
       code += `          }\n`;

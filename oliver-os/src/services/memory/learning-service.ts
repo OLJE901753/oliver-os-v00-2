@@ -397,6 +397,31 @@ export class LearningService extends EventEmitter {
    * Record a new learning pattern
    */
   recordPattern(pattern: LearningPattern): void {
+    if (!pattern || !pattern.id) {
+      throw new Error('Invalid pattern: pattern and pattern.id are required');
+    }
+    
+    if (!pattern.pattern || pattern.pattern.trim() === '') {
+      throw new Error('Invalid pattern: pattern.pattern cannot be empty');
+    }
+    
+    if (!pattern.context || pattern.context.trim() === '') {
+      throw new Error('Invalid pattern: pattern.context cannot be empty');
+    }
+    
+    // Validate numeric ranges
+    if (pattern.successRate !== undefined && (pattern.successRate < 0 || pattern.successRate > 1)) {
+      throw new Error('Invalid pattern: successRate must be between 0 and 1');
+    }
+    
+    if (pattern.frequency !== undefined && pattern.frequency < 0) {
+      throw new Error('Invalid pattern: frequency must be non-negative');
+    }
+    
+    if (pattern.confidence !== undefined && (pattern.confidence < 0 || pattern.confidence > 1)) {
+      throw new Error('Invalid pattern: confidence must be between 0 and 1');
+    }
+    
     this.learningPatterns.set(pattern.id, pattern);
     
     this.logLearningEvent('pattern_recorded', {

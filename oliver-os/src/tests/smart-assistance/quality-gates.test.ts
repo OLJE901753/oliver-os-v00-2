@@ -156,9 +156,21 @@ export class QualityGateManager {
     let complexity = 1; // Base complexity
     
     for (const keyword of complexityKeywords) {
-      const matches = content.match(new RegExp(`\\b${keyword}\\b`, 'g'));
-      if (matches) {
-        complexity += matches.length;
+      if (!keyword || keyword.trim() === '') {
+        continue; // Skip empty keywords
+      }
+      
+      // Escape special regex characters
+      const escapedKeyword = keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      
+      try {
+        const matches = content.match(new RegExp(`\\b${escapedKeyword}\\b`, 'g'));
+        if (matches) {
+          complexity += matches.length;
+        }
+      } catch (error) {
+        // Skip invalid regex patterns
+        continue;
       }
     }
     
