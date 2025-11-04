@@ -71,6 +71,20 @@ export class SecurityManager {
    * Load security configuration from environment and config
    */
   private loadSecurityConfig(config: Config): SecurityConfig {
+    // Build CSP directives separately to handle upgradeInsecureRequests correctly
+    const cspDirectives: Record<string, string[] | boolean> = {
+      defaultSrc: ["'self'"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      scriptSrc: ["'self'", "'unsafe-inline'"],
+      imgSrc: ["'self'", "data:", "https:"],
+      connectSrc: ["'self'", "ws:", "wss:"],
+      fontSrc: ["'self'", "https:"],
+      objectSrc: ["'none'"],
+      mediaSrc: ["'self'"],
+      frameSrc: ["'none'"],
+      upgradeInsecureRequests: true,
+    };
+
     return {
       jwt: {
         secret: process.env['JWT_SECRET'] || 'oliver-os-secret-key-change-in-production',
@@ -100,18 +114,7 @@ export class SecurityManager {
       },
       helmet: {
         contentSecurityPolicy: {
-          directives: {
-            defaultSrc: ["'self'"],
-            styleSrc: ["'self'", "'unsafe-inline'", "'nonce-{random}'"],
-            scriptSrc: ["'self'", "'unsafe-inline'"],
-            imgSrc: ["'self'", "data:", "https:"],
-            connectSrc: ["'self'", "ws:", "wss:"],
-            fontSrc: ["'self'", "https:"],
-            objectSrc: ["'none'"],
-            mediaSrc: ["'self'"],
-            frameSrc: ["'none'"],
-            upgradeInsecureRequests: true,
-          },
+          directives: cspDirectives as ContentSecurityPolicy['directives'],
         },
       },
       password: {

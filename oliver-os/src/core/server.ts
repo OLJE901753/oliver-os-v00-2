@@ -57,8 +57,28 @@ export function createServer(config: Config, serviceManager?: unknown, prisma?: 
   const securityManager = new SecurityManager(config);
   const securityConfig = securityManager.getConfig();
   
-  // Security middleware
-  app.use(helmet(securityConfig.helmet as Parameters<typeof helmet>[0]));
+  // Security middleware - properly structure helmet config
+  // Extract upgradeInsecureRequests separately to avoid iteration issues
+  const cspDirectives = securityConfig.helmet.contentSecurityPolicy.directives;
+  const { upgradeInsecureRequests, ...arrayDirectives } = cspDirectives;
+  
+  // Build helmet config with proper structure
+  // In development, disable CSP to avoid helmet iteration issues
+  // In production, include upgradeInsecureRequests conditionally
+  const isDevelopment = process.env['NODE_ENV'] !== 'production';
+  const helmetConfig = {
+    contentSecurityPolicy: isDevelopment 
+      ? false // Disable CSP in development to avoid iteration issues
+      : {
+          directives: {
+            ...arrayDirectives,
+            // Only include upgradeInsecureRequests if explicitly true
+            ...(upgradeInsecureRequests === true ? { upgradeInsecureRequests: true } : {}),
+          },
+        },
+  } as Parameters<typeof helmet>[0];
+  
+  app.use(helmet(helmetConfig));
   // Ensure CORP allows favicon and similar resources
   // @ts-ignore - helmet namespace typing
   app.use((helmet as unknown as { crossOriginResourcePolicy: (options: { policy: string }) => unknown }).crossOriginResourcePolicy({ policy: 'cross-origin' }));
