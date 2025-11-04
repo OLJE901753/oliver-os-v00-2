@@ -35,7 +35,7 @@
     "monitor-workflow": "node monitor-workflow.js",
     "test:smart:ci": "vitest --config vitest.config.smart-assistance.ts --run --coverage --reporter=json --outputFile=test-results.json",
     "ci:validate": "pnpm lint && pnpm type-check && pnpm test:smart",
-    "ci:test": "pnpm test:smart:all",
+    "ci:test": "pnpm test:smart:ci",
     "ci:coverage": "pnpm test:smart:coverage",
     "ci:performance": "pnpm test:smart:benchmark",
     "ci:security": "pnpm audit --audit-level moderate",
