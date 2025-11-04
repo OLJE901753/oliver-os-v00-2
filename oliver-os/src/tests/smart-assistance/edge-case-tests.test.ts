@@ -5,7 +5,7 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { SmartAssistanceExample } from '../../examples/smart-assistance-example';
+import { SmartAssistanceExample } from '@examples/smart-assistance-example';
 import { LearningService } from '../../services/memory/learning-service';
 import { MemoryService } from '../../services/memory/memory-service';
 import { ContextualSuggestionEngine } from '../../services/memory/contextual-suggestion-engine';
