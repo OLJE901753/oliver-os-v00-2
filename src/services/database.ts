@@ -203,6 +203,23 @@ export class DatabaseService {
     return thoughts.map(thought => this.parseJsonFields(thought, ['metadata'])!);
   }
 
+  async searchThoughts(query: string, userId?: string) {
+    // Use the custom search function from the database
+    return this.prisma.$queryRaw`
+      SELECT id, content, rank, created_at
+      FROM search_thoughts(${query}, ${userId || null}::uuid)
+      ORDER BY rank DESC, created_at DESC
+    `;
+  }
+
+  async findSimilarThoughts(queryVector: number[], threshold = 0.7, limit = 10) {
+    // Use the custom vector similarity function
+    return this.prisma.$queryRaw`
+      SELECT id, content, similarity, created_at
+      FROM find_similar_thoughts(${queryVector}::vector(1536), ${threshold}, ${limit})
+    `;
+  }
+
   // Knowledge graph operations
   async createKnowledgeNode(data: {
     label: string;

@@ -285,7 +285,8 @@ export class MemoryService extends EventEmitter {
         successfulSuggestions: [],
         rejectedSuggestions: [],
         userFeedback: {}
-      }
+      },
+      preferences: {}
     };
   }
 
@@ -293,6 +294,7 @@ export class MemoryService extends EventEmitter {
    * Save memory to file
    */
   async saveMemory(): Promise<void> {
+    this.ensureMemoryInitialized();
     try {
       this.memory.lastUpdated = new Date().toISOString();
       await fs.writeJson(this.memoryFilePath, this.memory, { spaces: 2 });
@@ -537,9 +539,10 @@ export class MemoryService extends EventEmitter {
    * Store user preferences
    */
   async storePreferences(preferences: Record<string, unknown>): Promise<void> {
+    this.ensureMemoryInitialized();
     try {
       this.memory.preferences = {
-        ...this.memory.preferences,
+        ...(this.memory.preferences || {}),
         ...preferences,
         lastUpdated: new Date().toISOString()
       };

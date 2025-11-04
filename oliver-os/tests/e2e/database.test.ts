@@ -3,18 +3,41 @@
  * Tests the complete database integration with Prisma
  */
 
-import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest';
 import { DatabaseService } from '../../src/services/database';
 
 describe('Database E2E Tests', () => {
   let dbService: DatabaseService;
+  const testUserIds: string[] = [];
 
   beforeAll(async () => {
     dbService = new DatabaseService();
     await dbService.initialize();
   }, 30000);
 
+  beforeEach(async () => {
+    // Clean up test users before each test to avoid unique constraint violations
+    try {
+      for (const userId of testUserIds) {
+        await dbService.getClient().user.deleteMany({
+          where: { id: userId }
+        }).catch(() => {});
+      }
+      testUserIds.length = 0;
+    } catch (error) {
+      // Ignore cleanup errors
+    }
+  });
+
   afterAll(async () => {
+    // Final cleanup
+    try {
+      await dbService.getClient().user.deleteMany({
+        where: { email: { contains: 'e2e-test' } }
+      }).catch(() => {});
+    } catch (error) {
+      // Ignore cleanup errors
+    }
     await dbService.close();
   });
 
@@ -34,10 +57,13 @@ describe('Database E2E Tests', () => {
 
   describe('User Operations', () => {
     let testUserId: string;
+    let testUserEmail: string;
 
     it('should create a user', async () => {
+      // Use unique email to avoid conflicts
+      testUserEmail = `e2e-test-${Date.now()}@example.com`;
       const userData = {
-        email: 'e2e-test@example.com',
+        email: testUserEmail,
         name: 'E2E Test User',
         avatarUrl: 'https://example.com/avatar.jpg',
         preferences: { theme: 'dark', notifications: true }
@@ -50,20 +76,41 @@ describe('Database E2E Tests', () => {
       expect(user.preferences).toEqual(userData.preferences);
       
       testUserId = user.id;
+      testUserIds.push(user.id);
     });
 
     it('should retrieve a user by ID', async () => {
+      if (!testUserId) {
+        // Create user if previous test failed
+        testUserEmail = `e2e-test-${Date.now()}@example.com`;
+        const user = await dbService.createUser({
+          email: testUserEmail,
+          name: 'E2E Test User'
+        });
+        testUserId = user.id;
+        testUserIds.push(user.id);
+      }
       const user = await dbService.getUserById(testUserId);
       expect(user).toBeDefined();
       expect(user!.id).toBe(testUserId);
-      expect(user!.email).toBe('e2e-test@example.com');
+      expect(user!.email).toBe(testUserEmail);
     });
 
     it('should retrieve a user by email', async () => {
-      const user = await dbService.getUserByEmail('e2e-test@example.com');
+      if (!testUserEmail) {
+        // Create user if previous test failed
+        testUserEmail = `e2e-test-${Date.now()}@example.com`;
+        const user = await dbService.createUser({
+          email: testUserEmail,
+          name: 'E2E Test User'
+        });
+        testUserId = user.id;
+        testUserIds.push(user.id);
+      }
+      const user = await dbService.getUserByEmail(testUserEmail);
       expect(user).toBeDefined();
       expect(user!.id).toBe(testUserId);
-      expect(user!.email).toBe('e2e-test@example.com');
+      expect(user!.email).toBe(testUserEmail);
     });
   });
 
@@ -72,12 +119,13 @@ describe('Database E2E Tests', () => {
     let testThoughtId: string;
 
     beforeAll(async () => {
-      // Create a test user
+      // Create a test user with unique email
       const user = await dbService.createUser({
-        email: 'thought-test@example.com',
+        email: `thought-test-${Date.now()}@example.com`,
         name: 'Thought Test User'
       });
       testUserId = user.id;
+      testUserIds.push(user.id);
     });
 
     it('should create a thought', async () => {
@@ -172,9 +220,10 @@ describe('Database E2E Tests', () => {
     beforeAll(async () => {
       // Create a test user
       const user = await dbService.createUser({
-        email: 'collab-test@example.com',
+        email: `collab-test-${Date.now()}@example.com`,
         name: 'Collaboration Test User'
       });
+      testUserIds.push(user.id);
       testUserId = user.id;
     });
 
@@ -267,11 +316,12 @@ describe('Database E2E Tests', () => {
     let testThoughtId: string;
 
     beforeAll(async () => {
-      // Create test user and thought
+      // Create test user and thought with unique email
       const user = await dbService.createUser({
-        email: 'voice-test@example.com',
+        email: `voice-test-${Date.now()}@example.com`,
         name: 'Voice Test User'
       });
+      testUserIds.push(user.id);
       
       const thought = await dbService.createThought({
         userId: user.id,
@@ -307,9 +357,10 @@ describe('Database E2E Tests', () => {
 
     beforeAll(async () => {
       const user = await dbService.createUser({
-        email: 'viz-test@example.com',
+        email: `viz-test-${Date.now()}@example.com`,
         name: 'Visualization Test User'
       });
+      testUserIds.push(user.id);
       testUserId = user.id;
     });
 
@@ -386,7 +437,7 @@ describe('Database E2E Tests', () => {
 
     it('should handle concurrent database operations', async () => {
       const user = await dbService.createUser({
-        email: 'concurrent-test@example.com',
+        email: `concurrent-test-${Date.now()}-${i}@example.com`,
         name: 'Concurrent Test User'
       });
       
