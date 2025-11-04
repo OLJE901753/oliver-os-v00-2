@@ -74,7 +74,10 @@ export class LearningService extends EventEmitter {
    * Initialize learning service
    */
   async initialize(): Promise<void> {
-    this._logger.info('🧠 Initializing Learning Service...');
+    // Only log in non-test environments to reduce noise
+    if (process.env['NODE_ENV'] !== 'test' && !process.env['VITEST']) {
+      this._logger.info('🧠 Initializing Learning Service...');
+    }
     
     try {
       // Ensure logs directory exists
@@ -89,7 +92,10 @@ export class LearningService extends EventEmitter {
         timestamp: new Date().toISOString()
       });
       
-      this._logger.info('✅ Learning Service initialized successfully');
+      // Only log in non-test environments to reduce noise
+      if (process.env['NODE_ENV'] !== 'test' && !process.env['VITEST']) {
+        this._logger.info('✅ Learning Service initialized successfully');
+      }
       this.emit('learning:initialized');
     } catch (error) {
       this._logger.error('Failed to initialize learning service:', error);
@@ -192,7 +198,10 @@ export class LearningService extends EventEmitter {
       }
     }
 
-    this._logger.info(`🔗 Built pattern database with ${patterns.length} patterns`);
+    // Only log in non-test environments to reduce noise
+    if (process.env['NODE_ENV'] !== 'test' && !process.env['VITEST']) {
+      this._logger.info(`🔗 Built pattern database with ${patterns.length} patterns`);
+    }
   }
 
   /**

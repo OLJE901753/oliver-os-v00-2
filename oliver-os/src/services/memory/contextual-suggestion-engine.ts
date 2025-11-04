@@ -56,13 +56,19 @@ export class ContextualSuggestionEngine extends EventEmitter {
    * Initialize suggestion engine
    */
   async initialize(): Promise<void> {
-    this._logger.info('💡 Initializing Contextual Suggestion Engine...');
+    // Only log in non-test environments to reduce noise
+    if (process.env['NODE_ENV'] !== 'test' && !process.env['VITEST']) {
+      this._logger.info('💡 Initializing Contextual Suggestion Engine...');
+    }
     
     try {
       await this.loadContextHistory();
       await this.buildSuggestionCache();
       
-      this._logger.info('✅ Contextual Suggestion Engine initialized successfully');
+      // Only log in non-test environments to reduce noise
+      if (process.env['NODE_ENV'] !== 'test' && !process.env['VITEST']) {
+        this._logger.info('✅ Contextual Suggestion Engine initialized successfully');
+      }
       this.emit('suggestion-engine:initialized');
     } catch (error) {
       this._logger.error('Failed to initialize suggestion engine:', error);
@@ -117,7 +123,10 @@ export class ContextualSuggestionEngine extends EventEmitter {
       this.suggestionCache.set(context.currentFile, suggestions);
     }
 
-    this._logger.info(`🗂️ Built suggestion cache with ${commonContexts.length} contexts`);
+    // Only log in non-test environments to reduce noise
+    if (process.env['NODE_ENV'] !== 'test' && !process.env['VITEST']) {
+      this._logger.info(`🗂️ Built suggestion cache with ${commonContexts.length} contexts`);
+    }
   }
 
   /**
@@ -209,7 +218,10 @@ export class ContextualSuggestionEngine extends EventEmitter {
     // Cache suggestions
     this.suggestionCache.set(cacheKey, suggestions);
     
-    this._logger.info(`💡 Generated ${suggestions.length} suggestions for context`);
+    // Only log in non-test environments to reduce noise
+    if (process.env['NODE_ENV'] !== 'test' && !process.env['VITEST']) {
+      this._logger.info(`💡 Generated ${suggestions.length} suggestions for context`);
+    }
     return suggestions.slice(0, 10); // Return top 10 suggestions
   }
 
@@ -672,7 +684,10 @@ export class ContextualSuggestionEngine extends EventEmitter {
       // Calculate overall score
       const overallScore = (securityScore + performanceScore + maintainabilityScore + readabilityScore) / 4;
       
-      this._logger.info(`🔍 Code quality analysis: overall=${overallScore.toFixed(3)}, security=${securityScore.toFixed(3)}, performance=${performanceScore.toFixed(3)} (${issues.length} issues)`);
+      // Only log in non-test environments to reduce noise (can be very verbose)
+      if (process.env['NODE_ENV'] !== 'test' && !process.env['VITEST']) {
+        this._logger.info(`🔍 Code quality analysis: overall=${overallScore.toFixed(3)}, security=${securityScore.toFixed(3)}, performance=${performanceScore.toFixed(3)} (${issues.length} issues)`);
+      }
       this.emit('code-quality:analyzed', { overall: overallScore, security: securityScore, performance: performanceScore, maintainability: maintainabilityScore, readability: readabilityScore, issues });
       
       return {
