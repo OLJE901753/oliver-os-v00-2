@@ -278,11 +278,12 @@ describe('Database E2E Tests', () => {
     let testThoughtId: string;
 
     beforeAll(async () => {
-      // Create a test thought
+      // Create a test thought with unique email
       const user = await dbService.createUser({
-        email: 'ai-test@example.com',
+        email: `ai-test-${Date.now()}@example.com`,
         name: 'AI Test User'
       });
+      testUserIds.push(user.id);
       
       const thought = await dbService.createThought({
         userId: user.id,
