@@ -497,7 +497,10 @@ export class LearningService extends EventEmitter {
     try {
       const currentPattern = this.learningPatterns.get(pattern.id);
       if (!currentPattern) {
-        this._logger.warn(`Pattern not found: ${pattern.id}`);
+        // Only log warning outside of test environment (expected in tests)
+        if (process.env['NODE_ENV'] !== 'test' && !process.env['VITEST']) {
+          this._logger.warn(`Pattern not found: ${pattern.id}`);
+        }
         return;
       }
 
@@ -583,7 +586,10 @@ export class LearningService extends EventEmitter {
         this.recentAdaptations.shift();
       }
       
-      this._logger.info(`📊 Updated pattern frequency: ${pattern.id} -> ${currentPattern.frequency}`);
+      // Only log in non-test environments to reduce noise
+      if (process.env['NODE_ENV'] !== 'test' && !process.env['VITEST']) {
+        this._logger.info(`📊 Updated pattern frequency: ${pattern.id} -> ${currentPattern.frequency}`);
+      }
       this.emit('learning:patternUsed', { patternId: pattern.id, frequency: currentPattern.frequency });
     } catch (error) {
       this._logger.error('Failed to update pattern frequency:', error);
