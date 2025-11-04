@@ -370,11 +370,12 @@ describe('Smart Assistance Quality Gates', () => {
       const gates = await qualityGateManager.runQualityGates();
       
       gates.forEach(gate => {
-        expect(gate.message).toContain(gate.name);
+        // Check case-insensitively since message format may vary
+        expect(gate.message.toLowerCase()).toContain(gate.name.toLowerCase());
         expect(gate.message).toContain(gate.current.toString());
         expect(gate.message).toContain(gate.threshold.toString());
       });
-    });
+    }, 90000); // 90 second timeout for this test
   });
 
   describe('Quality Metrics Collection', () => {

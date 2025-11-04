@@ -89,6 +89,11 @@ describe('Smart Assistance Edge Case Tests', () => {
     });
 
     it('should handle files with no read permissions', async () => {
+      // Skip on Windows - chmod doesn't work the same way on Windows
+      if (process.platform === 'win32') {
+        return;
+      }
+      
       const testFile = await createTestFile('test content');
       
       // Remove read permissions (simulate)

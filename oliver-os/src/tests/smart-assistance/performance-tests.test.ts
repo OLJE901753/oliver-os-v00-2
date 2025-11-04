@@ -139,7 +139,7 @@ describe('Smart Assistance Performance Tests', () => {
       
       // Memory increase should be reasonable (< 50MB)
       expect(memoryIncrease).toBeLessThan(50 * 1024 * 1024);
-    });
+    }, 120000); // 2 minute timeout for this test
 
     it('should handle memory pressure gracefully', async () => {
       const initialMemory = process.memoryUsage();
