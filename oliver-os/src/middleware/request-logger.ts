@@ -4,6 +4,7 @@
  */
 
 import type { Request, Response, NextFunction } from 'express';
+import type { BufferEncoding } from 'buffer';
 import { Logger } from '../core/logger';
 
 const logger = new Logger('RequestLogger');
