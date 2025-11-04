@@ -4,10 +4,9 @@
  * Following BMAD principles: Break, Map, Automate, Document
  */
 
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { SmartAssistanceExample } from '@examples/smart-assistance-example';
 import { Config } from '../../core/config';
-import { Logger } from '../../core/logger';
 import fs from 'fs-extra';
 import path from 'path';
 
@@ -29,13 +28,10 @@ interface QualityGate {
 }
 
 export class QualityGateManager {
-  private _config: Config;
-  private _logger: Logger;
   private qualityThresholds: Record<string, number>;
 
-  constructor(config: Config) {
-    this._config = config;
-    this._logger = new Logger('QualityGateManager');
+  constructor(_config: Config) {
+    // Config is kept for potential future use
     this.qualityThresholds = {
       testCoverage: 80,
       codeComplexity: 10,
@@ -51,57 +47,69 @@ export class QualityGateManager {
     const gates: QualityGate[] = [];
 
     // Test Coverage Gate
+    const testCoverage = metrics.testCoverage ?? 0;
+    const testCoverageThreshold = this.qualityThresholds['testCoverage'] ?? 80;
     gates.push({
       name: 'Test Coverage',
-      threshold: this.qualityThresholds.testCoverage,
-      current: metrics.testCoverage,
-      passed: metrics.testCoverage >= this.qualityThresholds.testCoverage,
-      message: `Test coverage: ${metrics.testCoverage.toFixed(1)}% (threshold: ${this.qualityThresholds.testCoverage}%)`
+      threshold: testCoverageThreshold,
+      current: testCoverage,
+      passed: testCoverage >= testCoverageThreshold,
+      message: `Test coverage: ${testCoverage.toFixed(1)}% (threshold: ${testCoverageThreshold}%)`
     });
 
     // Code Complexity Gate
+    const codeComplexity = metrics.codeComplexity ?? 0;
+    const codeComplexityThreshold = this.qualityThresholds['codeComplexity'] ?? 10;
     gates.push({
       name: 'Code Complexity',
-      threshold: this.qualityThresholds.codeComplexity,
-      current: metrics.codeComplexity,
-      passed: metrics.codeComplexity <= this.qualityThresholds.codeComplexity,
-      message: `Code complexity: ${metrics.codeComplexity} (threshold: ${this.qualityThresholds.codeComplexity})`
+      threshold: codeComplexityThreshold,
+      current: codeComplexity,
+      passed: codeComplexity <= codeComplexityThreshold,
+      message: `Code complexity: ${codeComplexity} (threshold: ${codeComplexityThreshold})`
     });
 
     // Performance Gate
+    const performanceScore = metrics.performanceScore ?? 0;
+    const performanceThreshold = this.qualityThresholds['performanceScore'] ?? 0.8;
     gates.push({
       name: 'Performance',
-      threshold: this.qualityThresholds.performanceScore,
-      current: metrics.performanceScore,
-      passed: metrics.performanceScore >= this.qualityThresholds.performanceScore,
-      message: `Performance score: ${metrics.performanceScore.toFixed(2)} (threshold: ${this.qualityThresholds.performanceScore})`
+      threshold: performanceThreshold,
+      current: performanceScore,
+      passed: performanceScore >= performanceThreshold,
+      message: `Performance score: ${performanceScore.toFixed(2)} (threshold: ${performanceThreshold})`
     });
 
     // Reliability Gate
+    const reliabilityScore = metrics.reliabilityScore ?? 0;
+    const reliabilityThreshold = this.qualityThresholds['reliabilityScore'] ?? 0.9;
     gates.push({
       name: 'Reliability',
-      threshold: this.qualityThresholds.reliabilityScore,
-      current: metrics.reliabilityScore,
-      passed: metrics.reliabilityScore >= this.qualityThresholds.reliabilityScore,
-      message: `Reliability score: ${metrics.reliabilityScore.toFixed(2)} (threshold: ${this.qualityThresholds.reliabilityScore})`
+      threshold: reliabilityThreshold,
+      current: reliabilityScore,
+      passed: reliabilityScore >= reliabilityThreshold,
+      message: `Reliability score: ${reliabilityScore.toFixed(2)} (threshold: ${reliabilityThreshold})`
     });
 
     // Maintainability Gate
+    const maintainabilityScore = metrics.maintainabilityScore ?? 0;
+    const maintainabilityThreshold = this.qualityThresholds['maintainabilityScore'] ?? 0.8;
     gates.push({
       name: 'Maintainability',
-      threshold: this.qualityThresholds.maintainabilityScore,
-      current: metrics.maintainabilityScore,
-      passed: metrics.maintainabilityScore >= this.qualityThresholds.maintainabilityScore,
-      message: `Maintainability score: ${metrics.maintainabilityScore.toFixed(2)} (threshold: ${this.qualityThresholds.maintainabilityScore})`
+      threshold: maintainabilityThreshold,
+      current: maintainabilityScore,
+      passed: maintainabilityScore >= maintainabilityThreshold,
+      message: `Maintainability score: ${maintainabilityScore.toFixed(2)} (threshold: ${maintainabilityThreshold})`
     });
 
     // Security Gate
+    const securityScore = metrics.securityScore ?? 0;
+    const securityThreshold = this.qualityThresholds['securityScore'] ?? 0.9;
     gates.push({
       name: 'Security',
-      threshold: this.qualityThresholds.securityScore,
-      current: metrics.securityScore,
-      passed: metrics.securityScore >= this.qualityThresholds.securityScore,
-      message: `Security score: ${metrics.securityScore.toFixed(2)} (threshold: ${this.qualityThresholds.securityScore})`
+      threshold: securityThreshold,
+      current: securityScore,
+      passed: securityScore >= securityThreshold,
+      message: `Security score: ${securityScore.toFixed(2)} (threshold: ${securityThreshold})`
     });
 
     return gates;
@@ -311,8 +319,9 @@ export class QualityGateManager {
     try {
       const files = await fs.readdir(testDir, { recursive: true });
       // Limit to first 50 files to avoid performance issues
+      // Ensure all entries are strings (readdir can return Buffer in some cases)
       return files
-        .filter(file => typeof file === 'string' && file.endsWith('.test.ts'))
+        .filter((file): file is string => typeof file === 'string' && file.endsWith('.test.ts'))
         .slice(0, 50)
         .map(file => path.join(testDir, file));
     } catch (error) {
@@ -328,8 +337,9 @@ export class QualityGateManager {
     try {
       const files = await fs.readdir(srcDir, { recursive: true });
       // Limit to first 50 files to avoid performance issues
+      // Ensure all entries are strings (readdir can return Buffer in some cases)
       return files
-        .filter(file => typeof file === 'string' && file.endsWith('.ts') && !file.includes('.test.'))
+        .filter((file): file is string => typeof file === 'string' && file.endsWith('.ts') && !file.includes('.test.'))
         .slice(0, 50)
         .map(file => path.join(srcDir, file));
     } catch (error) {
@@ -438,18 +448,18 @@ describe('Smart Assistance Quality Gates', () => {
 
   describe('Quality Thresholds', () => {
     it('should have reasonable default thresholds', () => {
-      const thresholds = (qualityGateManager as any).qualityThresholds;
+      const thresholds = (qualityGateManager as any).qualityThresholds as Record<string, number>;
       
-      expect(thresholds.testCoverage).toBeGreaterThanOrEqual(80);
-      expect(thresholds.codeComplexity).toBeLessThanOrEqual(10);
-      expect(thresholds.performanceScore).toBeGreaterThanOrEqual(0.8);
-      expect(thresholds.reliabilityScore).toBeGreaterThanOrEqual(0.9);
-      expect(thresholds.maintainabilityScore).toBeGreaterThanOrEqual(0.8);
-      expect(thresholds.securityScore).toBeGreaterThanOrEqual(0.9);
+      expect(thresholds['testCoverage']).toBeGreaterThanOrEqual(80);
+      expect(thresholds['codeComplexity']).toBeLessThanOrEqual(10);
+      expect(thresholds['performanceScore']).toBeGreaterThanOrEqual(0.8);
+      expect(thresholds['reliabilityScore']).toBeGreaterThanOrEqual(0.9);
+      expect(thresholds['maintainabilityScore']).toBeGreaterThanOrEqual(0.8);
+      expect(thresholds['securityScore']).toBeGreaterThanOrEqual(0.9);
     });
 
     it('should allow threshold customization', () => {
-      const customThresholds = {
+      const customThresholds: Record<string, number> = {
         testCoverage: 90,
         codeComplexity: 5,
         performanceScore: 0.9,
