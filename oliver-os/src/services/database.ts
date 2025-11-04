@@ -180,16 +180,27 @@ export class DatabaseService {
     type?: string;
     metadata?: unknown;
   }) {
-    const thought = await this.prisma.thought.create({
-      data: {
-        userId: data.userId,
-        content: data.content,
-        type: data.type || 'text',
-        metadata: data.metadata ? JSON.stringify(data.metadata) : '{}'
+    try {
+      const thought = await this.prisma.thought.create({
+        data: {
+          userId: data.userId,
+          content: data.content,
+          type: data.type || 'text',
+          metadata: data.metadata ? JSON.stringify(data.metadata) : '{}'
+        }
+      });
+      // Parse JSON fields before returning
+      return this.parseJsonFields(thought, ['metadata']);
+    } catch (error) {
+      // Check if it's a foreign key constraint violation
+      if (error && typeof error === 'object' && 'code' in error) {
+        const prismaError = error as { code?: string; message?: string };
+        if (prismaError.code === 'P2003') {
+          throw new Error(`Foreign key constraint violated: userId '${data.userId}' does not exist`);
+        }
       }
-    });
-    // Parse JSON fields before returning
-    return this.parseJsonFields(thought, ['metadata']);
+      throw error;
+    }
   }
 
   async getThoughtsByUserId(userId: string, limit = 50, offset = 0) {
@@ -204,20 +215,34 @@ export class DatabaseService {
   }
 
   async searchThoughts(query: string, userId?: string) {
-    // Use the custom search function from the database
-    return this.prisma.$queryRaw`
-      SELECT id, content, rank, created_at
-      FROM search_thoughts(${query}, ${userId || null}::uuid)
-      ORDER BY rank DESC, created_at DESC
-    `;
+    // SQLite-compatible search using LIKE with safe parameter binding
+    const searchPattern = `%${query}%`;
+    if (userId) {
+      return this.prisma.$queryRaw`
+        SELECT id, content, created_at as "created_at", 1 as rank
+        FROM Thought
+        WHERE userId = ${userId} AND content LIKE ${searchPattern}
+        ORDER BY created_at DESC
+        LIMIT 50
+      `;
+    } else {
+      return this.prisma.$queryRaw`
+        SELECT id, content, created_at as "created_at", 1 as rank
+        FROM Thought
+        WHERE content LIKE ${searchPattern}
+        ORDER BY created_at DESC
+        LIMIT 50
+      `;
+    }
   }
 
-  async findSimilarThoughts(queryVector: number[], threshold = 0.7, limit = 10) {
-    // Use the custom vector similarity function
-    return this.prisma.$queryRaw`
-      SELECT id, content, similarity, created_at
-      FROM find_similar_thoughts(${queryVector}::vector(1536), ${threshold}, ${limit})
-    `;
+  async findSimilarThoughts(_queryVector: number[], _threshold = 0.7, _limit = 10) {
+    // SQLite doesn't support vector similarity search natively
+    // Return empty array as fallback (can be enhanced with extensions like vectorlite if needed)
+    // For now, return empty results since vector search requires PostgreSQL or specialized extensions
+    // Parameters are prefixed with _ to indicate they're intentionally unused (SQLite limitation)
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    return [];
   }
 
   // Knowledge graph operations
