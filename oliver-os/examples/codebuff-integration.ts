@@ -15,7 +15,7 @@ import type {
 
 // Initialize Oliver-OS configuration
 const config = new Config();
-config.set('codebuff.apiKey', process.env.CODEBUFF_API_KEY || 'your-api-key');
+config.set('codebuff.apiKey', process.env['CODEBUFF_API_KEY'] || 'your-api-key');
 config.set('codebuff.timeout', 300000);
 config.set('codebuff.retries', 3);
 
@@ -31,7 +31,7 @@ async function basicCodebuffExample() {
   
   // 1. Initialize the client (as shown in your example)
   const client = new CodebuffClient({
-    apiKey: process.env.CODEBUFF_API_KEY || 'your-api-key',
+    apiKey: process.env['CODEBUFF_API_KEY'] || 'your-api-key',
     cwd: process.cwd(),
     onError: (error) => console.error('Codebuff error:', error.message),
   });
@@ -40,9 +40,6 @@ async function basicCodebuffExample() {
   const result = await client.run({
     agent: 'base', // Codebuff's base coding agent
     prompt: 'Add comprehensive error handling to all API endpoints',
-    handleEvent: (event) => {
-      console.log('Progress', event);
-    },
   });
 
   console.log('✅ Basic task completed:', result);
@@ -56,7 +53,7 @@ async function customAgentExample() {
   console.log('🤖 Custom Agent Example');
   
   const client = new CodebuffClient({
-    apiKey: process.env.CODEBUFF_API_KEY || 'your-api-key',
+    apiKey: process.env['CODEBUFF_API_KEY'] || 'your-api-key',
     cwd: process.cwd(),
     onError: (error) => console.error('Codebuff error:', error.message),
   });
@@ -80,11 +77,7 @@ async function customAgentExample() {
 
   const result = await client.run({
     agent: 'oliver-os-code-generator',
-    agentDefinitions: [myCustomAgent],
     prompt: 'Create a REST API endpoint for user authentication with proper error handling and validation',
-    handleEvent: (event) => {
-      console.log('Agent Progress', event);
-    },
   });
 
   console.log('✅ Custom agent task completed:', result);
@@ -117,10 +110,7 @@ async function oliverOSCodebuffExample() {
       agent: 'thought-processor',
       prompt: 'Analyze the current codebase structure and identify opportunities for automation and streamlining',
       timeout: 300000,
-      retries: 3,
-      handleEvent: (event) => {
-        console.log('Task Event:', event.type, event.message);
-      }
+      retries: 3
     };
 
     const taskResult = await codebuffService.runTask(taskOptions);
@@ -150,18 +140,22 @@ async function workflowExample() {
       description: 'Complete code generation workflow with review and testing',
       steps: [
         {
+          id: 'step-1',
           agent: 'code-generator',
           prompt: 'Generate a user authentication service with proper validation and error handling'
         },
         {
+          id: 'step-2',
           agent: 'bureaucracy-disruptor',
           prompt: 'Review the generated code for inefficiencies and optimization opportunities'
         },
         {
+          id: 'step-3',
           agent: 'thought-processor',
           prompt: 'Analyze the code structure and extract key patterns and insights'
         },
         {
+          id: 'step-4',
           agent: 'collaboration-coordinator',
           prompt: 'Create documentation and integration guidelines for the generated code'
         }
@@ -230,6 +224,7 @@ async function agentCoordinationExample() {
       description: 'Coordinate multiple agents for complex task execution',
       steps: [
         {
+          id: 'coordination-step-1',
           agent: 'collaboration-coordinator',
           prompt: 'Coordinate the code generation and analysis tasks between all spawned agents'
         }

@@ -11,7 +11,7 @@ async function simpleExample() {
   
   // 1. Initialize the client
   const client = new CodebuffClient({
-    apiKey: process.env.CODEBUFF_API_KEY || 'your-api-key',
+    apiKey: process.env['CODEBUFF_API_KEY'] || 'your-api-key',
     cwd: process.cwd(),
     onError: (error) => console.error('Codebuff error:', error.message),
   });
@@ -21,9 +21,6 @@ async function simpleExample() {
     const result = await client.run({
       agent: 'base', // Codebuff's base coding agent
       prompt: 'Add comprehensive error handling to all API endpoints',
-      handleEvent: (event) => {
-        console.log('Progress:', event);
-      },
     });
 
     console.log('✅ Task completed:', result);

@@ -15,12 +15,6 @@ import {
   VisualDocumentationService, 
   ImprovementSuggestionsService, 
   BranchManagementService,
-  type CodeReviewResult,
-  type QualityGateResult,
-  type ChangeDocumentation,
-  type VisualDocumentation,
-  type ImprovementSuggestion,
-  type SoloWorkflow
 } from '../src/services/review';
 
 export class SelfReviewExample {

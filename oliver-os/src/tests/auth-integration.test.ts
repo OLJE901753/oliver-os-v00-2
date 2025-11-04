@@ -29,10 +29,10 @@ describe('Authentication Integration Tests', () => {
 
   beforeAll(async () => {
     // Set up test environment
-    process.env.JWT_SECRET = TEST_CONFIG.jwtSecret;
-    process.env.JWT_REFRESH_SECRET = TEST_CONFIG.jwtRefreshSecret;
-    process.env.JWT_ACCESS_EXPIRY = '15m';
-    process.env.JWT_REFRESH_EXPIRY = '7d';
+    process.env['JWT_SECRET'] = TEST_CONFIG.jwtSecret;
+    process.env['JWT_REFRESH_SECRET'] = TEST_CONFIG.jwtRefreshSecret;
+    process.env['JWT_ACCESS_EXPIRY'] = '15m';
+    process.env['JWT_REFRESH_EXPIRY'] = '7d';
 
     // Generate unique email for this test run
     testEmail = `integration-test-${Date.now()}@oliver-os.com`;

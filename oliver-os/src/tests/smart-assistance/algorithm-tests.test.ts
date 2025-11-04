@@ -9,11 +9,9 @@ import { LearningService } from '../../services/memory/learning-service';
 import { MemoryService } from '../../services/memory/memory-service';
 import { ContextualSuggestionEngine } from '../../services/memory/contextual-suggestion-engine';
 import { Config } from '../../core/config';
-import { Logger } from '../../core/logger';
 
 describe('Smart Assistance Algorithm Quality Tests', () => {
   let config: Config;
-  let logger: Logger;
   let memoryService: MemoryService;
   let learningService: LearningService;
   let suggestionEngine: ContextualSuggestionEngine;

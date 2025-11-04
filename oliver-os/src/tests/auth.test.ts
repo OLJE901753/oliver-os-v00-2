@@ -5,7 +5,6 @@
 
 import { describe, it, expect, beforeAll, afterAll, vi } from 'vitest';
 import { AuthService } from '../../src/services/auth';
-import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 
@@ -30,10 +29,10 @@ describe('Authentication System Tests', () => {
 
   beforeAll(() => {
     // Set up test environment
-    process.env.JWT_SECRET = 'test-jwt-secret-key';
-    process.env.JWT_REFRESH_SECRET = 'test-jwt-refresh-secret-key';
-    process.env.JWT_ACCESS_EXPIRY = '15m';
-    process.env.JWT_REFRESH_EXPIRY = '7d';
+    process.env['JWT_SECRET'] = 'test-jwt-secret-key';
+    process.env['JWT_REFRESH_SECRET'] = 'test-jwt-refresh-secret-key';
+    process.env['JWT_ACCESS_EXPIRY'] = '15m';
+    process.env['JWT_REFRESH_EXPIRY'] = '7d';
     
     authService = new AuthService(mockPrisma);
   });

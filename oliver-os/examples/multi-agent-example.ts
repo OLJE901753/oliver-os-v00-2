@@ -7,7 +7,7 @@
 import { MultiAgentService } from '../src/services/multi-agent/multi-agent-service';
 import { Config } from '../src/core/config';
 import { Logger } from '../src/core/logger';
-import type { TaskDefinition, AgentType } from '../src/services/multi-agent/types';
+import type { TaskDefinition } from '../src/services/multi-agent/types';
 
 export class MultiAgentExample {
   private multiAgentService: MultiAgentService;
@@ -53,7 +53,7 @@ export class MultiAgentExample {
       this.logger.error(`❌ Agent task failed: ${data.agentType} - ${data.error}`);
     });
 
-    this.multiAgentService.on('workflow:completed', (data) => {
+    this.multiAgentService.on('workflow:completed', () => {
       this.logger.info('🎉 Workflow completed successfully!');
       this.logger.info('   All agents finished their tasks');
     });
@@ -95,7 +95,8 @@ export class MultiAgentExample {
       await this.monitorTaskProgress(taskId);
 
     } catch (error) {
-      this.logger.error(`Basic example failed: ${error.message}`);
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      this.logger.error(`Basic example failed: ${errorMessage}`);
       throw error;
     }
   }
@@ -137,7 +138,8 @@ export class MultiAgentExample {
       await this.monitorTaskProgress(taskId);
 
     } catch (error) {
-      this.logger.error(`Collaboration example failed: ${error.message}`);
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      this.logger.error(`Collaboration example failed: ${errorMessage}`);
       throw error;
     }
   }
@@ -151,7 +153,8 @@ export class MultiAgentExample {
     try {
       await this.multiAgentService.runSampleWorkflow();
     } catch (error) {
-      this.logger.error(`Sample workflow failed: ${error.message}`);
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      this.logger.error(`Sample workflow failed: ${errorMessage}`);
       throw error;
     }
   }
@@ -255,7 +258,8 @@ export class MultiAgentExample {
       this.logger.info('🎉 All examples completed successfully!');
 
     } catch (error) {
-      this.logger.error(`Examples failed: ${error.message}`);
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      this.logger.error(`Examples failed: ${errorMessage}`);
       throw error;
     }
   }
