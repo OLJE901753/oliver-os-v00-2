@@ -14,10 +14,20 @@ RUN which pnpm || npm list -g pnpm
 # Copy package files
 COPY package.json pnpm-lock.yaml* package-lock.json* ./
 
+# Remove bmad-global dependency if it exists (it's a local file dependency not available in Docker)
+# We'll install dependencies without it, then handle it separately if needed
+RUN if [ -f package.json ]; then \
+      node -e "const fs=require('fs'); const pkg=JSON.parse(fs.readFileSync('package.json')); \
+      if (pkg.dependencies && pkg.dependencies['bmad-global']) { \
+        delete pkg.dependencies['bmad-global']; \
+        fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2)); \
+      }"; \
+    fi
+
 # Install dependencies - try pnpm first, fallback to npm
 RUN if [ -f pnpm-lock.yaml ]; then \
       echo "Found pnpm-lock.yaml, using pnpm..." && \
-      (pnpm install --frozen-lockfile || npm install); \
+      (pnpm install --frozen-lockfile --ignore-scripts || pnpm install --no-frozen-lockfile --ignore-scripts || npm install); \
     elif [ -f package-lock.json ]; then \
       echo "Found package-lock.json, using npm ci..." && \
       npm ci; \
