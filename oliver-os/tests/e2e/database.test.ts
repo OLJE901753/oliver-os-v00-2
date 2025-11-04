@@ -17,22 +17,9 @@ describe('Database E2E Tests', () => {
   }, 30000);
 
   beforeEach(async () => {
-    // Clean up test users before each test to avoid unique constraint violations
-    // But preserve users needed for later tests (created in beforeAll)
-    try {
-      for (const userId of testUserIds) {
-        // Don't delete if it's a persistent user
-        if (!persistentUserIds.includes(userId)) {
-          await dbService.getClient().user.deleteMany({
-            where: { id: userId }
-          }).catch(() => {});
-        }
-      }
-      // Only clear non-persistent users
-      testUserIds.length = 0;
-    } catch (error) {
-      // Ignore cleanup errors
-    }
+    // Don't clean up users in beforeEach - let each test suite manage its own cleanup
+    // The cleanup logic was causing users to be deleted before retrieval tests could run
+    // Each describe block should handle its own cleanup in afterEach if needed
   });
 
   afterAll(async () => {
@@ -65,8 +52,8 @@ describe('Database E2E Tests', () => {
     let testUserId: string;
     let testUserEmail: string;
 
-    it('should create a user', async () => {
-      // Use unique email to avoid conflicts
+    // Create user once for all tests in this suite
+    beforeAll(async () => {
       testUserEmail = `e2e-test-${Date.now()}@example.com`;
       const userData = {
         email: testUserEmail,
@@ -76,27 +63,24 @@ describe('Database E2E Tests', () => {
       };
 
       const user = await dbService.createUser(userData);
-      expect(user).toBeDefined();
-      expect(user.email).toBe(userData.email);
-      expect(user.name).toBe(userData.name);
-      expect(user.preferences).toEqual(userData.preferences);
-      
       testUserId = user.id;
       testUserIds.push(user.id);
+      persistentUserIds.push(user.id); // Mark as persistent
+    });
+
+    it('should create a user', async () => {
+      // Verify the user created in beforeAll
+      expect(testUserId).toBeDefined();
+      expect(testUserEmail).toBeDefined();
+      
+      const user = await dbService.getUserById(testUserId);
+      expect(user).toBeDefined();
+      expect(user!.email).toBe(testUserEmail);
+      expect(user!.name).toBe('E2E Test User');
+      expect(user!.preferences).toEqual({ theme: 'dark', notifications: true });
     });
 
     it('should retrieve a user by ID', async () => {
-      // Ensure testUserId is set from previous test
-      if (!testUserId || !testUserEmail) {
-        testUserEmail = `e2e-test-${Date.now()}@example.com`;
-        const user = await dbService.createUser({
-          email: testUserEmail,
-          name: 'E2E Test User'
-        });
-        testUserId = user.id;
-        testUserIds.push(user.id);
-      }
-      
       const user = await dbService.getUserById(testUserId);
       expect(user).toBeDefined();
       expect(user).not.toBeNull();
@@ -105,17 +89,6 @@ describe('Database E2E Tests', () => {
     });
 
     it('should retrieve a user by email', async () => {
-      // Ensure testUserId is set from previous test
-      if (!testUserId || !testUserEmail) {
-        testUserEmail = `e2e-test-${Date.now()}@example.com`;
-        const user = await dbService.createUser({
-          email: testUserEmail,
-          name: 'E2E Test User'
-        });
-        testUserId = user.id;
-        testUserIds.push(user.id);
-      }
-      
       const user = await dbService.getUserByEmail(testUserEmail);
       expect(user).toBeDefined();
       expect(user).not.toBeNull();

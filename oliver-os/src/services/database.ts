@@ -216,13 +216,13 @@ export class DatabaseService {
 
   async searchThoughts(query: string, userId?: string) {
     // SQLite-compatible search using LIKE with safe parameter binding
-    // Note: Prisma maps Thought model to 'thoughts' table
+    // Note: Prisma maps Thought model to 'thoughts' table, and userId field to 'user_id' column
     const searchPattern = `%${query}%`;
     if (userId) {
       return this.prisma.$queryRaw`
         SELECT id, content, created_at as "created_at", 1 as rank
         FROM thoughts
-        WHERE userId = ${userId} AND content LIKE ${searchPattern}
+        WHERE user_id = ${userId} AND content LIKE ${searchPattern}
         ORDER BY created_at DESC
         LIMIT 50
       `;
