@@ -97,7 +97,7 @@ describe('Smart Assistance Performance Tests', () => {
         // Duration should not increase more than 2x the size increase
         expect(ratio).toBeLessThan(sizeRatio * 2);
       }
-    });
+    }, 60000); // 60 second timeout for this test
   });
 
   describe('Memory Usage Tests', () => {

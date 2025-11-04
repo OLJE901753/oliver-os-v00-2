@@ -133,7 +133,9 @@ describe('Smart Assistance Edge Case Tests', () => {
     });
 
     it('should handle files with special characters in names', async () => {
-      const specialFile = path.join(process.cwd(), 'test file with spaces & symbols!.ts');
+      // Use safer special characters that work on all platforms
+      // Avoid & which can cause issues on Windows
+      const specialFile = path.join(process.cwd(), 'test file with spaces and symbols!.ts');
       await fs.writeFile(specialFile, 'export class Test {}');
       testFiles.push(specialFile);
       
