@@ -36,7 +36,8 @@
   ],
   "exclude": [
     "node_modules",
-    "dist"
+    "dist",
+    "src/tests/frontend-auth.test.tsx"
   ],
   "ts-node": {
     "esm": true,

@@ -93,30 +93,45 @@ export class MonsterModeExample {
       const tasks = [
         {
           id: 'task-1',
+          type: 'code-generation' as const,
           description: 'Implement user authentication',
-          priority: 'high',
+          priority: 'high' as const,
+          status: 'pending' as const,
           complexity: 'medium',
           dependencies: [],
           estimatedDuration: 3600000, // 1 hour
-          assignedAgent: 'backend'
+          assignedAgent: 'backend',
+          context: {},
+          requirements: ['TypeScript', 'Express'],
+          metadata: {}
         },
         {
           id: 'task-2',
+          type: 'code-generation' as const,
           description: 'Create user interface',
-          priority: 'medium',
+          priority: 'medium' as const,
+          status: 'pending' as const,
           complexity: 'low',
           dependencies: ['task-1'],
           estimatedDuration: 1800000, // 30 minutes
-          assignedAgent: 'frontend'
+          assignedAgent: 'frontend',
+          context: {},
+          requirements: ['React', 'TypeScript'],
+          metadata: {}
         },
         {
           id: 'task-3',
+          type: 'optimization' as const,
           description: 'Optimize database queries',
-          priority: 'low',
+          priority: 'low' as const,
+          status: 'pending' as const,
           complexity: 'high',
           dependencies: [],
           estimatedDuration: 7200000, // 2 hours
-          assignedAgent: 'database'
+          assignedAgent: 'database',
+          context: {},
+          requirements: ['PostgreSQL', 'Query optimization'],
+          metadata: {}
         }
       ];
 
@@ -195,38 +210,19 @@ export class MonsterModeExample {
     this.logger.info('⚡ Demonstrating workflow optimization...');
     
     try {
-      const workflows = [
-        {
-          id: 'workflow-1',
-          name: 'Development Workflow',
-          stages: ['planning', 'development', 'testing', 'review', 'deployment'],
-          currentEfficiency: 0.6,
-          bottlenecks: ['testing', 'review'],
-          optimizationOpportunities: ['parallelization', 'automation']
-        },
-        {
-          id: 'workflow-2',
-          name: 'Deployment Workflow',
-          stages: ['build', 'test', 'staging', 'production'],
-          currentEfficiency: 0.7,
-          bottlenecks: ['staging'],
-          optimizationOpportunities: ['automation', 'parallelization']
-        }
-      ];
-
       // Analyze workflow performance
       const workflowContext = {
         completedTasks: new Map([
-          ['task-1', { id: 'task-1', type: 'development', status: 'completed', actualDuration: 3000000 }],
-          ['task-2', { id: 'task-2', type: 'testing', status: 'completed', actualDuration: 1500000 }]
+          ['task-1', { id: 'task-1', type: 'development', status: 'completed' as const, actualDuration: 3000000 }],
+          ['task-2', { id: 'task-2', type: 'testing', status: 'completed' as const, actualDuration: 1500000 }]
         ]),
         activeTasks: new Map([
-          ['task-3', { id: 'task-3', type: 'review', status: 'active' }]
+          ['task-3', { id: 'task-3', type: 'review', status: 'active' as const }]
         ]),
         taskQueue: [],
         agentStatuses: new Map([
-          ['agent-1', { id: 'agent-1', status: 'busy', load: 0.7 }],
-          ['agent-2', { id: 'agent-2', status: 'idle', load: 0.3 }]
+          ['agent-1', { id: 'agent-1', status: 'busy' as const, load: 0.7 }],
+          ['agent-2', { id: 'agent-2', status: 'idle' as const, load: 0.3 }]
         ])
       };
       
@@ -293,20 +289,6 @@ export class MonsterModeExample {
     this.logger.info('🎯 Demonstrating master orchestration...');
     
     try {
-      const orchestrationConfig = {
-        maxConcurrentTasks: 10,
-        taskTimeout: 300000,
-        healthCheckInterval: 60000,
-        metricsCollectionInterval: 30000,
-        autoRecovery: true,
-        autoScaling: true,
-        loadBalancing: true,
-        conflictResolution: true,
-        workflowOptimization: true,
-        architectureImprovements: true,
-        performanceMonitoring: true
-      };
-
       const status = this.masterOrchestrator.getMonsterModeStatus();
       this.logger.info(`✅ Master orchestration status retrieved`);
       
@@ -350,13 +332,13 @@ export class MonsterModeExample {
    */
   async exportMonsterModeData(exportPath: string): Promise<void> {
     try {
-      const taskData = await this.taskPrioritization.exportTaskPrioritizationData(`${exportPath}/task-prioritization.json`);
-      const conflictData = await this.conflictResolution.exportConflictResolutionData(`${exportPath}/conflict-resolution.json`);
-      const workflowData = await this.workflowOptimization.exportWorkflowOptimizationData(`${exportPath}/workflow-optimization.json`);
-      const architectureData = await this.architectureImprovements.exportArchitectureImprovementData(`${exportPath}/architecture-improvements.json`);
+      await this.taskPrioritization.exportTaskPrioritizationData(`${exportPath}/task-prioritization.json`);
+      await this.conflictResolution.exportConflictResolutionData(`${exportPath}/conflict-resolution.json`);
+      await this.workflowOptimization.exportWorkflowOptimizationData(`${exportPath}/workflow-optimization.json`);
+      await this.architectureImprovements.exportArchitectureImprovementData(`${exportPath}/architecture-improvements.json`);
       // Note: MasterOrchestrator doesn't have exportOrchestrationData method
       // Using getMonsterModeStatus instead
-      const orchestrationStatus = this.masterOrchestrator.getMonsterModeStatus();
+      this.masterOrchestrator.getMonsterModeStatus();
       // Could write this to a file if needed
 
       this.logger.info(`📤 Monster Mode data exported to: ${exportPath}`);

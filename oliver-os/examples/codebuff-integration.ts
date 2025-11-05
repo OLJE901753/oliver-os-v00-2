@@ -58,23 +58,6 @@ async function customAgentExample() {
     onError: (error) => console.error('Codebuff error:', error.message),
   });
 
-  // Define a custom agent following BMAD principles
-  const myCustomAgent = {
-    id: 'oliver-os-code-generator',
-    displayName: 'Oliver-OS Code Generator',
-    model: 'openai/gpt-4',
-    instructionsPrompt: `
-      You are the Oliver-OS Code Generator, following BMAD principles:
-      - Break down complex tasks into manageable pieces
-      - Map out architecture and dependencies
-      - Automate repetitive processes
-      - Document everything thoroughly
-      
-      Generate high-quality, maintainable code that follows these principles.
-      Always include proper error handling, logging, and documentation.
-    `,
-  };
-
   const result = await client.run({
     agent: 'oliver-os-code-generator',
     prompt: 'Create a REST API endpoint for user authentication with proper error handling and validation',
@@ -161,7 +144,11 @@ async function workflowExample() {
         }
       ],
       agents: ['code-generator', 'bureaucracy-disruptor', 'thought-processor', 'collaboration-coordinator'],
-      status: 'idle'
+      status: 'idle',
+      metadata: {},
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      executionHistory: []
     };
 
     // Create the workflow
@@ -230,7 +217,11 @@ async function agentCoordinationExample() {
         }
       ],
       agents: ['collaboration-coordinator'],
-      status: 'idle'
+      status: 'idle',
+      metadata: {},
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      executionHistory: []
     };
 
     await codebuffService.createWorkflow(coordinationWorkflow);
