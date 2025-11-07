@@ -43,6 +43,12 @@ router.get('/', (_req: Request, res: Response) => {
 });
 
 router.get('/metrics', (req: Request, res: Response) => {
+  // Calculate actual response time from request header if available
+  const requestStart = req.headers['x-request-start'] 
+    ? parseInt(req.headers['x-request-start'] as string) 
+    : null;
+  const responseTime = requestStart ? Date.now() - requestStart : null;
+  
   const metrics = {
     timestamp: new Date().toISOString(),
     system: {
@@ -63,8 +69,9 @@ router.get('/metrics', (req: Request, res: Response) => {
       pid: process.pid
     },
     performance: {
-      responseTime: Date.now() - parseInt(req.headers['x-request-start'] as string || '0'),
-      requestCount: Math.floor(Math.random() * 1000) + 100 // Mock metric
+      responseTime,
+      // Note: requestCount would need to be tracked by middleware or a monitoring service
+      // For now, this is omitted as it requires real tracking infrastructure
     }
   };
 

@@ -15,10 +15,10 @@ import { Config } from './config';
 import { container, ServiceIds, resolveService } from './di/index.js';
 import { healthRouter } from '../routes/health';
 import { backupRouter } from '../routes/backup';
-import { servicesRouter } from '../routes/services';
-import { processesRouter } from '../routes/processes';
+import { servicesRouter, initializeServicesRouter } from '../routes/services';
+import { processesRouter, initializeProcessesRouter } from '../routes/processes';
 import { statusRouter } from '../routes/status';
-import { disruptorRouter } from '../routes/disruptor';
+import { disruptorRouter, initializeDisruptorRouter } from '../routes/disruptor';
 import { createAgentRoutes } from '../routes/agents';
 import { websocketRouter, setWebSocketManager } from '../routes/websocket';
 import { createAuthRoutes } from '../routes/auth';
@@ -43,6 +43,8 @@ import {
 import { SecurityManager } from './security';
 import { createSecurityHeadersMiddleware } from '../middleware/security-headers';
 import { WebSocketManager } from './websocket-manager';
+import { AuthMiddleware } from '../middleware/auth';
+import type { PrismaClient } from '@prisma/client';
 
 const logger = new Logger('Server');
 
@@ -50,7 +52,7 @@ const logger = new Logger('Server');
  * Create and configure Express server
  * Supports both traditional and DI-based initialization
  */
-export function createServer(config: Config, serviceManager?: unknown, prisma?: unknown): express.Application {
+export function createServer(config: Config, serviceManager?: unknown, prisma?: unknown, processManager?: unknown, disruptorService?: unknown): express.Application {
   const app = express();
   
   // Initialize security manager
@@ -289,13 +291,45 @@ export function createServer(config: Config, serviceManager?: unknown, prisma?: 
       res.status(500).json({ error: 'Failed to read traces', details: errorMessage });
     }
   });
+  // Initialize routers with their respective managers
+  if (serviceManager && typeof serviceManager === 'object' && serviceManager !== null && 'registerService' in serviceManager) {
+    initializeServicesRouter(serviceManager as Parameters<typeof initializeServicesRouter>[0]);
+  }
+  
+  if (processManager && typeof processManager === 'object' && processManager !== null && 'getProcesses' in processManager) {
+    initializeProcessesRouter(processManager as Parameters<typeof initializeProcessesRouter>[0]);
+  }
+  
+  if (disruptorService && typeof disruptorService === 'object' && disruptorService !== null && 'getReports' in disruptorService) {
+    initializeDisruptorRouter(disruptorService as Parameters<typeof initializeDisruptorRouter>[0]);
+  }
+
+  // Initialize auth middleware
+  let authMiddleware: AuthMiddleware | null = null;
+  if (prisma && typeof prisma === 'object' && prisma !== null && 'user' in prisma) {
+    authMiddleware = new AuthMiddleware(prisma as PrismaClient);
+  }
+
+  // Public routes (no authentication required)
   app.use('/api/health', healthRouter);
-  app.use('/api/backup', backupRouter);
-  app.use('/api/services', servicesRouter);
-  app.use('/api/processes', processesRouter);
   app.use('/api/status', statusRouter);
-  app.use('/api/disruptor', disruptorRouter);
-  app.use('/api/websocket', websocketRouter);
+  
+  // Protected routes (require authentication)
+  if (authMiddleware) {
+    app.use('/api/services', authMiddleware.verifyToken, servicesRouter);
+    app.use('/api/processes', authMiddleware.verifyToken, processesRouter);
+    app.use('/api/disruptor', authMiddleware.verifyToken, disruptorRouter);
+    app.use('/api/backup', authMiddleware.verifyToken, backupRouter);
+    app.use('/api/websocket', authMiddleware.verifyToken, websocketRouter);
+  } else {
+    // Fallback if auth not available (development mode)
+    logger.warn('⚠️ Authentication middleware not available - routes are unprotected');
+    app.use('/api/services', servicesRouter);
+    app.use('/api/processes', processesRouter);
+    app.use('/api/disruptor', disruptorRouter);
+    app.use('/api/backup', backupRouter);
+    app.use('/api/websocket', websocketRouter);
+  }
   
   // Authentication routes (with rate limiting)
   if (prisma && typeof prisma === 'object' && prisma !== null && 'user' in prisma) {
@@ -635,8 +669,8 @@ export function createServer(config: Config, serviceManager?: unknown, prisma?: 
 /**
  * Create HTTP server with WebSocket support
  */
-export function createHttpServerWithWebSocket(config: Config, serviceManager?: unknown, prisma?: unknown): { app: express.Application; httpServer: HTTPServer; wsManager: WebSocketManager } {
-  const app = createServer(config, serviceManager, prisma);
+export function createHttpServerWithWebSocket(config: Config, serviceManager?: unknown, prisma?: unknown, processManager?: unknown, disruptorService?: unknown): { app: express.Application; httpServer: HTTPServer; wsManager: WebSocketManager } {
+  const app = createServer(config, serviceManager, prisma, processManager, disruptorService);
   const httpServer = createHttpServer(app);
   
   // Initialize WebSocket manager

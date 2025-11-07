@@ -151,7 +151,15 @@ export class AuthService {
   async refreshToken(refreshToken: string): Promise<{ accessToken: string; expiresIn: number }> {
     try {
       // Verify refresh token
-      jwt.verify(refreshToken, this.jwtRefreshSecret) as { userId: string; tokenId: string };
+      try {
+        jwt.verify(refreshToken, this.jwtRefreshSecret) as { userId: string; tokenId: string };
+      } catch (jwtError) {
+        // Convert JWT errors to our custom error message
+        if (jwtError instanceof Error && (jwtError.name === 'TokenExpiredError' || jwtError.name === 'JsonWebTokenError')) {
+          throw new Error('Invalid or expired refresh token');
+        }
+        throw jwtError;
+      }
       
       // Find refresh token in database
       const tokenRecord = await this.prisma.refreshToken.findUnique({

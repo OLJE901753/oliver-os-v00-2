@@ -6,103 +6,209 @@
 import { Router, type IRouter } from 'express';
 import type { Request, Response } from 'express';
 import { Logger } from '../core/logger';
+import type { ServiceManager } from '../services/service-manager';
+import { requestSchemas } from '../middleware/validation';
+import { validateBody, validateParams, sendValidationError } from '../utils/route-validation';
 
 const router: IRouter = Router();
 const logger = new Logger('ServicesAPI');
 
-// Mock service manager for now
-const mockServices = [
-  { id: 'system-health', name: 'System Health Monitor', status: 'running', startTime: new Date() },
-  { id: 'process-manager', name: 'Process Manager', status: 'running', startTime: new Date() },
-  { id: 'api-gateway', name: 'API Gateway', status: 'running', startTime: new Date() },
-  { id: 'security-service', name: 'Security Service', status: 'running', startTime: new Date() }
-];
+// Service manager will be injected via dependency injection or passed during route setup
+let serviceManager: ServiceManager | null = null;
+
+/**
+ * Initialize services router with ServiceManager instance
+ */
+export function initializeServicesRouter(manager: ServiceManager): void {
+  serviceManager = manager;
+  logger.info('Services router initialized with ServiceManager');
+}
 
 router.get('/', (_req: Request, res: Response) => {
   logger.info('Services list requested');
   
-  res.json({
-    services: mockServices,
-    total: mockServices.length,
-    running: mockServices.filter(s => s.status === 'running').length,
-    timestamp: new Date().toISOString()
-  });
+  if (!serviceManager) {
+    res.status(503).json({
+      error: 'Service unavailable',
+      message: 'ServiceManager not initialized'
+    });
+    return;
+  }
+  
+  try {
+    const services = serviceManager.getServices();
+    const runningCount = services.filter(s => s.status === 'running').length;
+    
+    res.json({
+      services: services.map(s => ({
+        id: s.id,
+        name: s.name,
+        status: s.status,
+        startTime: s.startTime,
+        metadata: s.metadata
+      })),
+      total: services.length,
+      running: runningCount,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    logger.error('Failed to get services:', error);
+    res.status(500).json({
+      error: 'Internal server error',
+      message: 'Failed to retrieve services'
+    });
+  }
 });
 
 router.get('/:id', (req: Request, res: Response) => {
-  const { id } = req.params;
-  const service = mockServices.find(s => s.id === id);
+  // Validate route parameters
+  const paramValidation = validateParams(requestSchemas.serviceId, req);
+  if (!paramValidation.success) {
+    sendValidationError(res, paramValidation, req);
+    return;
+  }
+  const { id } = paramValidation.data!;
   
-  if (!service) {
-    logger.warn(`Service not found: ${id}`);
-    return res.status(404).json({
-      error: 'Service not found',
-      id,
-      message: 'The requested service does not exist'
+  if (!serviceManager) {
+    res.status(503).json({
+      error: 'Service unavailable',
+      message: 'ServiceManager not initialized'
     });
+    return;
   }
   
-  logger.info(`Service details requested: ${id}`);
-  return res.json(service);
+  try {
+    const services = serviceManager.getServices();
+    const service = services.find(s => s.id === id);
+    
+    if (!service) {
+      logger.warn(`Service not found: ${id}`);
+      res.status(404).json({
+        error: 'Service not found',
+        id,
+        message: 'The requested service does not exist'
+      });
+      return;
+    }
+    
+    logger.info(`Service details requested: ${id}`);
+    res.json({
+      id: service.id,
+      name: service.name,
+      status: service.status,
+      startTime: service.startTime,
+      metadata: service.metadata
+    });
+  } catch (error) {
+    logger.error(`Failed to get service ${id}:`, error);
+    res.status(500).json({
+      error: 'Internal server error',
+      message: 'Failed to retrieve service'
+    });
+  }
 });
 
-router.post('/', (req: Request, res: Response) => {
-  const { name, metadata = {} } = req.body;
+router.post('/', async (req: Request, res: Response) => {
+  // Validate request body
+  const bodyValidation = validateBody(requestSchemas.createService, req);
+  if (!bodyValidation.success) {
+    sendValidationError(res, bodyValidation, req);
+    return;
+  }
+  const { name, metadata = {} } = bodyValidation.data!;
   
-  if (!name) {
-    return res.status(400).json({
-      error: 'Service name is required',
-      message: 'Please provide a name for the service'
+  if (!serviceManager) {
+    res.status(503).json({
+      error: 'Service unavailable',
+      message: 'ServiceManager not initialized'
     });
+    return;
   }
   
-  const newService = {
-    id: `service-${Date.now()}`,
-    name,
-    status: 'starting' as const,
-    startTime: new Date(),
-    metadata
-  };
-  
-  mockServices.push(newService);
-  
-  logger.info(`New service created: ${name} (${newService.id})`);
-  
-  return res.status(201).json({
-    message: 'Service created successfully',
-    service: newService
-  });
+  try {
+    const serviceId = `service-${Date.now()}`;
+    await serviceManager.registerService(serviceId, name, metadata);
+    
+    const services = serviceManager.getServices();
+    const newService = services.find(s => s.id === serviceId);
+    
+    if (!newService) {
+      throw new Error('Service registration failed');
+    }
+    
+    logger.info(`New service created: ${name} (${serviceId})`);
+    
+    res.status(201).json({
+      message: 'Service created successfully',
+      service: {
+        id: newService.id,
+        name: newService.name,
+        status: newService.status,
+        startTime: newService.startTime,
+        metadata: newService.metadata
+      }
+    });
+  } catch (error) {
+    logger.error(`Failed to create service:`, error);
+    res.status(500).json({
+      error: 'Internal server error',
+      message: error instanceof Error ? error.message : 'Failed to create service'
+    });
+  }
 });
 
-router.delete('/:id', (req: Request, res: Response) => {
-  const { id } = req.params;
-  const serviceIndex = mockServices.findIndex(s => s.id === id);
+router.delete('/:id', async (req: Request, res: Response) => {
+  // Validate route parameters
+  const paramValidation = validateParams(requestSchemas.serviceId, req);
+  if (!paramValidation.success) {
+    sendValidationError(res, paramValidation, req);
+    return;
+  }
+  const { id } = paramValidation.data!;
   
-  if (serviceIndex === -1) {
-    logger.warn(`Service not found for deletion: ${id}`);
-    return res.status(404).json({
-      error: 'Service not found',
-      id,
-      message: 'The service to delete does not exist'
+  if (!serviceManager) {
+    res.status(503).json({
+      error: 'Service unavailable',
+      message: 'ServiceManager not initialized'
     });
+    return;
   }
   
-  const deletedService = mockServices.splice(serviceIndex, 1)[0];
-  
-  if (!deletedService) {
-    logger.warn(`Service deletion failed: ${id}`);
-    return res.status(500).json({
-      error: 'Service deletion failed',
-      message: 'Failed to delete the service'
+  try {
+    const services = serviceManager.getServices();
+    const service = services.find(s => s.id === id);
+    
+    if (!service) {
+      logger.warn(`Service not found for deletion: ${id}`);
+      res.status(404).json({
+        error: 'Service not found',
+        id,
+        message: 'The service to delete does not exist'
+      });
+      return;
+    }
+    
+    await serviceManager.unregisterService(id);
+    
+    logger.info(`Service deleted: ${service.name} (${id})`);
+    
+    res.json({
+      message: 'Service deleted successfully',
+      service: {
+        id: service.id,
+        name: service.name,
+        status: service.status,
+        startTime: service.startTime,
+        metadata: service.metadata
+      }
+    });
+  } catch (error) {
+    logger.error(`Failed to delete service ${id}:`, error);
+    res.status(500).json({
+      error: 'Internal server error',
+      message: error instanceof Error ? error.message : 'Failed to delete service'
     });
   }
-  
-  logger.info(`Service deleted: ${deletedService.name} (${id})`);
-  
-  return res.json({
-    message: 'Service deleted successfully',
-    service: deletedService
-  });
 });
 
 export { router as servicesRouter };

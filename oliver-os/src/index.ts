@@ -29,6 +29,22 @@ async function initialize(): Promise<void> {
     await config.load();
     logger.info('✅ Configuration loaded');
     
+    // Validate API accounts and configurations
+    try {
+      const { ApiValidator } = await import('./core/api-validation');
+      const validator = new ApiValidator(config);
+      const report = await validator.validate();
+      validator.logReport(report);
+      
+      if (report.errors.length > 0) {
+        logger.warn('⚠️  Some configuration issues detected - check the validation report above');
+        logger.warn('💡 Run "pnpm setup:api-accounts" to fix configuration issues');
+      }
+    } catch (error) {
+      logger.warn('⚠️  Could not validate API accounts:', error);
+      // Don't fail startup if validation fails
+    }
+    
     // Initialize database (skip if SKIP_DB_INIT is set)
     let prisma: PrismaClient | null = null;
     if (!process.env['SKIP_DB_INIT']) {
@@ -59,7 +75,13 @@ async function initialize(): Promise<void> {
     logger.info('✅ Monitoring service initialized');
     
     // Create and start server with WebSocket support
-    const { httpServer, wsManager } = createHttpServerWithWebSocket(config, serviceManager, prisma as PrismaClient);
+    const { httpServer, wsManager } = createHttpServerWithWebSocket(
+      config, 
+      serviceManager, 
+      prisma as PrismaClient,
+      processManager,
+      disruptorService
+    );
     
     // Connect monitoring service to WebSocket manager
     wsManager.setMonitoringService(monitoringService);

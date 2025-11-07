@@ -28,13 +28,13 @@ RUN node -e "const fs=require('fs'); const pkg=JSON.parse(fs.readFileSync('packa
 
 # Install dependencies - try pnpm first, fallback to npm
 RUN if [ -f pnpm-lock.yaml ]; then \
-      echo "Found pnpm-lock.yaml, using pnpm..." && \
-      (pnpm install --frozen-lockfile --ignore-scripts || pnpm install --no-frozen-lockfile --ignore-scripts || npm install); \
+      echo "Found pnpm-lock.yaml, using pnpm..."; \
+      pnpm install --frozen-lockfile --ignore-scripts || pnpm install --no-frozen-lockfile --ignore-scripts || npm install; \
     elif [ -f package-lock.json ]; then \
-      echo "Found package-lock.json, using npm ci..." && \
+      echo "Found package-lock.json, using npm ci..."; \
       npm ci; \
     else \
-      echo "No lockfile found, using npm install..." && \
+      echo "No lockfile found, using npm install..."; \
       npm install; \
     fi
 

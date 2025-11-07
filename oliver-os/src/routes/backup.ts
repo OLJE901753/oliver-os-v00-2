@@ -6,6 +6,8 @@
 import { Router, type IRouter, type Request, type Response } from 'express';
 import { Logger } from '../core/logger';
 import { BackupService } from '../services/backup/backup-service';
+import { requestSchemas } from '../middleware/validation';
+import { validateBody, sendValidationError } from '../utils/route-validation';
 
 const router: IRouter = Router();
 const logger = new Logger('BackupAPI');
@@ -80,14 +82,13 @@ router.get('/list', async (_req: Request, res: Response) => {
  */
 router.post('/restore', async (req: Request, res: Response) => {
   try {
-    const { backupPath } = req.body;
-    
-    if (!backupPath) {
-      return res.status(400).json({
-        success: false,
-        error: 'backupPath is required'
-      });
+    // Validate request body
+    const bodyValidation = validateBody(requestSchemas.restoreBackup, req);
+    if (!bodyValidation.success) {
+      sendValidationError(res, bodyValidation, req);
+      return;
     }
+    const { backupPath } = bodyValidation.data!;
 
     logger.info('Backup restore requested via API', { backupPath });
     const result = await backupService.restoreBackup(backupPath);

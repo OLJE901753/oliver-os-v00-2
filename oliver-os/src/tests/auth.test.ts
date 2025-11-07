@@ -178,7 +178,13 @@ describe('Authentication System Tests', () => {
 
   describe('Token Management', () => {
     it('should refresh access token with valid refresh token', async () => {
-      const refreshToken = 'valid-refresh-token';
+      // Create a valid JWT refresh token
+      const refreshToken = jwt.sign(
+        { userId: 'user-123', tokenId: 'token-123' },
+        'test-jwt-refresh-secret-key',
+        { expiresIn: '7d' }
+      );
+
       const mockTokenRecord = {
         id: 'token-123',
         userId: 'user-123',
@@ -201,7 +207,13 @@ describe('Authentication System Tests', () => {
     });
 
     it('should reject refresh with expired token', async () => {
-      const refreshToken = 'expired-refresh-token';
+      // Create an expired JWT refresh token
+      const refreshToken = jwt.sign(
+        { userId: 'user-123', tokenId: 'token-123' },
+        'test-jwt-refresh-secret-key',
+        { expiresIn: '-1h' } // Expired 1 hour ago
+      );
+
       const mockTokenRecord = {
         id: 'token-123',
         userId: 'user-123',
@@ -217,6 +229,7 @@ describe('Authentication System Tests', () => {
 
       (mockPrisma.refreshToken.findUnique as ReturnType<typeof vi.fn>).mockResolvedValue(mockTokenRecord);
 
+      // The auth service now converts JWT errors to "Invalid or expired refresh token"
       await expect(authService.refreshToken(refreshToken)).rejects.toThrow(
         'Invalid or expired refresh token'
       );

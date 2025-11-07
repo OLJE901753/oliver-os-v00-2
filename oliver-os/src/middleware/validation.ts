@@ -60,6 +60,81 @@ export const requestSchemas = {
     description: commonSchemas.optionalString,
     settings: z.record(z.string(), z.unknown()).optional(),
   }),
+  
+  // Service validation schemas
+  createService: z.object({
+    name: z.string()
+      .min(1, 'Service name is required')
+      .max(10000, 'Service name must be less than 10000 characters'),
+    metadata: z.record(z.string(), z.unknown()).optional().default({}),
+  }),
+  
+  serviceId: z.object({
+    id: z.string()
+      .min(1, 'Service ID is required')
+      .max(200, 'Service ID must be less than 200 characters'),
+  }),
+  
+  // Process validation schemas
+  createProcess: z.object({
+    name: z.string()
+      .min(1, 'Process name is required')
+      .max(10000, 'Process name must be less than 10000 characters'),
+    description: z.string()
+      .max(10000, 'Description must be less than 10000 characters')
+      .optional(),
+    metadata: z.record(z.string(), z.unknown()).optional().default({}),
+  }),
+  
+  processId: z.object({
+    id: z.string()
+      .min(1, 'Process ID is required')
+      .max(200, 'Process ID must be less than 200 characters'),
+  }),
+  
+  // Agent validation schemas
+  spawnAgent: z.object({
+    agentType: z.string()
+      .min(1, 'Agent type is required')
+      .max(100, 'Agent type must be less than 100 characters'),
+    prompt: z.string()
+      .min(1, 'Prompt is required')
+      .max(50000, 'Prompt must be less than 50000 characters'),
+    metadata: z.record(z.string(), z.unknown()).optional(),
+  }),
+  
+  spawnMultipleAgents: z.object({
+    requests: z.array(z.object({
+      agentType: z.string()
+        .min(1, 'Agent type is required')
+        .max(100, 'Agent type must be less than 100 characters'),
+      prompt: z.string()
+        .min(1, 'Prompt is required')
+        .max(50000, 'Prompt must be less than 50000 characters'),
+      metadata: z.record(z.string(), z.unknown()).optional(),
+    }))
+    .min(1, 'At least one request is required')
+    .max(100, 'Cannot spawn more than 100 agents at once'),
+  }),
+  
+  agentId: z.object({
+    agentId: z.string()
+      .min(1, 'Agent ID is required')
+      .max(200, 'Agent ID must be less than 200 characters'),
+  }),
+  
+  spawnedAgentId: z.object({
+    spawnedAgentId: z.string()
+      .min(1, 'Spawned agent ID is required')
+      .max(200, 'Spawned agent ID must be less than 200 characters'),
+  }),
+  
+  // Backup validation schemas
+  restoreBackup: z.object({
+    backupPath: z.string()
+      .min(1, 'backupPath is required')
+      .max(2000, 'Backup path must be less than 2000 characters'),
+  }),
 };
 
 export class ValidationMiddleware {

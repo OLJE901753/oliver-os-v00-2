@@ -152,7 +152,13 @@ The E2E tests measure and report:
    pg_isready
    
    # Start database services
-   cd database && docker-compose up -d
+   cd database
+   docker-compose up -d
+   ```
+   
+   Or in PowerShell:
+   ```powershell
+   cd database; docker-compose up -d
    ```
 
 2. **Redis Connection Failed**

@@ -289,6 +289,26 @@ describe('Authentication Integration Tests', () => {
 
   describe('Performance Integration Tests', () => {
     it('should handle multiple concurrent logins', async () => {
+      // Ensure user exists before concurrent login attempts
+      // If user doesn't exist from previous tests, create it
+      if (!testUserId) {
+        const registerResult = await authService.register({
+          ...TEST_CONFIG.testUser,
+          email: testEmail
+        });
+        testUserId = registerResult.user.id;
+        testTokens = registerResult.tokens;
+      }
+
+      // Verify user exists before attempting concurrent logins
+      const existingUser = await prisma.user.findUnique({
+        where: { email: testEmail }
+      });
+      
+      if (!existingUser) {
+        throw new Error(`Test user not found: ${testEmail}. Cannot run concurrent login test.`);
+      }
+
       const loginPromises = Array.from({ length: 10 }, () =>
         authService.login({
           email: testEmail,

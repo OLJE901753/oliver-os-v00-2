@@ -164,7 +164,8 @@ pnpm update
 #### Build Commands
 ```bash
 # Clean and rebuild
-pnpm clean && pnpm build
+pnpm clean
+pnpm build
 
 # Fix TypeScript errors
 pnpm type-check
@@ -173,10 +174,20 @@ pnpm type-check
 #### Lint Commands
 ```bash
 # Fix all linting issues
-pnpm lint:fix && pnpm type-check
+pnpm lint:fix
+pnpm type-check
 
 # Run strict linting
 pnpm lint --max-warnings=0
+```
+
+#### PowerShell Commands
+```powershell
+# Clean and rebuild (PowerShell)
+pnpm clean; pnpm build
+
+# Fix all linting issues (PowerShell)
+pnpm lint:fix; pnpm type-check
 ```
 
 ## 🔄 Workflow Integration

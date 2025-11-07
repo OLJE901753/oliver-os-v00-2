@@ -209,7 +209,16 @@ Get latest request from Python agent to Cursor
 
 ### Python Chat Not Starting
 - Ensure Python 3 is installed: `python --version` or `py --version`
-- Install dependencies: `cd ai-services && pip install -r requirements.txt`
+- Install dependencies:
+  ```bash
+  cd ai-services
+  pip install -r requirements.txt
+  ```
+  
+  Or in PowerShell:
+  ```powershell
+  cd ai-services; pip install -r requirements.txt
+  ```
 
 ### Server Not Running Error
 If you see "TypeScript agent server not running":

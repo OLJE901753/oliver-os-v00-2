@@ -77,19 +77,81 @@ export class Config {
 
   private async loadEnvironment(): Promise<void> {
     try {
-      const envFile = process.env['NODE_ENV'] === 'production' ? '.env.production' : '.env.local';
-      const pathExists = await fs.pathExists(envFile).catch((error) => {
-        this._logger.warn(`⚠️ Could not check path for environment file: ${error instanceof Error ? error.message : 'Unknown error'}`);
-        return false;
-      });
+      // Try multiple .env files in order of precedence
+      const envFiles = process.env['NODE_ENV'] === 'production' 
+        ? ['.env.production', '.env.local', '.env']
+        : ['.env.local', '.env'];
       
-      if (pathExists) {
-        require('dotenv').config({ path: envFile });
-        this._logger.info(`📄 Loaded environment from ${envFile}`);
+      let loaded = false;
+      
+      // Load dotenv dynamically (ES module compatible)
+      try {
+        const dotenv = await import('dotenv');
+        
+        for (const envFile of envFiles) {
+          const pathExists = await fs.pathExists(envFile).catch((error) => {
+            this._logger.warn(`⚠️ Could not check path for environment file: ${error instanceof Error ? error.message : 'Unknown error'}`);
+            return false;
+          });
+          
+          if (pathExists && !loaded) {
+            dotenv.config({ path: envFile });
+            this._logger.info(`📄 Loaded environment from ${envFile}`);
+            loaded = true;
+          }
+        }
+        
+        // Also load .env as fallback if no other file was loaded
+        if (!loaded) {
+          try {
+            dotenv.config(); // Try default .env
+            this._logger.info(`📄 Loaded environment from default .env`);
+            loaded = true;
+          } catch (error) {
+            // Continue without environment file
+          }
+        }
+      } catch (dotenvError) {
+        this._logger.warn(`⚠️ Could not load dotenv: ${dotenvError instanceof Error ? dotenvError.message : 'Unknown error'}`);
+        // Fallback to manual .env parsing if dotenv is not available
+        await this.loadEnvManually(envFiles);
       }
     } catch (error) {
       this._logger.warn(`⚠️ Could not load environment file: ${error instanceof Error ? error.message : 'Unknown error'}`);
       // Continue without environment file
+    }
+  }
+  
+  private async loadEnvManually(envFiles: string[]): Promise<void> {
+    for (const envFile of envFiles) {
+      try {
+        const pathExists = await fs.pathExists(envFile);
+        if (pathExists) {
+          const content = await fs.readFile(envFile, 'utf-8');
+          const lines = content.split('\n');
+          
+          for (const line of lines) {
+            const trimmed = line.trim();
+            if (trimmed && !trimmed.startsWith('#') && trimmed.includes('=')) {
+              const match = trimmed.match(/^([^=]+)=(.*)$/);
+              if (match) {
+                const key = match[1].trim();
+                let value = match[2].trim();
+                // Remove quotes if present
+                value = value.replace(/^["']|["']$/g, '');
+                // Set in process.env if not already set
+                if (!process.env[key]) {
+                  process.env[key] = value;
+                }
+              }
+            }
+          }
+          this._logger.info(`📄 Loaded environment from ${envFile} (manual)`);
+          return;
+        }
+      } catch (error) {
+        // Continue to next file
+      }
     }
   }
 
