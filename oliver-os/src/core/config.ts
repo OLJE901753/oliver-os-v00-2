@@ -135,8 +135,9 @@ export class Config {
             if (trimmed && !trimmed.startsWith('#') && trimmed.includes('=')) {
               const match = trimmed.match(/^([^=]+)=(.*)$/);
               if (match) {
-                const key = match[1].trim();
-                let value = match[2].trim();
+                const [, rawKey = '', rawValue = ''] = match;
+                const key = rawKey.trim();
+                let value = rawValue.trim();
                 // Remove quotes if present
                 value = value.replace(/^["']|["']$/g, '');
                 // Set in process.env if not already set

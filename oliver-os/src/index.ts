@@ -41,7 +41,10 @@ async function initialize(): Promise<void> {
         logger.warn('💡 Run "pnpm setup:api-accounts" to fix configuration issues');
       }
     } catch (error) {
-      logger.warn('⚠️  Could not validate API accounts:', error);
+      const meta = error instanceof Error
+        ? { name: error.name, message: error.message, stack: error.stack }
+        : { value: String(error) };
+      logger.warn('⚠️  Could not validate API accounts:', { error: meta });
       // Don't fail startup if validation fails
     }
     

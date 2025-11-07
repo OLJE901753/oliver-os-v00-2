@@ -94,6 +94,12 @@ export function sendValidationError(res: Response, validationResult: ValidationR
   if (validationResult.error?.details && validationResult.error.details.length > 0) {
     // Extract the first error detail for backward compatibility
     const firstError = validationResult.error.details[0];
+    if (!firstError) {
+      res.status(400).json({
+        error: validationResult.error.message || 'Validation failed',
+      });
+      return;
+    }
     
     // Determine route context from request path (check both path and originalUrl)
     const routeContext = req ? (req.originalUrl || req.path || req.baseUrl + req.path) : '';

@@ -3,8 +3,8 @@
  * Comprehensive tests for process lifecycle management
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { ProcessManager, type Process } from '../../core/process-manager';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { ProcessManager } from '../../core/process-manager';
 import { Config } from '../../core/config';
 
 describe('ProcessManager Tests', () => {
@@ -52,7 +52,7 @@ describe('ProcessManager Tests', () => {
 
       const process = processManager.getProcess(processId);
       expect(process?.metadata).toMatchObject(metadata);
-      expect(process?.metadata.description).toBe('Description');
+      expect(process?.metadata?.['description']).toBe('Description');
     });
 
     it('should use empty metadata object when not provided', async () => {
@@ -60,7 +60,7 @@ describe('ProcessManager Tests', () => {
 
       const process = processManager.getProcess(processId);
       expect(process?.metadata).toBeDefined();
-      expect(process?.metadata.description).toBeUndefined();
+      expect(process?.metadata?.['description']).toBeUndefined();
     });
 
     it('should assign unique process IDs', async () => {
@@ -171,8 +171,9 @@ describe('ProcessManager Tests', () => {
       const systemProcessNames = ['system-monitor', 'log-manager'];
       const processNames = processes.map(p => p.name);
       
-      // System processes should be registered
-      expect(processes.length).toBeGreaterThanOrEqual(2);
+      systemProcessNames.forEach(name => {
+        expect(processNames).toContain(name);
+      });
     });
   });
 

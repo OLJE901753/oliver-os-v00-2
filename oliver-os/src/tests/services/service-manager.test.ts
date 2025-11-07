@@ -4,10 +4,8 @@
  */
 
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
-import { ServiceManager, type Service } from '../../services/service-manager';
+import { ServiceManager } from '../../services/service-manager';
 import { Config } from '../../core/config';
-import { AgentManager } from '../../services/agent-manager';
-
 // Mock AgentManager
 vi.mock('../../services/agent-manager', () => ({
   AgentManager: vi.fn().mockImplementation(() => ({
@@ -55,7 +53,7 @@ describe('ServiceManager Tests', () => {
       expect(service?.id).toBe('test-service');
       expect(service?.name).toBe('Test Service');
       expect(service?.status).toBe('running');
-      expect(service?.metadata.version).toBe('1.0');
+      expect(service?.metadata?.['version']).toBe('1.0');
     });
 
     it('should set service status to running after initialization', async () => {
@@ -296,12 +294,12 @@ describe('ServiceManager Tests', () => {
       await serviceManager.registerService('duplicate-id', 'First Service', { version: '1.0' });
       const firstService = serviceManager.getService('duplicate-id');
       expect(firstService?.name).toBe('First Service');
-      expect(firstService?.metadata.version).toBe('1.0');
+      expect(firstService?.metadata?.['version']).toBe('1.0');
 
       await serviceManager.registerService('duplicate-id', 'Second Service', { version: '2.0' });
       const secondService = serviceManager.getService('duplicate-id');
       expect(secondService?.name).toBe('Second Service');
-      expect(secondService?.metadata.version).toBe('2.0');
+      expect(secondService?.metadata?.['version']).toBe('2.0');
       expect(serviceManager.getServices().filter(s => s.id === 'duplicate-id').length).toBe(1);
     });
 
@@ -404,7 +402,8 @@ describe('ServiceManager Tests', () => {
       await serviceManager.registerService('nested-service', 'Nested Metadata', nestedMetadata);
       const service = serviceManager.getService('nested-service');
       expect(service?.metadata).toEqual(nestedMetadata);
-      expect((service?.metadata.level1 as any)?.level2?.level3?.value).toBe('deep');
+      const nestedValue = (service?.metadata?.['level1'] as any)?.level2?.level3?.value;
+      expect(nestedValue).toBe('deep');
     });
 
     it('should maintain service order after multiple operations', async () => {

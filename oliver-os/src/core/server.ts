@@ -28,6 +28,7 @@ import { KnowledgeGraphService } from '../services/knowledge/knowledge-graph-ser
 import { createMemoryCaptureRoutes } from '../routes/memory-capture';
 import { CaptureMemoryService } from '../services/memory/capture/capture-memory-service';
 import { createOrganizerRoutes } from '../routes/organizer';
+import { uiRouter } from '../routes/ui';
 import { ThoughtOrganizerService } from '../services/organizer/organizer-service';
 import { MinimaxProvider, type MinimaxConfig } from '../services/llm/minimax-provider';
 import { createAssistantRoutes } from '../routes/assistant';
@@ -159,6 +160,8 @@ export function createServer(config: Config, serviceManager?: unknown, prisma?: 
     ].join('; '));
     next();
   });
+
+  app.use('/ui', uiRouter);
   
   // Health check endpoint
   app.get('/health', (_req, res) => {

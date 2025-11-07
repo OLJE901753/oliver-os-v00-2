@@ -569,7 +569,7 @@ describe('Processes Route Tests', () => {
       (mockProcessManager.startProcess as ReturnType<typeof vi.fn>).mockResolvedValue(processId);
       (mockProcessManager.getProcesses as ReturnType<typeof vi.fn>).mockReturnValue([newProcess]);
 
-      const response = await request(app)
+      await request(app)
         .post('/api/processes')
         .send({ name: 'Long Description Process', description: longDescription })
         .expect(201);

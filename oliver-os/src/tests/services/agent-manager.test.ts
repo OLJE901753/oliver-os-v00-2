@@ -4,10 +4,8 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { AgentManager, type SpawnRequest, type AgentDefinition, type SpawnedAgent } from '../../services/agent-manager';
+import { AgentManager, type SpawnRequest } from '../../services/agent-manager';
 import { Config } from '../../core/config';
-import { MinimaxProvider } from '../../services/llm/minimax-provider';
-
 // Mock MinimaxProvider
 vi.mock('../../services/llm/minimax-provider', () => ({
   MinimaxProvider: vi.fn().mockImplementation(() => ({
@@ -30,7 +28,7 @@ vi.mock('fs-extra', () => ({
 }));
 
 vi.mock('child_process', () => ({
-  exec: vi.fn((cmd, callback) => {
+  exec: vi.fn((_cmd, callback) => {
     callback(null, { stdout: 'Success', stderr: '' });
   }),
 }));
@@ -196,8 +194,9 @@ describe('AgentManager Tests', () => {
 
       expect(Array.isArray(spawnedAgents)).toBe(true);
       expect(spawnedAgents.length).toBe(2);
-      expect(spawnedAgents[0].agentType).toBe('code-generator');
-      expect(spawnedAgents[1].agentType).toBe('code-reviewer');
+      const [firstAgent, secondAgent] = spawnedAgents;
+      expect(firstAgent?.agentType).toBe('code-generator');
+      expect(secondAgent?.agentType).toBe('code-reviewer');
     });
 
     it('should handle concurrent agent spawning', async () => {

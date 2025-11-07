@@ -137,7 +137,14 @@ describe('Agents Route Tests', () => {
       
       // Verify mock was called (validation may add metadata, so check structure)
       expect(mockFn).toHaveBeenCalledTimes(1);
-      const callArgs = mockFn.mock.calls[0][0];
+      const [firstCall] = mockFn.mock.calls;
+      if (!firstCall) {
+        throw new Error('spawnAgent was not called');
+      }
+      const [callArgs] = firstCall;
+      if (!callArgs) {
+        throw new Error('spawnAgent was called without arguments');
+      }
       expect(callArgs).toMatchObject({ agentType: 'code-generator', prompt: 'Generate a login function' });
     });
   });
@@ -188,8 +195,14 @@ describe('Agents Route Tests', () => {
       
       // Check that mock was called with the correct structure
       // Note: Validation may add metadata: {} to requests, so we check structure rather than exact equality
-      const callArgs = mockFn.mock.calls[0][0];
-      expect(Array.isArray(callArgs)).toBe(true);
+      const [firstCall] = mockFn.mock.calls;
+      if (!firstCall) {
+        throw new Error('spawnMultipleAgents was not called');
+      }
+      const [callArgs] = firstCall;
+      if (!Array.isArray(callArgs)) {
+        throw new Error('spawnMultipleAgents was called without requests array');
+      }
       expect(callArgs.length).toBe(2);
       expect(callArgs[0]).toMatchObject({ agentType: 'code-generator', prompt: 'Generate login function' });
       expect(callArgs[1]).toMatchObject({ agentType: 'code-reviewer', prompt: 'Review the code' });

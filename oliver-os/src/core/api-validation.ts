@@ -24,10 +24,8 @@ interface ValidationReport {
 }
 
 export class ApiValidator {
-  private config: Config;
-
-  constructor(config: Config) {
-    this.config = config;
+  constructor(private readonly config: Config) {
+    void this.config;
   }
 
   /**
@@ -127,7 +125,7 @@ export class ApiValidator {
     });
 
     // LLM Provider
-    const hasProvider = minimaxKey || openaiKey || anthropicKey || llmProvider === 'ollama';
+    const hasProvider = Boolean(minimaxKey || openaiKey || anthropicKey || llmProvider === 'ollama');
     results.push({
       service: 'LLM Provider',
       configured: hasProvider,
